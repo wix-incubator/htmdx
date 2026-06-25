@@ -1,0 +1,14 @@
+pre-commit:
+  parallel: true
+  commands:
+    lint-and-format:
+      glob: "*.{js,ts,jsx,tsx}"
+      run: yarn lint:fix && yarn fmt
+      stage_fixed: true
+    syncpack:
+      glob: "package.json"
+      run: yarn syncpack
+    dedupe:
+      glob: "yarn.lock"
+      run: yarn dedupe
+      stage_fixed: true

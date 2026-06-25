@@ -1,0 +1,21 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": [],
+  "ui": "tui",
+  "tasks": {
+    "lint": {
+      "outputLogs": "new-only"
+    },
+    "fmt": {
+      "outputLogs": "new-only"
+    },
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"],
+      "inputs": ["$TURBO_DEFAULT$", "!*.md"]
+    },
+    "test": {
+      "dependsOn": ["^test"]
+    }
+  }
+}

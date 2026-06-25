@@ -1,0 +1,45 @@
+{
+  "name": "htmdx",
+  "description": "Render editable HTMDX source inside plain HTML artifacts.",
+  "private": true,
+  "type": "module",
+  "author": "Vlad Tansky (https://github.com/vltansky)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wix-incubator/htmdx.git"
+  },
+  "keywords": [
+    "html",
+    "mdx",
+    "custom-element",
+    "artifacts",
+    "agents"
+  ],
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "postinstall": "lefthook install",
+    "lint": "turbo lint",
+    "lint:fix": "turbo lint -- --fix",
+    "fmt": "turbo fmt",
+    "fmt:check": "turbo fmt -- --check",
+    "build": "turbo build",
+    "test": "turbo test",
+    "-- Tools --": ":",
+    "syncpack": "syncpack lint",
+    "knip": "knip"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.1",
+    "knip": "^5.88.1",
+    "lefthook": "^2.1.9",
+    "syncpack": "^14.3.1",
+    "turbo": "^2.9.16"
+  },
+  "packageManager": "yarn@4.16.0"
+}

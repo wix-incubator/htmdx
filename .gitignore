@@ -1,0 +1,21 @@
+# General
+node_modules
+.idea
+.vscode
+dist
+
+# Wix apps
+.wix
+
+# Yarn
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+!.yarn/cache
+
+# Turborepo - ignore cache folder
+.turbo

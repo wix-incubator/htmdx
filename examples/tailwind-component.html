@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HTMDX Tailwind component example</title>
+    <script src="../packages/htmdx/dist/browser.js" defer></script>
+    <script>
+      window.addEventListener('htmdx:ready', () => {
+        window.Htmdx.registerComponent(
+          'ProductCard',
+          ({ body, markdown }) => `
+            <section
+              data-testid="product-card"
+              class="mx-auto mt-10 max-w-md rounded-lg border border-slate-200 bg-white p-6 shadow-sm"
+            >
+              ${markdown(body)}
+            </section>
+          `,
+        );
+      });
+    </script>
+  </head>
+  <body class="bg-slate-50">
+    <htmdx-code>
+      <template type="text/htmdx">
+# Artifact
+
+<ProductCard>
+**Launch plan:** invite beta users first.
+
+This card is rendered by a custom HTMDX component and styled with Tailwind utilities.
+</ProductCard>
+      </template>
+    </htmdx-code>
+  </body>
+</html>

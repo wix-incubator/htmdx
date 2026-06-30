@@ -8,6 +8,11 @@ declare global {
 
 if (globalThis.window) {
   window.Htmdx = htmdx;
+  window.dispatchEvent(
+    new CustomEvent('htmdx:ready', {
+      detail: { version: htmdx.VERSION },
+    }),
+  );
   htmdx.register();
 }
 

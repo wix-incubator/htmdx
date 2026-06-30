@@ -227,6 +227,14 @@ Loaded after runtime.
     expect(() => tokenizeBlocks('<Nope>content</Nope>')).toThrow('unknown component <Nope>');
   });
 
+  test('rejects raw nested HTML inside component bodies', () => {
+    expect(() =>
+      tokenizeBlocks(`<Card>
+<div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">Test</div>
+</Card>`),
+    ).toThrow('nested JSX inside <Card> is not supported in htmdx@1');
+  });
+
   test('strips unsafe link schemes', () => {
     const rendered = compile('[bad](javascript:alert(1)) [good](https://wix.com)');
 

@@ -6,6 +6,33 @@ export type HtmdxCompileResult =
   | { ok: true; html: string; components: string[] }
   | { ok: false; error: string };
 
+export type HtmdxComponentRenderContext = {
+  name: string;
+  body: string;
+  markdown: (source: string) => string;
+  inline: (source: string) => string;
+  escapeHtml: (source: string) => string;
+};
+
+export type HtmdxComponentRenderer = (context: HtmdxComponentRenderContext) => string;
+
+export type HtmdxComponentDefinition = HtmdxComponentRenderer | { render: HtmdxComponentRenderer };
+
+export type HtmdxComponentRegistry = Record<string, HtmdxComponentDefinition>;
+
+export type HtmdxThemeDefinition = {
+  id?: string;
+  css: string;
+};
+
+export type HtmdxCompileOptions = {
+  components?: HtmdxComponentRegistry;
+};
+
+export type HtmdxExtensionOptions = {
+  rerender?: boolean;
+};
+
 type HtmdxHeading = {
   id: string;
   label: string;
@@ -23,14 +50,24 @@ export type HtmdxSourceResult =
 export type HtmdxRegisterOptions = {
   tagName?: string;
   sourceSelector?: string;
-};
+  theme?: HtmdxThemeDefinition;
+  tailwind?: boolean | { src?: string };
+} & HtmdxCompileOptions;
 
 export const VERSION = '1.0.2';
 const STYLE_ID = 'htmdx-runtime-v1-styles';
+const TAILWIND_SCRIPT_ID = 'htmdx-tailwind-browser';
 export const DEFAULT_TAG_NAME = 'htmdx-code';
+export const DEFAULT_TAILWIND_BROWSER_SRC = 'https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4';
 const DEFAULT_SOURCE_SELECTOR = 'script[type="text/htmdx"], template[type="text/htmdx"]';
 
-const blockRenderers = new Map([
+type InternalComponentRenderer = (name: string, body: string) => string;
+type InternalComponentRegistry = Map<string, InternalComponentRenderer>;
+const globalComponentDefinitions: HtmdxComponentRegistry = {};
+const registeredTagNames = new Set([DEFAULT_TAG_NAME]);
+const sourceCache = new WeakMap<Element, HtmdxSourceResult & { ok: true }>();
+
+const builtInRenderers: InternalComponentRegistry = new Map([
   ['ExecutiveSummary', renderNarrativeBlock],
   ['Card', renderNarrativeBlock],
   ['Callout', renderNarrativeBlock],
@@ -50,13 +87,14 @@ const blockRenderers = new Map([
   ['Timeline', renderListCards],
 ]);
 
-export function compile(source: string): HtmdxCompileResult {
+export function compile(source: string, options: HtmdxCompileOptions = {}): HtmdxCompileResult {
   try {
+    const renderers = createComponentRegistry(options);
     const title = titleFromSource(source);
     const normalized = stripFrontmatterAndComments(source);
-    const tokens = tokenizeBlocks(normalized);
+    const tokens = tokenizeBlocksWithRegistry(normalized, renderers);
     const context: RenderContext = { headings: [], slugCounts: new Map() };
-    const html = tokens.map((token) => renderToken(token, context)).join('');
+    const html = tokens.map((token) => renderToken(token, context, renderers)).join('');
 
     return {
       ok: true,
@@ -66,6 +104,51 @@ export function compile(source: string): HtmdxCompileResult {
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : String(error) };
   }
+}
+
+export function registerComponent(
+  name: string,
+  definition: HtmdxComponentDefinition,
+  options: HtmdxExtensionOptions = {},
+) {
+  assertComponentName(name);
+  globalComponentDefinitions[name] = definition;
+  if (options.rerender !== false) {
+    return rerender();
+  }
+  return Promise.resolve();
+}
+
+export function registerComponents(
+  components: HtmdxComponentRegistry,
+  options: HtmdxExtensionOptions = {},
+) {
+  for (const [name, definition] of Object.entries(components)) {
+    assertComponentName(name);
+    globalComponentDefinitions[name] = definition;
+  }
+  if (options.rerender !== false) {
+    return rerender();
+  }
+  return Promise.resolve();
+}
+
+export function registerTheme(theme: HtmdxThemeDefinition, options: HtmdxExtensionOptions = {}) {
+  injectThemeStyle(theme);
+  if (options.rerender === true) {
+    return rerender();
+  }
+  return Promise.resolve();
+}
+
+export function rerender(options: Pick<HtmdxRegisterOptions, 'tagName' | 'sourceSelector'> = {}) {
+  if (!globalThis.document) {
+    return Promise.resolve([]);
+  }
+
+  const tagNames = options.tagName ? [options.tagName] : Array.from(registeredTagNames);
+  const hosts = tagNames.flatMap((tagName) => Array.from(document.querySelectorAll(tagName)));
+  return Promise.all(hosts.map((host) => renderHost(host, options)));
 }
 
 export function register(options: HtmdxRegisterOptions = {}) {
@@ -79,8 +162,11 @@ export function register(options: HtmdxRegisterOptions = {}) {
     style.textContent = RUNTIME_CSS;
     document.head.append(style);
   }
+  injectTailwindBrowser(options.tailwind);
+  injectThemeStyle(options.theme);
 
   const tagName = options.tagName || DEFAULT_TAG_NAME;
+  registeredTagNames.add(tagName);
   if (customElements.get(tagName)) {
     return;
   }
@@ -109,7 +195,8 @@ export async function renderHost(host: Element, options: HtmdxRegisterOptions = 
     return;
   }
 
-  const rendered = compile(sourceResult.source);
+  sourceCache.set(host, sourceResult);
+  const rendered = compile(sourceResult.source, options);
   if (!rendered.ok) {
     renderError(host, rendered.error, sourceResult.source);
     host.dispatchEvent(new CustomEvent('htmdx:error', { detail: rendered, bubbles: true }));
@@ -150,7 +237,8 @@ export async function resolveSource(
 
   const sourceElement = querySourceElement(host, options);
   if (!sourceElement) {
-    return { ok: false, error: 'missing HTMDX source' };
+    const cached = sourceCache.get(host);
+    return cached || { ok: false, error: 'missing HTMDX source' };
   }
 
   return { ok: true, kind: 'embedded', source: readSourceElement(sourceElement) };
@@ -205,7 +293,14 @@ function activateSectionRail(root: Element) {
   onScroll();
 }
 
-export function tokenizeBlocks(source: string): HtmdxToken[] {
+export function tokenizeBlocks(source: string, options: HtmdxCompileOptions = {}): HtmdxToken[] {
+  return tokenizeBlocksWithRegistry(source, createComponentRegistry(options));
+}
+
+function tokenizeBlocksWithRegistry(
+  source: string,
+  renderers: InternalComponentRegistry,
+): HtmdxToken[] {
   const tokens: HtmdxToken[] = [];
   const componentPattern = /<([A-Za-z][A-Za-z0-9]*)\b[^>]*>([\s\S]*?)<\/\1>/g;
   let lastIndex = 0;
@@ -217,12 +312,12 @@ export function tokenizeBlocks(source: string): HtmdxToken[] {
       tokens.push({ type: 'markdown', value: before });
     }
 
-    const name = canonicalComponentName(match[1]);
+    const name = canonicalComponentName(match[1], renderers);
     if (/<[A-Za-z][A-Za-z0-9]*\b/.test(match[2])) {
       throw new Error(`nested JSX inside <${name}> is not supported in htmdx@1`);
     }
 
-    if (!blockRenderers.has(name)) {
+    if (!renderers.has(name)) {
       throw new Error(`unknown component <${name}>`);
     }
 
@@ -238,8 +333,15 @@ export function tokenizeBlocks(source: string): HtmdxToken[] {
   return tokens;
 }
 
-export function canonicalComponentName(name: string) {
-  for (const known of blockRenderers.keys()) {
+export function canonicalComponentName(
+  name: string,
+  optionsOrRenderers: HtmdxCompileOptions | InternalComponentRegistry = {},
+) {
+  const renderers =
+    optionsOrRenderers instanceof Map
+      ? optionsOrRenderers
+      : createComponentRegistry(optionsOrRenderers);
+  for (const known of renderers.keys()) {
     if (known.toLowerCase() === name.toLowerCase()) {
       return known;
     }
@@ -320,17 +422,87 @@ function renderToc(headings: HtmdxHeading[]) {
   return `<nav class="htmdx-toc" aria-label="Sections"><ol class="htmdx-toc-list">${items}</ol></nav>`;
 }
 
-function renderToken(token: HtmdxToken, context: RenderContext) {
+function renderToken(
+  token: HtmdxToken,
+  context: RenderContext,
+  renderers: InternalComponentRegistry,
+) {
   if (token.type === 'markdown') {
     return renderMarkdown(token.value, context);
   }
 
-  const renderer = blockRenderers.get(token.name);
+  const renderer = renderers.get(token.name);
   if (!renderer) {
     throw new Error(`unknown component <${token.name}>`);
   }
 
   return renderer(token.name, token.body);
+}
+
+function createComponentRegistry(options: HtmdxCompileOptions): InternalComponentRegistry {
+  const renderers = new Map(builtInRenderers);
+  for (const [name, definition] of Object.entries(globalComponentDefinitions)) {
+    renderers.set(name, normalizeComponentDefinition(definition));
+  }
+  for (const [name, definition] of Object.entries(options.components || {})) {
+    renderers.set(name, normalizeComponentDefinition(definition));
+  }
+  return renderers;
+}
+
+function assertComponentName(name: string) {
+  if (!/^[A-Za-z][A-Za-z0-9]*$/.test(name)) {
+    throw new Error(`invalid component name "${name}"`);
+  }
+}
+
+function normalizeComponentDefinition(
+  definition: HtmdxComponentDefinition,
+): InternalComponentRenderer {
+  const render = typeof definition === 'function' ? definition : definition.render;
+  return (name, body) =>
+    render({
+      name,
+      body,
+      markdown: renderMarkdown,
+      inline,
+      escapeHtml,
+    });
+}
+
+function injectThemeStyle(theme: HtmdxThemeDefinition | undefined) {
+  if (!theme || !theme.css) {
+    return;
+  }
+
+  const id = `htmdx-theme-${theme.id || 'custom'}`;
+  if (document.getElementById(id)) {
+    return;
+  }
+
+  const style = document.createElement('style');
+  style.id = id;
+  style.textContent = theme.css;
+  document.head.append(style);
+}
+
+function injectTailwindBrowser(tailwind: HtmdxRegisterOptions['tailwind'] = true) {
+  if (tailwind === false) {
+    return;
+  }
+  if (document.getElementById(TAILWIND_SCRIPT_ID)) {
+    return;
+  }
+  if (document.querySelector('script[src*="@tailwindcss/browser"]')) {
+    return;
+  }
+
+  const script = document.createElement('script');
+  script.id = TAILWIND_SCRIPT_ID;
+  script.src =
+    typeof tailwind === 'object' && tailwind.src ? tailwind.src : DEFAULT_TAILWIND_BROWSER_SRC;
+  script.defer = true;
+  document.head.append(script);
 }
 
 function renderMarkdown(markdown: string, context?: RenderContext) {

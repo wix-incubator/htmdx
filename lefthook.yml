@@ -10,5 +10,9 @@ pre-commit:
       run: yarn syncpack
     dedupe:
       glob: "yarn.lock"
-      run: yarn dedupe
+      # Dedupe, then strip any `::__archiveUrl=` overrides a non-public registry
+      # (e.g. an internal mirror) may have pinned into the lockfile. Keeps the
+      # committed lock host-agnostic so it resolves against public npm in CI and
+      # for external contributors.
+      run: yarn dedupe && node -e "const f='yarn.lock',fs=require('fs');fs.writeFileSync(f,fs.readFileSync(f,'utf8').replace(/::__archiveUrl=[^\"]*/g,''))"
       stage_fixed: true

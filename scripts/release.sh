@@ -31,12 +31,26 @@ if [ -n "$(git status --porcelain)" ]; then
 fi
 git pull --ff-only
 
-# Bump version, commit, and create the tag (npm names it v<version>).
-cd "$PKG_DIR"
-new_version="$(npm version "$BUMP" -m "chore(release): @wix/htmdx@%s")"
-cd "$repo_root"
+# Bump the version in package.json only. `npm version` inside a workspace also
+# tries to sync lockfiles / run an install (and then silently skips its own git
+# commit+tag when that dirties the tree), so we disable all of that and drive git
+# ourselves below.
+(cd "$PKG_DIR" && npm version "$BUMP" \
+  --no-git-tag-version --no-workspaces-update --no-package-lock >/dev/null)
 
-echo "Prepared release $new_version"
+# Discard anything npm may have touched beyond the version bump.
+rm -f package-lock.json "$PKG_DIR/package-lock.json"
+git checkout -- yarn.lock 2>/dev/null || true
+
+version="$(node -p "require('./$PKG_DIR/package.json').version")"
+tag="v$version"
+
+# Commit only the version bump, tag it, and push both.
+git add "$PKG_DIR/package.json"
+git commit -m "chore(release): @wix/htmdx@$version"
+git tag -a "$tag" -m "@wix/htmdx@$version"
+
+echo "Prepared release $tag"
 git push --follow-tags
 
 echo "Pushed $new_version. Publish workflow will run:"

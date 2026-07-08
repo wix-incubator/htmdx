@@ -53,5 +53,5 @@ git tag -a "$tag" -m "@wix/htmdx@$version"
 echo "Prepared release $tag"
 git push --follow-tags
 
-echo "Pushed $new_version. Publish workflow will run:"
+echo "Pushed $tag. Publish workflow will run:"
 echo "  gh run watch -R wix-incubator/htmdx"

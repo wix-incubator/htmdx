@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>htmdx — DecisionTable</title>
+    <script src="../packages/htmdx/dist/browser.js" defer></script>
+  </head>
+  <body>
+    <htmdx-code>
+      <template type="text/htmdx" data-htmdx-edit-instruction="Edit only this template content. HTMDX format.">
+# Database Choice
+
+<ExecutiveSummary>
+Picking the primary datastore for the new service. DecisionTable below records the call.
+</ExecutiveSummary>
+
+## Decision
+
+<DecisionTable>
+- Decision: Adopt PostgreSQL as the primary datastore
+- Status: Accepted
+- Owner: Platform team
+- Date: 2026-07-08
+- Alternatives considered: MySQL, DynamoDB, MongoDB
+- Rationale: Strongest relational guarantees, mature tooling, team familiarity
+- Consequences: Managed Postgres cost; migration effort from prototype store
+</DecisionTable>
+      </template>
+    </htmdx-code>
+  </body>
+</html>

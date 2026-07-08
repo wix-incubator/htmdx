@@ -30,6 +30,7 @@
     "fmt:check": "turbo fmt -- --check",
     "build": "turbo build",
     "test": "turbo test",
+    "release": "bash scripts/release.sh",
     "-- Tools --": ":",
     "syncpack": "syncpack lint",
     "knip": "knip"

@@ -1056,8 +1056,7 @@ const RUNTIME_CSS = `
     font-size: 0.85rem;
     margin: 6px 0;
   }
-  .htmdx-article thead th,
-  .htmdx-article tbody th {
+  .htmdx-article thead th {
     text-align: left;
     font-size: 0.64rem;
     font-weight: 700;
@@ -1068,6 +1067,20 @@ const RUNTIME_CSS = `
     border-bottom: 2px solid var(--htmdx-ink);
     white-space: nowrap;
   }
+  .htmdx-article tbody th {
+    width: 30%;
+    text-align: left;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--htmdx-soft);
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--htmdx-line);
+    border-right: 1px solid var(--htmdx-line);
+    vertical-align: top;
+    white-space: normal;
+  }
   .htmdx-article tbody td {
     padding: 9px 12px;
     border-bottom: 1px solid var(--htmdx-line);
@@ -1075,8 +1088,10 @@ const RUNTIME_CSS = `
     vertical-align: top;
     color: var(--htmdx-body);
   }
-  .htmdx-article tbody tr:last-child td { border-bottom: none; }
-  .htmdx-article tbody tr:hover td { background: var(--htmdx-panel); }
+  .htmdx-article tbody tr:last-child td,
+  .htmdx-article tbody tr:last-child th { border-bottom: none; }
+  .htmdx-article tbody tr:hover td,
+  .htmdx-article tbody tr:hover th { background: var(--htmdx-panel); }
 
   .htmdx-chart svg {
     width: 100%;

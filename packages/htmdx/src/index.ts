@@ -286,7 +286,15 @@ function activateSectionRail(root: Element) {
   };
 
   for (const link of links) {
-    link.addEventListener('click', () => setActive(link.dataset.htmdxTarget || ''));
+    link.addEventListener('click', (event) => {
+      const id = link.dataset.htmdxTarget || '';
+      setActive(id);
+      const target = root.querySelector<HTMLElement>(`#${cssEscape(id)}`);
+      if (target) {
+        event.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
   }
 
   window.addEventListener('scroll', onScroll, { passive: true });

@@ -265,6 +265,10 @@ function activateSectionRail(root: Element) {
     }
   };
 
+  // While a click-triggered smooth scroll is in flight, the indicator is
+  // locked to the clicked section so scroll-spy doesn't flicker through the
+  // sections it passes over on the way there.
+  let pending: string | null = null;
   let ticking = false;
   const onScroll = () => {
     if (ticking) {
@@ -280,15 +284,39 @@ function activateSectionRail(root: Element) {
           current = heading.id;
         }
       }
-      setActive(current);
+      if (pending) {
+        // Release the lock once the scroll reaches the clicked section.
+        if (current === pending) {
+          pending = null;
+        }
+      } else {
+        setActive(current);
+      }
       ticking = false;
     });
   };
 
   for (const link of links) {
-    link.addEventListener('click', () => setActive(link.dataset.htmdxTarget || ''));
+    link.addEventListener('click', (event) => {
+      const id = link.dataset.htmdxTarget || '';
+      const target = root.querySelector<HTMLElement>(`#${cssEscape(id)}`);
+      if (target) {
+        event.preventDefault();
+        pending = id;
+        setActive(id);
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        setActive(id);
+      }
+    });
   }
 
+  // `scrollend` isn't guaranteed everywhere; the current === pending check in
+  // onScroll is the primary release, this just covers targets that can't reach
+  // the threshold (e.g. the last section near the bottom of the page).
+  window.addEventListener('scrollend', () => {
+    pending = null;
+  });
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
 }

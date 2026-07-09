@@ -8,6 +8,7 @@ import {
   registerComponent,
   registerComponents,
   registerTheme,
+  renderHost,
   tokenizeBlocks,
 } from '../src';
 
@@ -221,6 +222,42 @@ Loaded after runtime.
     expect(document.querySelector('htmdx-late-extension')?.innerHTML).not.toContain(
       'unknown component',
     );
+  });
+
+  test('scrolls TOC targets explicitly instead of relying on hash nav', async () => {
+    const scrollIntoView = vi.fn();
+    const original = HTMLElement.prototype.scrollIntoView;
+    HTMLElement.prototype.scrollIntoView = scrollIntoView;
+
+    const host = document.createElement('div');
+    host.innerHTML = `<script type="text/htmdx">---
+title: "Nav"
+---
+
+## Executive Summary
+
+Summary.
+
+## Situation
+
+Context.</script>`;
+    document.body.append(host);
+
+    await renderHost(host);
+
+    const link = host.querySelector<HTMLAnchorElement>(
+      '.htmdx-toc-link[data-htmdx-target="situation"]',
+    );
+    expect(link).not.toBeNull();
+
+    const event = new window.MouseEvent('click', { bubbles: true, cancelable: true });
+    link?.dispatchEvent(event);
+
+    expect(event.defaultPrevented).toBe(true);
+    expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' });
+
+    HTMLElement.prototype.scrollIntoView = original;
+    host.remove();
   });
 
   test('rejects unknown components', () => {

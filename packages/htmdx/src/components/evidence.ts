@@ -1,4 +1,5 @@
-import { renderListCards } from './renderers';
+import type { MarkdownListCards } from './body-contracts';
+import { componentShell, renderFeatureCardsContent } from './rendering';
 import type { HtmdxComponent } from './types';
 
 export const evidence: HtmdxComponent = {
@@ -7,5 +8,9 @@ export const evidence: HtmdxComponent = {
   purpose: 'List evidence that supports the surrounding analysis.',
   example:
     '<Evidence>\n- **Runtime:** The allowlist currently lives in implementation code.\n</Evidence>',
-  renderer: renderListCards,
+  renderer: renderEvidence,
 };
+
+function renderEvidence(name: string, body: MarkdownListCards) {
+  return componentShell(name, renderFeatureCardsContent(body));
+}

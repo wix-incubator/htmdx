@@ -10,7 +10,7 @@ import {
   renderMarkdown,
   type HtmdxHeading,
   type RenderContext,
-} from './components/renderers';
+} from './components/rendering';
 
 export type HtmdxToken =
   | { type: 'markdown'; value: string }

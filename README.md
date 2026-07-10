@@ -9,7 +9,7 @@ Start with one HTML file:
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <script src="https://unpkg.com/@wix/htmdx@1.1.0/dist/browser.js" defer></script>
+    <script src="https://unpkg.com/@wix/htmdx@<exact-version>/dist/browser.js" defer></script>
   </head>
   <body>
     <htmdx-code>
@@ -47,13 +47,13 @@ External source files are supported too:
 
 ## Exact-version component manifest
 
-Starting with `@wix/htmdx@1.1.0`, every release includes a machine-readable built-in component contract at:
+Every release includes a machine-readable built-in component contract at:
 
 ```text
 https://unpkg.com/@wix/htmdx@<exact-version>/dist/components.json
 ```
 
-Use the same exact version as the artifact's runtime URL. The manifest is a built-ins-only allowlist; it does not describe components registered by host code, and versions before `1.1.0` do not have a manifest.
+Use the same exact version as the artifact's runtime URL. The manifest is a built-ins-only allowlist; it does not describe components registered by host code.
 
 Each entry declares one enforced body format: `markdown`, `label-value-list`, `label-number-list`, `gfm-table`, or `markdown-list-cards`. Bodies must be non-empty, Markdown-shaped one-level JSX. Imports, exports, MDX expressions, and nested JSX are forbidden. A body that violates the global or declared format contract fails compilation of the whole HTMDX artifact; browser hosts show the error fallback and raw artifact source instead of partially rendered output.
 
@@ -76,7 +76,7 @@ inside the HTMDX source block. Load the runtime, then load an inline or external
 script that contributes named components/themes through `window.Htmdx`:
 
 ```html
-<script src="https://unpkg.com/@wix/htmdx@1.1.0/dist/browser.js" defer></script>
+<script src="https://unpkg.com/@wix/htmdx@<exact-version>/dist/browser.js" defer></script>
 <script>
   window.addEventListener('htmdx:ready', () => {
     window.Htmdx.registerComponent(
@@ -98,7 +98,7 @@ script that contributes named components/themes through `window.Htmdx`:
 External scripts work too:
 
 ```html
-<script src="https://unpkg.com/@wix/htmdx@1.1.0/dist/browser.js" defer></script>
+<script src="https://unpkg.com/@wix/htmdx@<exact-version>/dist/browser.js" defer></script>
 <script src="./product-components.js" defer></script>
 ```
 

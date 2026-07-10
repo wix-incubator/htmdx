@@ -9,7 +9,7 @@ Start with one HTML file:
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <script src="https://unpkg.com/@wix/htmdx@1.1.0/dist/browser.js" defer></script>
+    <script src="https://unpkg.com/@wix/htmdx@<exact-version>/dist/browser.js" defer></script>
   </head>
   <body>
     <htmdx-code>
@@ -33,13 +33,13 @@ CDN caveats:
 
 ## Exact-version component manifest
 
-Starting with `@wix/htmdx@1.1.0`, every release includes its machine-readable built-in component contract at:
+Every release includes its machine-readable built-in component contract at:
 
 ```text
 https://unpkg.com/@wix/htmdx@<exact-version>/dist/components.json
 ```
 
-Use the same exact version as the artifact's runtime URL. The manifest is a built-ins-only allowlist; host-registered components are outside its scope, and versions before `1.1.0` do not have one.
+Use the same exact version as the artifact's runtime URL. The manifest is a built-ins-only allowlist; host-registered components are outside its scope.
 
 Manifest entries declare one enforced body format: `markdown`, `label-value-list`, `label-number-list`, `gfm-table`, or `markdown-list-cards`. Bodies must be non-empty, Markdown-shaped one-level JSX. Imports, exports, MDX expressions, and nested JSX are forbidden. Invalid global syntax or a body that does not match its declared format fails compilation of the whole HTMDX artifact. Browser hosts then display the error fallback and raw artifact source rather than partial output.
 
@@ -62,7 +62,7 @@ Extension API prototype. Trusted host code can contribute components and theme
 CSS from an inline or external script:
 
 ```html
-<script src="https://unpkg.com/@wix/htmdx@1.1.0/dist/browser.js" defer></script>
+<script src="https://unpkg.com/@wix/htmdx@<exact-version>/dist/browser.js" defer></script>
 <script>
   window.addEventListener('htmdx:ready', () => {
     window.Htmdx.registerComponent(
@@ -84,7 +84,7 @@ CSS from an inline or external script:
 External scripts work too:
 
 ```html
-<script src="https://unpkg.com/@wix/htmdx@1.1.0/dist/browser.js" defer></script>
+<script src="https://unpkg.com/@wix/htmdx@<exact-version>/dist/browser.js" defer></script>
 <script src="./product-components.js" defer></script>
 ```
 

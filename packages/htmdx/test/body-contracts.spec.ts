@@ -51,6 +51,15 @@ describe('component body contracts', () => {
     });
   });
 
+  test('preserves escaped pipes inside GFM table cells', () => {
+    expect(
+      parseGfmTable('| Choice \\| fallback | Result |\n| --- | --- |\n| A \\| B | Works |'),
+    ).toEqual({
+      header: ['Choice | fallback', 'Result'],
+      rows: [['A | B', 'Works']],
+    });
+  });
+
   test.each([
     '| Plan |\n| --- |',
     '| | Users |\n| --- | --- |\n| Free | 48 |',
@@ -100,11 +109,25 @@ describe('component body contracts', () => {
   });
 
   test.each([
+    ['`{name}`', '<code>{name}</code>'],
+    ['\\{name\\}', '\\{name\\}'],
+    ['`<Card>`', '<code>&lt;Card&gt;</code>'],
+    ['<https://wix.com>', '&lt;https://wix.com&gt;'],
+    ['```tsx\n<Card />\n```', '&lt;Card /&gt;'],
+  ])('allows Markdown literal syntax in component bodies: %j', (body, renderedText) => {
+    const rendered = compile(`<Card>\n${body}\n</Card>`);
+
+    expect(rendered).toMatchObject({ ok: true });
+    expect(rendered.ok && rendered.html).toContain(renderedText);
+  });
+
+  test.each([
     ['', 'body is empty'],
     ['import data from "./data.js"', 'import statements are not allowed'],
     ['export const value = 1', 'export statements are not allowed'],
     ['Hello {name}', 'MDX expressions are not allowed'],
     ['<Card>nested</Card>', 'nested JSX is not allowed'],
+    ['<>fragment</>', 'nested JSX is not allowed'],
   ])('rejects global body violation in %j', (body, violation) => {
     expect(() => parseComponentBody('Callout', 'markdown', body)).toThrow(
       new RegExp(`Invalid body for <Callout>.*${violation}.*expected`),
@@ -116,6 +139,16 @@ describe('component body contracts', () => {
       expect(compile(component.example), component.name).toMatchObject({ ok: true });
     }
   });
+
+  test.each(['<Card></Card>', '<Card />'])(
+    'rejects an empty component body through compilation: %s',
+    (source) => {
+      const rendered = compile(source);
+
+      expect(rendered).toMatchObject({ ok: false });
+      expect(!rendered.ok && rendered.error).toContain('Invalid body for <Card>: body is empty');
+    },
+  );
 
   test('fails the whole compilation with component, rule, expected shape, and body line', () => {
     const rendered = compile('<ChartBar>\n- Users: 1,000\n</ChartBar>');

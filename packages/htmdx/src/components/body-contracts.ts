@@ -70,7 +70,8 @@ export function validateGlobalBody(body: string) {
     throw new BodyContractError('body is empty', 'non-empty content');
   }
 
-  const lines = body.split(/\r?\n/);
+  const syntax = markdownSyntaxSource(body);
+  const lines = syntax.split(/\r?\n/);
   for (const [index, line] of lines.entries()) {
     const moduleSyntax = line.match(/^\s*(import|export)\b/);
     if (moduleSyntax) {
@@ -83,7 +84,7 @@ export function validateGlobalBody(body: string) {
     }
   }
 
-  const expression = firstMatch(body, /[{}]/);
+  const expression = firstMatch(syntax, /[{}]/);
   if (expression) {
     throw new BodyContractError(
       'MDX expressions are not allowed',
@@ -93,7 +94,7 @@ export function validateGlobalBody(body: string) {
     );
   }
 
-  const jsx = firstMatch(body, /<[A-Za-z][A-Za-z0-9]*\b/);
+  const jsx = firstMatch(syntax, /<\/?[A-Za-z][A-Za-z0-9]*\b|<>|<\/>/);
   if (jsx) {
     throw new BodyContractError(
       'nested JSX is not allowed',
@@ -229,8 +230,105 @@ function nonEmptyLines(body: string) {
 }
 
 function splitTableLine(line: string) {
-  const trimmed = line.trim().replace(/^\|/, '').replace(/\|$/, '');
-  return trimmed.split('|').map((cell) => cell.trim());
+  const cells: string[] = [];
+  let cell = '';
+  for (const character of line.trim()) {
+    if (character !== '|') {
+      cell += character;
+      continue;
+    }
+
+    const precedingBackslashes = cell.match(/\\+$/)?.[0].length ?? 0;
+    if (precedingBackslashes % 2 === 1) {
+      cell = `${cell.slice(0, -1)}|`;
+      continue;
+    }
+    cells.push(cell.trim());
+    cell = '';
+  }
+  cells.push(cell.trim());
+
+  if (cells[0] === '') {
+    cells.shift();
+  }
+  if (cells.at(-1) === '') {
+    cells.pop();
+  }
+  return cells;
+}
+
+export function markdownSyntaxSource(source: string) {
+  const syntax = source.split('');
+  const lines = source.matchAll(/.*(?:\r?\n|$)/g);
+  let fence: { marker: string; length: number } | null = null;
+
+  const mask = (start: number, end: number) => {
+    for (let index = start; index < end; index += 1) {
+      if (syntax[index] !== '\n' && syntax[index] !== '\r') {
+        syntax[index] = ' ';
+      }
+    }
+  };
+
+  for (const lineMatch of lines) {
+    const line = lineMatch[0].replace(/\r?\n$/, '');
+    if (!line && lineMatch.index === source.length) {
+      continue;
+    }
+    const lineStart = lineMatch.index;
+    const marker = line.match(/^ {0,3}(`{3,}|~{3,})/)?.[1];
+    if (fence) {
+      mask(lineStart, lineStart + line.length);
+      if (
+        marker?.[0] === fence.marker &&
+        marker.length >= fence.length &&
+        new RegExp(`^ {0,3}${fence.marker}{${fence.length},}\\s*$`).test(line)
+      ) {
+        fence = null;
+      }
+      continue;
+    }
+    if (marker) {
+      fence = { marker: marker[0], length: marker.length };
+      mask(lineStart, lineStart + line.length);
+      continue;
+    }
+    if (/^(?: {4}|\t)/.test(line)) {
+      mask(lineStart, lineStart + line.length);
+      continue;
+    }
+
+    let offset = 0;
+    while (offset < line.length) {
+      const character = line[offset];
+      if (character === '\\' && offset + 1 < line.length) {
+        mask(lineStart + offset, lineStart + offset + 2);
+        offset += 2;
+        continue;
+      }
+      if (character === '`') {
+        const runLength = line.slice(offset).match(/^`+/)?.[0].length ?? 1;
+        const closing = line.indexOf('`'.repeat(runLength), offset + runLength);
+        if (closing >= 0) {
+          mask(lineStart + offset, lineStart + closing + runLength);
+          offset = closing + runLength;
+          continue;
+        }
+      }
+      if (character === '<') {
+        const autolink = line
+          .slice(offset)
+          .match(/^<(?:https?:\/\/|mailto:)[^<>\s]+>|^<[^<>\s@]+@[^<>\s@]+>/i)?.[0];
+        if (autolink) {
+          mask(lineStart + offset, lineStart + offset + autolink.length);
+          offset += autolink.length;
+          continue;
+        }
+      }
+      offset += 1;
+    }
+  }
+  return syntax.join('');
 }
 
 function firstMatch(source: string, pattern: RegExp) {

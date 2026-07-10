@@ -1,4 +1,4 @@
-import { parseComponentBody } from './components/body-contracts';
+import { markdownSyntaxSource, parseComponentBody } from './components/body-contracts';
 import { builtInComponents } from './components/catalog';
 import type { HtmdxComponent } from './components/types';
 import {
@@ -347,7 +347,9 @@ function tokenizeBlocksWithRegistry(
   let match: RegExpExecArray | null;
 
   while ((match = componentPattern.exec(source))) {
-    const before = source.slice(lastIndex, match.index).trim();
+    const beforeSource = source.slice(lastIndex, match.index);
+    assertNoSelfClosingComponents(beforeSource, renderers);
+    const before = beforeSource.trim();
     if (before) {
       tokens.push({ type: 'markdown', value: before });
     }
@@ -357,17 +359,32 @@ function tokenizeBlocksWithRegistry(
       throw new Error(`unknown component <${name}>`);
     }
 
-    parseComponentBody(name, 'markdown', match[2]);
-    tokens.push({ type: 'component', name, body: match[2].trim() });
+    const body = match[2].trim();
+    parseComponentBody(name, 'markdown', body);
+    tokens.push({ type: 'component', name, body });
     lastIndex = componentPattern.lastIndex;
   }
 
-  const after = source.slice(lastIndex).trim();
+  const afterSource = source.slice(lastIndex);
+  assertNoSelfClosingComponents(afterSource, renderers);
+  const after = afterSource.trim();
   if (after) {
     tokens.push({ type: 'markdown', value: after });
   }
 
   return tokens;
+}
+
+function assertNoSelfClosingComponents(source: string, renderers: InternalComponentRegistry) {
+  const syntax = markdownSyntaxSource(source);
+  const pattern = /<([A-Za-z][A-Za-z0-9]*)\b[^>]*\/\s*>/g;
+  let match: RegExpExecArray | null;
+  while ((match = pattern.exec(syntax))) {
+    const name = canonicalComponentName(match[1], renderers);
+    if (renderers.has(name)) {
+      parseComponentBody(name, 'markdown', '');
+    }
+  }
 }
 
 export function canonicalComponentName(

@@ -1,6 +1,9 @@
 import { markdownSyntaxSource, parseComponentBody } from './components/body-contracts';
 import { builtInComponents } from './components/catalog';
 import type { HtmdxComponent } from './components/types';
+import { VERSION } from './version';
+
+export { VERSION } from './version';
 import {
   escapeHtml,
   inline,
@@ -55,7 +58,6 @@ export type HtmdxRegisterOptions = {
   tailwind?: boolean | { src?: string };
 } & HtmdxCompileOptions;
 
-export const VERSION = '1.0.2';
 const STYLE_ID = 'htmdx-runtime-v1-styles';
 const TAILWIND_SCRIPT_ID = 'htmdx-tailwind-browser';
 export const DEFAULT_TAG_NAME = 'htmdx-code';

@@ -35,6 +35,36 @@ Ship **one HTML file** with editable HTMDX source.
     expect(rendered.ok && rendered.html).toContain('Ship <strong>one HTML file</strong>');
   });
 
+  test('keeps every built-in component available', () => {
+    const components = [
+      ['ExecutiveSummary', 'Summary.'],
+      ['Card', 'Card body.'],
+      ['Callout', 'Callout body.'],
+      ['SourceQuote', 'Quoted body.'],
+      ['MetricStrip', '- Metric: 1'],
+      ['Stat', '- Metric: 1'],
+      ['ChartBar', '- Metric: 1'],
+      ['ChartArea', '- Metric: 1'],
+      ['ChartLine', '- Metric: 1'],
+      ['ChartPie', '- Metric: 1'],
+      ['DataTable', '| Metric | Value |\n| --- | --- |\n| Users | 1 |'],
+      ['Compare', '- Option: A'],
+      ['Finding', '- Finding: A'],
+      ['Evidence', '- Evidence: A'],
+      ['RiskTable', '- **Must-have:** A'],
+      ['DecisionTable', '- Decision: A'],
+      ['Timeline', '- Today: A'],
+    ];
+    const source = components.map(([name, body]) => `<${name}>\n${body}\n</${name}>`).join('\n\n');
+
+    const rendered = compile(source);
+
+    expect(rendered).toMatchObject({
+      ok: true,
+      components: components.map(([name]) => name),
+    });
+  });
+
   test('renders the C Memo shell with masthead and section rail', () => {
     const rendered = compile(`---
 title: "Competitor Research"
@@ -269,7 +299,9 @@ Context.</script>`;
       tokenizeBlocks(`<Card>
 <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">Test</div>
 </Card>`),
-    ).toThrow('nested JSX inside <Card> is not supported in htmdx@1');
+    ).toThrow(
+      'Invalid body for <Card> at body line 1, column 1: nested JSX is not allowed; expected one-level HTMDX without nested JSX.',
+    );
   });
 
   test('strips unsafe link schemes', () => {

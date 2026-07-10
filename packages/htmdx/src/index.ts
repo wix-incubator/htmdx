@@ -1,4 +1,6 @@
+import { parseComponentBody } from './components/body-contracts';
 import { builtInComponents } from './components/catalog';
+import type { HtmdxComponent } from './components/types';
 import {
   escapeHtml,
   inline,
@@ -67,8 +69,35 @@ const registeredTagNames = new Set([DEFAULT_TAG_NAME]);
 const sourceCache = new WeakMap<Element, HtmdxSourceResult & { ok: true }>();
 
 const builtInRenderers: InternalComponentRegistry = new Map(
-  builtInComponents.map((component) => [component.name, component.renderer]),
+  builtInComponents.map((component) => [component.name, createBuiltInRenderer(component)]),
 );
+
+function createBuiltInRenderer(component: HtmdxComponent): InternalComponentRenderer {
+  return (name, rawBody) => {
+    switch (component.body) {
+      case 'markdown': {
+        const body = parseComponentBody(name, component.body, rawBody, component.validate);
+        return component.renderer(name, body);
+      }
+      case 'label-value-list': {
+        const body = parseComponentBody(name, component.body, rawBody, component.validate);
+        return component.renderer(name, body);
+      }
+      case 'label-number-list': {
+        const body = parseComponentBody(name, component.body, rawBody, component.validate);
+        return component.renderer(name, body);
+      }
+      case 'gfm-table': {
+        const body = parseComponentBody(name, component.body, rawBody, component.validate);
+        return component.renderer(name, body);
+      }
+      case 'markdown-list-cards': {
+        const body = parseComponentBody(name, component.body, rawBody, component.validate);
+        return component.renderer(name, body);
+      }
+    }
+  };
+}
 
 export function compile(source: string, options: HtmdxCompileOptions = {}): HtmdxCompileResult {
   try {
@@ -324,14 +353,11 @@ function tokenizeBlocksWithRegistry(
     }
 
     const name = canonicalComponentName(match[1], renderers);
-    if (/<[A-Za-z][A-Za-z0-9]*\b/.test(match[2])) {
-      throw new Error(`nested JSX inside <${name}> is not supported in htmdx@1`);
-    }
-
     if (!renderers.has(name)) {
       throw new Error(`unknown component <${name}>`);
     }
 
+    parseComponentBody(name, 'markdown', match[2]);
     tokens.push({ type: 'component', name, body: match[2].trim() });
     lastIndex = componentPattern.lastIndex;
   }

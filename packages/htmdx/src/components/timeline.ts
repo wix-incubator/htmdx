@@ -1,4 +1,4 @@
-import { renderListCards } from './renderers';
+import { renderTimeline } from './renderers';
 import type { HtmdxComponent } from './types';
 
 export const timeline: HtmdxComponent = {
@@ -7,5 +7,5 @@ export const timeline: HtmdxComponent = {
   purpose: 'Describe milestones as labeled points in time.',
   example:
     '<Timeline>\n- July: Publish the manifest\n- August: Adopt it in validators\n</Timeline>',
-  renderer: renderListCards,
+  renderer: renderTimeline,
 };

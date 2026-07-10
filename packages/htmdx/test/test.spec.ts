@@ -299,7 +299,9 @@ Context.</script>`;
       tokenizeBlocks(`<Card>
 <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">Test</div>
 </Card>`),
-    ).toThrow('nested JSX inside <Card> is not supported in htmdx@1');
+    ).toThrow(
+      'Invalid body for <Card> at body line 2, column 1: nested JSX is not allowed; expected one-level HTMDX without nested JSX.',
+    );
   });
 
   test('strips unsafe link schemes', () => {

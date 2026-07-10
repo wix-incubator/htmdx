@@ -1,3 +1,5 @@
+import type { GfmTable, LabelNumber, LabelValue, MarkdownListCards } from './body-contracts';
+
 export type HtmdxHeading = {
   id: string;
   label: string;
@@ -49,10 +51,10 @@ export function renderSourceQuote(name: string, body: string) {
   return shell(name, `<p>${inline(body.replace(/\n/g, ' '))}</p>`);
 }
 
-export function renderMetricStrip(name: string, body: string) {
-  const items = parsePairs(body)
+export function renderMetricStrip(name: string, body: LabelValue[]) {
+  const items = body
     .map(
-      ([label, value]) => `
+      ({ label, value }) => `
         <div class="htmdx-metric-item">
           <span class="htmdx-metric-label">${escapeHtml(label)}</span>
           <span class="htmdx-metric-value">${inline(stripWrappingBold(value))}</span>
@@ -63,19 +65,16 @@ export function renderMetricStrip(name: string, body: string) {
   return shell(name, `<div class="htmdx-metric-grid">${items}</div>`);
 }
 
-export function renderChartBar(name: string, body: string) {
-  const pairs = parsePairs(body).map(
-    ([label, value]) => [label, Number(value.replace(/[^0-9.]/g, '')) || 0] as const,
-  );
-  const max = Math.max(...pairs.map(([, value]) => value), 1);
+export function renderChartBar(name: string, body: LabelNumber[]) {
+  const max = Math.max(...body.map(({ value }) => value), 1);
   const chartWidth = 640;
   const chartHeight = 240;
   const paddingX = 34;
   const axisY = 206;
-  const slotWidth = (chartWidth - paddingX * 2) / Math.max(pairs.length, 1);
+  const slotWidth = (chartWidth - paddingX * 2) / body.length;
   const barWidth = Math.max(28, Math.min(72, slotWidth * 0.68));
-  const bars = pairs
-    .map(([label, value], index) => {
+  const bars = body
+    .map(({ label, value }, index) => {
       const height = (value / max) * 172;
       const x = paddingX + index * slotWidth + (slotWidth - barWidth) / 2;
       const y = axisY - height;
@@ -99,54 +98,36 @@ export function renderChartBar(name: string, body: string) {
   );
 }
 
-export function renderDataTable(name: string, body: string) {
-  const tableLines = body
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter((line) => line.startsWith('|'));
-
-  if (tableLines.length < 2) {
-    return shell(name, renderMarkdown(body));
-  }
-
-  const header = splitTableLine(tableLines[0])
-    .map((cell) => `<th>${inline(cell)}</th>`)
-    .join('');
-  const rows = tableLines
-    .slice(2)
-    .map(
-      (line) =>
-        `<tr>${splitTableLine(line)
-          .map((cell) => `<td>${inline(cell)}</td>`)
-          .join('')}</tr>`,
-    )
+export function renderDataTable(name: string, body: GfmTable) {
+  const header = body.header.map((cell) => `<th>${inline(cell)}</th>`).join('');
+  const rows = body.rows
+    .map((row) => `<tr>${row.map((cell) => `<td>${inline(cell)}</td>`).join('')}</tr>`)
     .join('');
 
   return shell(name, `<table><thead><tr>${header}</tr></thead><tbody>${rows}</tbody></table>`);
 }
 
-export function renderListCards(name: string, body: string) {
+export function renderListCards(name: string, body: MarkdownListCards) {
   return shell(
     name,
-    `<div class="htmdx-feature-grid">${parseList(body)
+    `<div class="htmdx-feature-grid">${body.items
       .map((item) => renderFeatureItem(item))
       .join('')}</div>`,
   );
 }
 
-export function renderRiskTable(name: string, body: string) {
-  const items = parseList(body)
+export function renderRiskTable(name: string, body: MarkdownListCards) {
+  const items = body.items
     .map((item) => {
-      const lower = item.toLowerCase();
-      const tier = lower.includes('**must-have**')
-        ? 'must-have'
-        : lower.includes('**differentiator**')
-          ? 'differentiator'
-          : lower.includes('**not now**')
-            ? 'not-now'
-            : lower.includes("**won't do**")
-              ? 'wont-do'
-              : '';
+      const tierName = item.match(/^\*\*(Must-have|Differentiator|Not now|Won't do):?\*\*/)?.[1];
+      const tier =
+        tierName === 'Must-have'
+          ? 'must-have'
+          : tierName === 'Differentiator'
+            ? 'differentiator'
+            : tierName === 'Not now'
+              ? 'not-now'
+              : 'wont-do';
       return renderFeatureItem(item, tier);
     })
     .join('');
@@ -154,12 +135,19 @@ export function renderRiskTable(name: string, body: string) {
   return shell(name, `<div class="htmdx-feature-grid">${items}</div>`);
 }
 
-export function renderDecisionTable(name: string, body: string) {
-  const rows = parsePairs(body)
-    .map(([label, value]) => `<tr><th>${inline(label)}</th><td>${inline(value)}</td></tr>`)
+export function renderDecisionTable(name: string, body: LabelValue[]) {
+  const rows = body
+    .map(({ label, value }) => `<tr><th>${inline(label)}</th><td>${inline(value)}</td></tr>`)
     .join('');
 
   return shell(name, `<table><tbody>${rows}</tbody></table>`);
+}
+
+export function renderTimeline(name: string, body: LabelValue[]) {
+  return renderListCards(name, {
+    items: body.map(({ label, value }) => `${label}: ${value}`),
+    lines: body.map((_, index) => index + 1),
+  });
 }
 
 function shell(name: string, body: string) {
@@ -185,33 +173,12 @@ function renderFeatureItem(item: string, tier = '') {
     </div>`;
 }
 
-function parsePairs(body: string) {
-  const pairs = parseList(body).map((item) => {
-    const [label, ...rest] = item.split(':');
-    return [label.trim(), rest.join(':').trim() || '-'] as const;
-  });
-
-  if (pairs.length === 0) {
-    throw new Error("component body must contain '- label: value' rows");
-  }
-
-  return pairs;
-}
-
 function parseList(body: string) {
   return body
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter((line) => line.startsWith('- '))
     .map((line) => line.slice(2).trim());
-}
-
-function splitTableLine(line: string) {
-  return line
-    .replace(/^\|/, '')
-    .replace(/\|$/, '')
-    .split('|')
-    .map((cell) => cell.trim());
 }
 
 function stripWrappingBold(value: string) {

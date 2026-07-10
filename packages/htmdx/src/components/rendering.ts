@@ -1,4 +1,4 @@
-import type { GfmTable, LabelNumber, LabelValue, MarkdownListCards } from './body-contracts';
+import type { LabelNumber, LabelValue, MarkdownListCards } from './body-contracts';
 
 export type HtmdxHeading = {
   id: string;
@@ -43,15 +43,11 @@ function renderMarkdownBlock(block: string, context?: RenderContext) {
   return `<p>${inline(block.replace(/\n/g, ' '))}</p>`;
 }
 
-export function renderNarrativeBlock(name: string, body: string) {
-  return shell(name, renderMarkdown(body));
+export function renderNarrativeContent(body: string) {
+  return renderMarkdown(body);
 }
 
-export function renderSourceQuote(name: string, body: string) {
-  return shell(name, `<p>${inline(body.replace(/\n/g, ' '))}</p>`);
-}
-
-export function renderMetricStrip(name: string, body: LabelValue[]) {
+export function renderMetricsContent(body: LabelValue[]) {
   const items = body
     .map(
       ({ label, value }) => `
@@ -62,10 +58,10 @@ export function renderMetricStrip(name: string, body: LabelValue[]) {
     )
     .join('');
 
-  return shell(name, `<div class="htmdx-metric-grid">${items}</div>`);
+  return `<div class="htmdx-metric-grid">${items}</div>`;
 }
 
-export function renderChartBar(name: string, body: LabelNumber[]) {
+export function renderBarChartContent(name: string, body: LabelNumber[]) {
   const max = Math.max(...body.map(({ value }) => value), 1);
   const chartWidth = 640;
   const chartHeight = 240;
@@ -88,69 +84,20 @@ export function renderChartBar(name: string, body: LabelNumber[]) {
     })
     .join('');
 
-  return shell(
+  return `<div class="htmdx-chart"><svg viewBox="0 0 ${chartWidth} ${chartHeight}" role="img" aria-label="${escapeHtml(
     name,
-    `<div class="htmdx-chart"><svg viewBox="0 0 ${chartWidth} ${chartHeight}" role="img" aria-label="${escapeHtml(
-      name,
-    )} chart"><line class="htmdx-chart-axis" x1="${paddingX}" y1="${axisY}" x2="${
-      chartWidth - paddingX
-    }" y2="${axisY}" />${bars}</svg></div>`,
-  );
+  )} chart"><line class="htmdx-chart-axis" x1="${paddingX}" y1="${axisY}" x2="${
+    chartWidth - paddingX
+  }" y2="${axisY}" />${bars}</svg></div>`;
 }
 
-export function renderDataTable(name: string, body: GfmTable) {
-  const header = body.header.map((cell) => `<th>${inline(cell)}</th>`).join('');
-  const rows = body.rows
-    .map((row) => `<tr>${row.map((cell) => `<td>${inline(cell)}</td>`).join('')}</tr>`)
-    .join('');
-
-  return shell(name, `<table><thead><tr>${header}</tr></thead><tbody>${rows}</tbody></table>`);
+export function renderFeatureCardsContent(body: MarkdownListCards) {
+  return `<div class="htmdx-feature-grid">${body.items
+    .map((item) => renderFeatureItem(item))
+    .join('')}</div>`;
 }
 
-export function renderListCards(name: string, body: MarkdownListCards) {
-  return shell(
-    name,
-    `<div class="htmdx-feature-grid">${body.items
-      .map((item) => renderFeatureItem(item))
-      .join('')}</div>`,
-  );
-}
-
-export function renderRiskTable(name: string, body: MarkdownListCards) {
-  const items = body.items
-    .map((item) => {
-      const tierName = item.match(/^\*\*(Must-have|Differentiator|Not now|Won't do):?\*\*/)?.[1];
-      const tier =
-        tierName === 'Must-have'
-          ? 'must-have'
-          : tierName === 'Differentiator'
-            ? 'differentiator'
-            : tierName === 'Not now'
-              ? 'not-now'
-              : 'wont-do';
-      return renderFeatureItem(item, tier);
-    })
-    .join('');
-
-  return shell(name, `<div class="htmdx-feature-grid">${items}</div>`);
-}
-
-export function renderDecisionTable(name: string, body: LabelValue[]) {
-  const rows = body
-    .map(({ label, value }) => `<tr><th>${inline(label)}</th><td>${inline(value)}</td></tr>`)
-    .join('');
-
-  return shell(name, `<table><tbody>${rows}</tbody></table>`);
-}
-
-export function renderTimeline(name: string, body: LabelValue[]) {
-  return renderListCards(name, {
-    items: body.map(({ label, value }) => `${label}: ${value}`),
-    lines: body.map((_, index) => index + 1),
-  });
-}
-
-function shell(name: string, body: string) {
+export function componentShell(name: string, body: string) {
   return `
     <section class="htmdx-component htmdx-${kebab(name)}" data-htmdx-component="${escapeHtml(name)}">
       <div class="htmdx-component-header">${escapeHtml(name)}</div>
@@ -158,7 +105,7 @@ function shell(name: string, body: string) {
     </section>`;
 }
 
-function renderFeatureItem(item: string, tier = '') {
+export function renderFeatureItem(item: string, tier = '') {
   const match = item.match(/^\*\*([^*]+)\*\*:?\s*(.*)$/);
   const tierAttribute = tier ? ` data-tier="${tier}"` : '';
 

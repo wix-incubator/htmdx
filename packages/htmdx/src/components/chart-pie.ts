@@ -1,4 +1,5 @@
-import { renderChartBar } from './renderers';
+import type { LabelNumber } from './body-contracts';
+import { componentShell, renderBarChartContent } from './rendering';
 import type { HtmdxComponent } from './types';
 
 export const chartPie: HtmdxComponent = {
@@ -7,5 +8,9 @@ export const chartPie: HtmdxComponent = {
   purpose:
     'Compare non-negative numeric values; currently rendered with the shared bar-chart visualization.',
   example: '<ChartPie>\n- Direct: 62\n- Referral: 38\n</ChartPie>',
-  renderer: renderChartBar,
+  renderer: renderChartPie,
 };
+
+function renderChartPie(name: string, body: LabelNumber[]) {
+  return componentShell(name, renderBarChartContent(name, body));
+}

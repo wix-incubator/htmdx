@@ -1,4 +1,5 @@
-import { renderMetricStrip } from './renderers';
+import type { LabelValue } from './body-contracts';
+import { componentShell, renderMetricsContent } from './rendering';
 import type { HtmdxComponent } from './types';
 
 export const stat: HtmdxComponent = {
@@ -6,5 +7,9 @@ export const stat: HtmdxComponent = {
   body: 'label-value-list',
   purpose: 'Highlight one or more labeled statistics.',
   example: '<Stat>\n- Adoption: **72%**\n</Stat>',
-  renderer: renderMetricStrip,
+  renderer: renderStat,
 };
+
+function renderStat(name: string, body: LabelValue[]) {
+  return componentShell(name, renderMetricsContent(body));
+}

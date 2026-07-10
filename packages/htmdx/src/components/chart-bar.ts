@@ -1,4 +1,5 @@
-import { renderChartBar } from './renderers';
+import type { LabelNumber } from './body-contracts';
+import { componentShell, renderBarChartContent } from './rendering';
 import type { HtmdxComponent } from './types';
 
 export const chartBar: HtmdxComponent = {
@@ -8,3 +9,7 @@ export const chartBar: HtmdxComponent = {
   example: '<ChartBar>\n- Free users: 48\n- Paid users: 12\n</ChartBar>',
   renderer: renderChartBar,
 };
+
+function renderChartBar(name: string, body: LabelNumber[]) {
+  return componentShell(name, renderBarChartContent(name, body));
+}

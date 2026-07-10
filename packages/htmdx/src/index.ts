@@ -1,3 +1,12 @@
+import { builtInComponents } from './components/catalog';
+import {
+  escapeHtml,
+  inline,
+  renderMarkdown,
+  type HtmdxHeading,
+  type RenderContext,
+} from './components/renderers';
+
 export type HtmdxToken =
   | { type: 'markdown'; value: string }
   | { type: 'component'; name: string; body: string };
@@ -33,16 +42,6 @@ export type HtmdxExtensionOptions = {
   rerender?: boolean;
 };
 
-type HtmdxHeading = {
-  id: string;
-  label: string;
-};
-
-type RenderContext = {
-  headings: HtmdxHeading[];
-  slugCounts: Map<string, number>;
-};
-
 export type HtmdxSourceResult =
   | { ok: true; kind: 'embedded' | 'src'; source: string }
   | { ok: false; error: string; source?: string };
@@ -67,25 +66,9 @@ const globalComponentDefinitions: HtmdxComponentRegistry = {};
 const registeredTagNames = new Set([DEFAULT_TAG_NAME]);
 const sourceCache = new WeakMap<Element, HtmdxSourceResult & { ok: true }>();
 
-const builtInRenderers: InternalComponentRegistry = new Map([
-  ['ExecutiveSummary', renderNarrativeBlock],
-  ['Card', renderNarrativeBlock],
-  ['Callout', renderNarrativeBlock],
-  ['SourceQuote', renderSourceQuote],
-  ['MetricStrip', renderMetricStrip],
-  ['Stat', renderMetricStrip],
-  ['ChartBar', renderChartBar],
-  ['ChartArea', renderChartBar],
-  ['ChartLine', renderChartBar],
-  ['ChartPie', renderChartBar],
-  ['DataTable', renderDataTable],
-  ['Compare', renderListCards],
-  ['Finding', renderListCards],
-  ['Evidence', renderListCards],
-  ['RiskTable', renderRiskTable],
-  ['DecisionTable', renderDecisionTable],
-  ['Timeline', renderListCards],
-]);
+const builtInRenderers: InternalComponentRegistry = new Map(
+  builtInComponents.map((component) => [component.name, component.renderer]),
+);
 
 export function compile(source: string, options: HtmdxCompileOptions = {}): HtmdxCompileResult {
   try {
@@ -531,281 +514,6 @@ function injectTailwindBrowser(tailwind: HtmdxRegisterOptions['tailwind'] = true
     typeof tailwind === 'object' && tailwind.src ? tailwind.src : DEFAULT_TAILWIND_BROWSER_SRC;
   script.defer = true;
   document.head.append(script);
-}
-
-function renderMarkdown(markdown: string, context?: RenderContext) {
-  return markdown
-    .split(/\n{2,}/)
-    .map((part) => part.trim())
-    .filter(Boolean)
-    .map((block) => renderMarkdownBlock(block, context))
-    .join('');
-}
-
-function renderMarkdownBlock(block: string, context?: RenderContext) {
-  if (block.startsWith('### ')) {
-    return `<h3>${inline(block.slice(4))}</h3>`;
-  }
-  if (block.startsWith('## ')) {
-    const label = block.slice(3);
-    const id = context ? uniqueSlug(label, context) : slugify(label);
-    if (context) {
-      context.headings.push({ id, label });
-    }
-    return `<h2 id="${id}">${inline(label)}</h2>`;
-  }
-  if (block.startsWith('# ')) {
-    return `<h1>${inline(block.slice(2))}</h1>`;
-  }
-  if (block.startsWith('- ')) {
-    return `<ul>${parseList(block)
-      .map((item) => `<li>${inline(item)}</li>`)
-      .join('')}</ul>`;
-  }
-
-  return `<p>${inline(block.replace(/\n/g, ' '))}</p>`;
-}
-
-function renderNarrativeBlock(name: string, body: string) {
-  return shell(name, renderMarkdown(body));
-}
-
-function renderSourceQuote(name: string, body: string) {
-  return shell(name, `<p>${inline(body.replace(/\n/g, ' '))}</p>`);
-}
-
-function renderMetricStrip(name: string, body: string) {
-  const items = parsePairs(body)
-    .map(
-      ([label, value]) => `
-        <div class="htmdx-metric-item">
-          <span class="htmdx-metric-label">${escapeHtml(label)}</span>
-          <span class="htmdx-metric-value">${inline(stripWrappingBold(value))}</span>
-        </div>`,
-    )
-    .join('');
-
-  return shell(name, `<div class="htmdx-metric-grid">${items}</div>`);
-}
-
-function renderChartBar(name: string, body: string) {
-  const pairs = parsePairs(body).map(
-    ([label, value]) => [label, Number(value.replace(/[^0-9.]/g, '')) || 0] as const,
-  );
-  const max = Math.max(...pairs.map(([, value]) => value), 1);
-  const chartWidth = 640;
-  const chartHeight = 240;
-  const paddingX = 34;
-  const axisY = 206;
-  const slotWidth = (chartWidth - paddingX * 2) / Math.max(pairs.length, 1);
-  const barWidth = Math.max(28, Math.min(72, slotWidth * 0.68));
-  const bars = pairs
-    .map(([label, value], index) => {
-      const height = (value / max) * 172;
-      const x = paddingX + index * slotWidth + (slotWidth - barWidth) / 2;
-      const y = axisY - height;
-      return `
-        <rect class="htmdx-chart-bar" x="${x}" y="${y}" width="${barWidth}" height="${height}" rx="7">
-          <title>${escapeHtml(label)}: ${escapeHtml(String(value))}</title>
-        </rect>
-        <text class="htmdx-chart-label" x="${x + barWidth / 2}" y="234" text-anchor="middle">${escapeHtml(
-          truncateLabel(label),
-        )}</text>`;
-    })
-    .join('');
-
-  return shell(
-    name,
-    `<div class="htmdx-chart"><svg viewBox="0 0 ${chartWidth} ${chartHeight}" role="img" aria-label="${escapeHtml(
-      name,
-    )} chart"><line class="htmdx-chart-axis" x1="${paddingX}" y1="${axisY}" x2="${
-      chartWidth - paddingX
-    }" y2="${axisY}" />${bars}</svg></div>`,
-  );
-}
-
-function renderDataTable(name: string, body: string) {
-  const tableLines = body
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter((line) => line.startsWith('|'));
-
-  if (tableLines.length < 2) {
-    return shell(name, renderMarkdown(body));
-  }
-
-  const header = splitTableLine(tableLines[0])
-    .map((cell) => `<th>${inline(cell)}</th>`)
-    .join('');
-  const rows = tableLines
-    .slice(2)
-    .map(
-      (line) =>
-        `<tr>${splitTableLine(line)
-          .map((cell) => `<td>${inline(cell)}</td>`)
-          .join('')}</tr>`,
-    )
-    .join('');
-
-  return shell(name, `<table><thead><tr>${header}</tr></thead><tbody>${rows}</tbody></table>`);
-}
-
-function renderListCards(name: string, body: string) {
-  return shell(
-    name,
-    `<div class="htmdx-feature-grid">${parseList(body)
-      .map((item) => renderFeatureItem(item))
-      .join('')}</div>`,
-  );
-}
-
-function renderRiskTable(name: string, body: string) {
-  const items = parseList(body)
-    .map((item) => {
-      const lower = item.toLowerCase();
-      const tier = lower.includes('**must-have**')
-        ? 'must-have'
-        : lower.includes('**differentiator**')
-          ? 'differentiator'
-          : lower.includes('**not now**')
-            ? 'not-now'
-            : lower.includes("**won't do**")
-              ? 'wont-do'
-              : '';
-      return renderFeatureItem(item, tier);
-    })
-    .join('');
-
-  return shell(name, `<div class="htmdx-feature-grid">${items}</div>`);
-}
-
-function renderDecisionTable(name: string, body: string) {
-  const rows = parsePairs(body)
-    .map(([label, value]) => `<tr><th>${inline(label)}</th><td>${inline(value)}</td></tr>`)
-    .join('');
-
-  return shell(name, `<table><tbody>${rows}</tbody></table>`);
-}
-
-function shell(name: string, body: string) {
-  return `
-    <section class="htmdx-component htmdx-${kebab(name)}" data-htmdx-component="${escapeHtml(name)}">
-      <div class="htmdx-component-header">${escapeHtml(name)}</div>
-      <div class="htmdx-component-body">${body}</div>
-    </section>`;
-}
-
-function renderFeatureItem(item: string, tier = '') {
-  const match = item.match(/^\*\*([^*]+)\*\*:?\s*(.*)$/);
-  const tierAttribute = tier ? ` data-tier="${tier}"` : '';
-
-  if (!match) {
-    return `<div class="htmdx-feature-item"${tierAttribute}><span class="htmdx-feature-text">${inline(item)}</span></div>`;
-  }
-
-  return `
-    <div class="htmdx-feature-item"${tierAttribute}>
-      <span class="htmdx-feature-title">${escapeHtml(match[1])}</span>
-      <span class="htmdx-feature-text">${inline(match[2])}</span>
-    </div>`;
-}
-
-function parsePairs(body: string) {
-  const pairs = parseList(body).map((item) => {
-    const [label, ...rest] = item.split(':');
-    return [label.trim(), rest.join(':').trim() || '-'] as const;
-  });
-
-  if (pairs.length === 0) {
-    throw new Error("component body must contain '- label: value' rows");
-  }
-
-  return pairs;
-}
-
-function parseList(body: string) {
-  return body
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter((line) => line.startsWith('- '))
-    .map((line) => line.slice(2).trim());
-}
-
-function splitTableLine(line: string) {
-  return line
-    .replace(/^\|/, '')
-    .replace(/\|$/, '')
-    .split('|')
-    .map((cell) => cell.trim());
-}
-
-function stripWrappingBold(value: string) {
-  return value.replace(/^\*\*(.*)\*\*$/, '$1');
-}
-
-function kebab(value: string) {
-  return value.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
-}
-
-function uniqueSlug(value: string, context: RenderContext) {
-  const base = slugify(value);
-  const count = context.slugCounts.get(base) || 0;
-  context.slugCounts.set(base, count + 1);
-  return count === 0 ? base : `${base}-${count + 1}`;
-}
-
-function slugify(value: string) {
-  const slug = value
-    .toLowerCase()
-    .replace(/&/g, ' and ')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-
-  return slug || 'section';
-}
-
-function truncateLabel(value: string) {
-  return value.length > 22 ? `${value.slice(0, 19)}...` : value;
-}
-
-function inline(text: string) {
-  return escapeHtml(text)
-    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-    .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_match, label: string, href: string) => {
-      const safeHref = sanitizeHref(href);
-      return safeHref ? `<a href="${safeHref}">${label}</a>` : label;
-    });
-}
-
-function sanitizeHref(value: string) {
-  const decoded = value
-    .replace(/&amp;/g, '&')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .trim();
-  const compact = Array.from(decoded)
-    .filter((char) => char.charCodeAt(0) > 31 && char.charCodeAt(0) !== 127 && !/\s/.test(char))
-    .join('');
-  if (!compact) {
-    return null;
-  }
-
-  const schemeMatch = compact.match(/^([a-z][a-z0-9+.-]*):/i);
-  if (!schemeMatch) {
-    return compact.startsWith('//') ? null : escapeHtml(decoded);
-  }
-
-  const allowedSchemes = new Set(['http', 'https', 'mailto']);
-  return allowedSchemes.has(schemeMatch[1].toLowerCase()) ? escapeHtml(decoded) : null;
-}
-
-function escapeHtml(value: string) {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
 }
 
 function cssEscape(value: string) {

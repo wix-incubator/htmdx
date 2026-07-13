@@ -24,7 +24,7 @@ export function createComponentStory(
     parameters: {
       layout: 'fullscreen',
     },
-    render: ({ body }) => createHtmdxHost(component.name, body),
+    render: ({ body }) => createHtmdxHost(`<${component.name}>\n${body}\n</${component.name}>`),
   };
 }
 
@@ -34,11 +34,11 @@ function canonicalBody(component: HtmdxComponent) {
   return component.example.slice(openingTag.length, -closingTag.length).trim();
 }
 
-function createHtmdxHost(componentName: string, body: string) {
+export function createHtmdxHost(htmdx: string) {
   const host = document.createElement('htmdx-code');
   const source = document.createElement('script');
   source.type = 'text/htmdx';
-  source.textContent = `<${componentName}>\n${body}\n</${componentName}>`;
+  source.textContent = htmdx;
   host.append(source);
   return host;
 }

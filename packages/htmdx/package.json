@@ -20,6 +20,8 @@
     "dist/**/*.js",
     "dist/**/*.d.ts",
     "dist/components.json",
+    "!dist/src/**/*.stories.d.ts",
+    "!dist/src/storybook/**",
     "!dist/test/**",
     "README.md",
     "LICENSE"
@@ -47,19 +49,26 @@
     "lint:fix": "oxlint --fix",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
-    "build": "yarn typecheck && rollup -c",
+    "build": "yarn build:library && yarn build-storybook",
+    "build:library": "yarn typecheck && rollup -c",
+    "build-storybook": "../../node_modules/.bin/storybook build",
+    "storybook": "../../node_modules/.bin/storybook dev -p 6006",
     "typecheck": "tsc --noEmit",
     "test": "vitest"
   },
   "devDependencies": {
     "@rollup/plugin-terser": "^1.0.0",
     "@rollup/plugin-typescript": "^12.3.0",
+    "@storybook/web-components-vite": "^10.4.6",
     "jsdom": "^27.2.0",
+    "lit": "^3.3.2",
     "oxfmt": "^0.54.0",
     "oxlint": "^1.69.0",
     "rollup": "^4.61.1",
+    "storybook": "^10.4.6",
     "tslib": "^2.8.1",
     "typescript": "^6.0.3",
+    "vite": "^8.1.0",
     "vitest": "^4.1.8"
   },
   "engines": {

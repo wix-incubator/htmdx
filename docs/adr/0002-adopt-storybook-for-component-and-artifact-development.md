@@ -1,0 +1,5 @@
+# Adopt Storybook for component and Artifact development
+
+Use Storybook with its Web Components and Vite integration as the local playground for built-in HTMDX Components and complete Artifacts. Storybook will load the TypeScript runtime directly and exercise the real HTMDX compilation path so maintainers—including non-technical contributors working through coding agents—can see source changes without rebuilding the package. This is preferred over a bespoke playground because Storybook supplies component navigation, controls, viewport tooling, and a static build while preserving HTMDX's custom-element architecture.
+
+Component stories are co-located with their implementations and each built-in must provide an editable `Default` story derived from its canonical catalog example. Complete examples are standalone HTML Artifacts that use the local built browser runtime outside Storybook; inside Storybook, their embedded HTMDX is rendered with the source runtime for fast feedback. Storybook's static build is part of the repository build, while hosted previews, generated Docs pages, visual regression testing, and dedicated Artifact validation are deferred.

@@ -51,8 +51,8 @@
     "fmt:check": "oxfmt --check",
     "build": "yarn build:library && yarn build-storybook",
     "build:library": "yarn typecheck && rollup -c",
-    "build-storybook": "storybook build",
-    "storybook": "storybook dev -p 6006",
+    "build-storybook": "../../node_modules/.bin/storybook build",
+    "storybook": "../../node_modules/.bin/storybook dev -p 6006",
     "typecheck": "tsc --noEmit",
     "test": "vitest"
   },

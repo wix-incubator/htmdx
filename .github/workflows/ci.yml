@@ -9,6 +9,9 @@ on:
 permissions:
   contents: read
 
+env:
+  YARN_NPM_REGISTRY_SERVER: https://registry.npmjs.org
+
 jobs:
   test:
     name: Build and test

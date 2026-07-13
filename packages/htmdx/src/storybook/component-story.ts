@@ -1,0 +1,44 @@
+import type { Meta } from '@storybook/web-components-vite';
+import { register } from '../index';
+import type { HtmdxComponent } from '../components/types';
+
+export type ComponentStoryArgs = {
+  body: string;
+};
+
+export function createComponentStory(
+  component: HtmdxComponent,
+): Pick<Meta<ComponentStoryArgs>, 'args' | 'argTypes' | 'parameters' | 'render'> {
+  register({ tailwind: false });
+
+  return {
+    args: {
+      body: canonicalBody(component),
+    },
+    argTypes: {
+      body: {
+        control: { type: 'text' },
+        description: `The editable body of <${component.name}>.`,
+      },
+    },
+    parameters: {
+      layout: 'fullscreen',
+    },
+    render: ({ body }) => createHtmdxHost(component.name, body),
+  };
+}
+
+function canonicalBody(component: HtmdxComponent) {
+  const openingTag = `<${component.name}>`;
+  const closingTag = `</${component.name}>`;
+  return component.example.slice(openingTag.length, -closingTag.length).trim();
+}
+
+function createHtmdxHost(componentName: string, body: string) {
+  const host = document.createElement('htmdx-code');
+  const source = document.createElement('script');
+  source.type = 'text/htmdx';
+  source.textContent = `<${componentName}>\n${body}\n</${componentName}>`;
+  host.append(source);
+  return host;
+}

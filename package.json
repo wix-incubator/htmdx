@@ -29,6 +29,7 @@
     "fmt": "turbo fmt",
     "fmt:check": "turbo fmt -- --check",
     "build": "turbo build",
+    "storybook": "yarn workspace @wix/htmdx storybook",
     "test": "turbo test",
     "release": "bash scripts/release.sh",
     "-- Tools --": ":",

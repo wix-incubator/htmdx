@@ -3,6 +3,7 @@ node_modules
 .idea
 .vscode
 dist
+storybook-static
 
 # Wix apps
 .wix

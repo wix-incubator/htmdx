@@ -57,6 +57,7 @@
     "test": "vitest"
   },
   "devDependencies": {
+    "@material/material-color-utilities": "patch:@material/material-color-utilities@npm%3A0.4.0#~/.yarn/patches/@material-material-color-utilities-npm-0.4.0-c075af2c47.patch",
     "@rollup/plugin-terser": "^1.0.0",
     "@rollup/plugin-typescript": "^12.3.0",
     "@storybook/web-components-vite": "^10.4.6",

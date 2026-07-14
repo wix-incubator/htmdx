@@ -1,6 +1,7 @@
 import { markdownSyntaxSource, parseComponentBody } from './components/body-contracts';
 import { builtInComponents } from './components/catalog';
 import type { HtmdxComponent } from './components/types';
+import { THEME_CSS, THEME_IDS } from './themes';
 import { VERSION } from './version';
 
 export { VERSION } from './version';
@@ -175,7 +176,7 @@ export function register(options: HtmdxRegisterOptions = {}) {
   if (!document.getElementById(STYLE_ID)) {
     const style = document.createElement('style');
     style.id = STYLE_ID;
-    style.textContent = RUNTIME_CSS;
+    style.textContent = RUNTIME_CSS + THEME_CSS;
     document.head.append(style);
   }
   injectFonts();
@@ -520,7 +521,12 @@ function renderDocument(
   const nav = renderNav(headings);
   const content = `<div class="htmdx-content">${stickyHeader}${hero}<main class="htmdx-doc">${sectionsHtml}</main></div>`;
   const appClass = nav ? 'htmdx-app' : 'htmdx-app htmdx-app--no-nav';
-  return `<div class="${appClass}">${nav}${content}</div>`;
+  const theme = meta.theme?.toLowerCase();
+  const themeAttr =
+    theme && theme !== 'purple' && (THEME_IDS as readonly string[]).includes(theme)
+      ? ` data-htmdx-theme="${theme}"`
+      : '';
+  return `<div class="${appClass}"${themeAttr}>${nav}${content}</div>`;
 }
 
 // Condensed page header revealed once the hero scrolls out of view. Rendered

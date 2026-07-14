@@ -57,6 +57,32 @@ Use the same exact version as the artifact's runtime URL. The manifest is a buil
 
 Each entry declares one enforced body format: `markdown`, `label-value-list`, `label-number-list`, `gfm-table`, or `markdown-list-cards`. Bodies must be non-empty, Markdown-shaped one-level JSX. Imports, exports, MDX expressions, and nested JSX are forbidden. A body that violates the global or declared format contract fails compilation of the whole HTMDX artifact; browser hosts show the error fallback and raw artifact source instead of partially rendered output.
 
+## Color themes
+
+Artifacts render in the default **purple** theme. To render in another built-in
+theme, add a `theme:` field to the HTMDX frontmatter:
+
+```mdx
+---
+theme: blue
+---
+
+# Title
+```
+
+Built-in themes: `purple` (default), `blue`, `green`, `teal`, `amber`,
+`magenta`, `fuchsia`, `rose`, `lime`, `coral`. Every
+theme shares the same design DNA — identical tone, contrast, and saturation,
+rotated to a different hue. Unknown or omitted values fall back to purple.
+
+Palettes are generated offline from the purple palette; regenerate with
+`node scripts/generate-themes.mjs` after editing the seeds.
+
+These built-in themes are separate from the host-side `registerTheme` API
+(see the Extension API below): built-ins are baked into the runtime and picked
+per-artifact via `theme:`, whereas `registerTheme` lets trusted host code inject
+its own custom CSS at load time.
+
 ## HTMDX Components
 
 The first version supports the Creator Kit artifact components:

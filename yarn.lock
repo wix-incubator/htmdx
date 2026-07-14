@@ -458,6 +458,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@material/material-color-utilities@npm:0.4.0":
+  version: 0.4.0
+  resolution: "@material/material-color-utilities@npm:0.4.0"
+  checksum: 10c0/cf4e6ea31ce4d357cd305efd2ef4f22f1830a2f3718f8da3f0968b6eb426290c86e148245530056311ff3d24d39aa9e7c931e5c5b345b3ed21294aa938976ea6
+  languageName: node
+  linkType: hard
+
+"@material/material-color-utilities@patch:@material/material-color-utilities@npm%3A0.4.0#~/.yarn/patches/@material-material-color-utilities-npm-0.4.0-c075af2c47.patch":
+  version: 0.4.0
+  resolution: "@material/material-color-utilities@patch:@material/material-color-utilities@npm%3A0.4.0%3A%3A__archiveUrl=https%253A%252F%252Fnpm.dev.wixpress.com%252Fapi%252Fnpm%252Fnpm-repos%252F%2540material%252Fmaterial-color-utilities%252F-%252Fmaterial-color-utilities-0.4.0.tgz#~/.yarn/patches/@material-material-color-utilities-npm-0.4.0-c075af2c47.patch::version=0.4.0&hash=909fe8"
+  checksum: 10c0/52d277e783d565d6ab63e18c00d2ce0d011fdcf597c0077fc2e2ebdd6acbc3f467ff58bf8c95afd587624f50d8679412dd319a9a71bf80a3250cfd323796a575
+  languageName: node
+  linkType: hard
+
 "@napi-rs/wasm-runtime@npm:^1.1.4, @napi-rs/wasm-runtime@npm:^1.1.6":
   version: 1.1.6
   resolution: "@napi-rs/wasm-runtime@npm:1.1.6"
@@ -1736,6 +1750,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@wix/htmdx@workspace:packages/htmdx"
   dependencies:
+    "@material/material-color-utilities": "patch:@material/material-color-utilities@npm%3A0.4.0#~/.yarn/patches/@material-material-color-utilities-npm-0.4.0-c075af2c47.patch"
     "@rollup/plugin-terser": "npm:^1.0.0"
     "@rollup/plugin-typescript": "npm:^12.3.0"
     "@storybook/web-components-vite": "npm:^10.4.6"

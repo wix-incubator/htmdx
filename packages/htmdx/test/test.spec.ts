@@ -39,6 +39,37 @@ Ship **one HTML file** with editable HTMDX source.
     expect(rendered.ok && rendered.html).toContain('Ship <strong>one HTML file</strong>');
   });
 
+  test('frontmatter theme stamps data-htmdx-theme on the app root', () => {
+    const rendered = compile(`---
+theme: blue
+---
+
+# Title
+
+## One
+
+Body.`);
+    expect(rendered.ok && rendered.html).toContain('data-htmdx-theme="blue"');
+  });
+
+  test('absent or unknown theme adds no attribute (purple default)', () => {
+    const none = compile(`# Title\n\n## One\n\nBody.`);
+    expect(none.ok && none.html).not.toContain('data-htmdx-theme');
+
+    const unknown = compile(`---\ntheme: chartreuse\n---\n\n# Title\n\n## One\n\nBody.`);
+    expect(unknown.ok && unknown.html).not.toContain('data-htmdx-theme');
+
+    const purple = compile(`---\ntheme: purple\n---\n\n# Title\n\n## One\n\nBody.`);
+    expect(purple.ok && purple.html).not.toContain('data-htmdx-theme');
+  });
+
+  test('theme matching is case-insensitive', () => {
+    const upper = compile(`---\ntheme: Blue\n---\n\n# T\n\n## One\n\nBody.`);
+    expect(upper.ok && upper.html).toContain('data-htmdx-theme="blue"');
+    const purpleCap = compile(`---\ntheme: Purple\n---\n\n# T\n\n## One\n\nBody.`);
+    expect(purpleCap.ok && purpleCap.html).not.toContain('data-htmdx-theme');
+  });
+
   test('keeps every built-in component available', () => {
     const components = [
       ['ExecutiveSummary', 'Summary.'],

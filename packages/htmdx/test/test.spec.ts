@@ -31,7 +31,11 @@ Ship **one HTML file** with editable HTMDX source.
       ok: true,
       components: ['ExecutiveSummary', 'MetricStrip'],
     });
-    expect(rendered.ok && rendered.html).toContain('<article class="htmdx-article">');
+    // Only one `##` heading here, so the nav is omitted and the shell gets
+    // the `htmdx-app--no-nav` modifier (see the interface contract in the
+    // task brief) — match tolerates that modifier suffix.
+    expect(rendered.ok && rendered.html).toMatch(/<div class="htmdx-app( htmdx-app--no-nav)?">/);
+    expect(rendered.ok && rendered.html).toContain('<div class="htmdx-doc-section-card">');
     expect(rendered.ok && rendered.html).toContain('Ship <strong>one HTML file</strong>');
   });
 
@@ -80,11 +84,45 @@ Summary.
 
 Context.`);
 
-    expect(rendered.ok && rendered.html).toContain('<header class="htmdx-masthead">');
-    expect(rendered.ok && rendered.html).toContain('<div class="htmdx-shell">');
-    expect(rendered.ok && rendered.html).toContain('class="htmdx-toc-link"');
+    expect(rendered.ok && rendered.html).toContain('<nav class="htmdx-nav"');
+    expect(rendered.ok && rendered.html).toContain('class="htmdx-nav-link"');
     expect(rendered.ok && rendered.html).toContain('href="#executive-summary"');
-    expect(rendered.ok && rendered.html).toContain('<h2 id="situation">Situation</h2>');
+    expect(rendered.ok && rendered.html).toContain(
+      '<h2 class="htmdx-doc-section-title" id="situation">Situation</h2>',
+    );
+  });
+
+  test('puts the title and lead paragraph in the hero, sections in cards', () => {
+    const rendered = compile(
+      '# My Page\n\nLead paragraph here.\n\n## First\n\nBody one.\n\n## Second\n\nBody two.',
+    );
+    expect(rendered.ok).toBe(true);
+    const html = rendered.ok ? rendered.html : '';
+    expect(html).toContain('<h1 class="htmdx-hero-title">My Page</h1>');
+    expect(html).toContain('<p class="htmdx-hero-desc">Lead paragraph here.</p>');
+    // two sections, each wrapped in a card, lead not duplicated inside a card
+    expect(html.match(/htmdx-doc-section-card/g)?.length).toBe(2);
+    expect(html.indexOf('Lead paragraph here.')).toBe(html.lastIndexOf('Lead paragraph here.'));
+  });
+
+  test('renders the hero eyebrow and label pills', () => {
+    const rendered = compile('# My Page\n\nLead.\n\n## First\n\nBody.');
+    const html = rendered.ok ? rendered.html : '';
+    expect(html).toContain('<div class="htmdx-hero-inner">');
+    expect(html).toContain('<p class="htmdx-hero-eyebrow">{Project Name}</p>');
+    expect(html).toContain('<div class="htmdx-hero-labels">');
+    expect(html).toContain('Owner <b>{name}</b>');
+    expect(html).toContain('Phase <b>{Flow / Skill}</b>');
+    expect(html).toContain('Updated <b>{Date}</b>');
+  });
+
+  test('builds left-nav pill links from the sections', () => {
+    const rendered = compile('# T\n\n## Alpha\n\nA.\n\n## Beta\n\nB.');
+    const html = rendered.ok ? rendered.html : '';
+    expect(html).toContain(
+      '<a class="htmdx-nav-link" href="#alpha" data-htmdx-target="alpha">Alpha</a>',
+    );
+    expect(html).toContain('data-htmdx-target="beta"');
   });
 
   test('keeps component names case-insensitive', () => {
@@ -276,7 +314,7 @@ Context.</script>`;
     await renderHost(host);
 
     const link = host.querySelector<HTMLAnchorElement>(
-      '.htmdx-toc-link[data-htmdx-target="situation"]',
+      '.htmdx-nav-link[data-htmdx-target="situation"]',
     );
     expect(link).not.toBeNull();
 
@@ -310,5 +348,56 @@ Context.</script>`;
     expect(rendered.ok && rendered.html).toContain('bad');
     expect(rendered.ok && rendered.html).not.toContain('javascript:');
     expect(rendered.ok && rendered.html).toContain('<a href="https://wix.com">good</a>');
+  });
+
+  test('injects the Figtree + Roboto fonts stylesheet once on register', () => {
+    register({ tailwind: false });
+    register({ tailwind: false });
+    const links = document.querySelectorAll('link#htmdx-fonts');
+    expect(links.length).toBe(1);
+    const href = links[0].getAttribute('href') ?? '';
+    expect(href).toContain('Figtree');
+    expect(href).toContain('Roboto');
+  });
+
+  test('bar chart tags each bar with a cycling data-series index', () => {
+    const rendered = compile('<ChartBar>\n- A: 1\n- B: 2\n- C: 3\n</ChartBar>');
+    const html = rendered.ok ? rendered.html : '';
+    expect(html).toContain('data-series="0"');
+    expect(html).toContain('data-series="1"');
+    expect(html).toContain('data-series="2"');
+  });
+
+  test('does not hoist a paragraph out of a component preceding the first section', () => {
+    const rendered = compile(
+      '# Report\n\n<Callout>\nCallout body paragraph.\n</Callout>\n\n## First\n\nBody.',
+    );
+    expect(rendered.ok).toBe(true);
+    const html = rendered.ok ? rendered.html : '';
+    expect(html).not.toContain('htmdx-hero-desc');
+    expect(html).toContain('Callout body paragraph.');
+    expect(html).not.toContain('<div class="htmdx-component-body"></div>');
+  });
+
+  test('nav-active colors are tokenized, not hard-coded literals', async () => {
+    const { readFileSync } = await import('node:fs');
+    const { fileURLToPath } = await import('node:url');
+    const { dirname, join } = await import('node:path');
+    // Vite rewrites `new URL('…', import.meta.url)` into an asset URL, so read
+    // via a path derived from import.meta.url instead.
+    const src = readFileSync(
+      join(dirname(fileURLToPath(import.meta.url)), '../src/index.ts'),
+      'utf8',
+    );
+    expect(src).toContain('--md-sys-color-nav-active-container: #DCDAF7;');
+    expect(src).toContain('--md-sys-color-on-nav-active-container: #24172C;');
+    // The nav rule must reference the tokens, not the raw hex.
+    const navRule = src.slice(
+      src.indexOf('.htmdx-nav-item.is-active .htmdx-nav-link'),
+      src.indexOf('.htmdx-nav-item.is-active .htmdx-nav-link') + 200,
+    );
+    expect(navRule).toContain('var(--md-sys-color-nav-active-container)');
+    expect(navRule).toContain('var(--md-sys-color-on-nav-active-container)');
+    expect(navRule).not.toMatch(/#DCDAF7|#24172C/);
   });
 });

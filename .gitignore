@@ -4,6 +4,7 @@ node_modules
 .vscode
 dist
 storybook-static
+.DS_Store
 
 # Wix apps
 .wix

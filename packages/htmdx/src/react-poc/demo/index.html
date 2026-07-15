@@ -4,6 +4,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>htmdx React PoC — shadcn demo</title>
+    <!-- Demo ships light theme vars only; pin the scheme so dark: variants stay off -->
+    <meta name="color-scheme" content="light" />
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style type="text/tailwindcss">
       @theme inline {
@@ -66,6 +68,14 @@
         --border: oklch(0.92 0.004 286.32);
         --input: oklch(0.92 0.004 286.32);
         --ring: oklch(0.705 0.015 286.067);
+      }
+
+      /* shadcn base layer: default border/ring colors for utilities like `border` */
+      @layer base {
+        * {
+          border-color: var(--color-border);
+          outline-color: color-mix(in oklab, var(--color-ring) 50%, transparent);
+        }
       }
 
       body {

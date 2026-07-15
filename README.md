@@ -75,8 +75,10 @@ Built-in themes: `purple` (default), `blue`, `green`, `teal`, `amber`,
 theme shares the same design DNA — identical tone, contrast, and saturation,
 rotated to a different hue. Unknown or omitted values fall back to purple.
 
-Palettes are generated offline from the purple palette; regenerate with
-`node scripts/generate-themes.mjs` after editing the seeds.
+Palettes are generated offline from the purple palette and committed to
+`src/themes.ts`. The generator (`scripts/generate-themes.mjs`) is not part of
+the build; regenerating after editing the seeds needs a one-off dev install (see
+the script header). No runtime or build dependency is added.
 
 These built-in themes are separate from the host-side `registerTheme` API
 (see the Extension API below): built-ins are baked into the runtime and picked

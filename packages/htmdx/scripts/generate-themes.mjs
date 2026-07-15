@@ -1,6 +1,15 @@
 // Offline generator: rotates the purple palette to each theme's hue in HCT,
 // keeping tone + chroma so every theme shares the same DNA. Output is committed
-// to src/themes.ts. Re-run with: node scripts/generate-themes.mjs
+// to src/themes.ts, so this script is NOT part of the build/test path and its
+// dependency is not tracked in package.json.
+//
+// To regenerate (only needed when editing SEEDS):
+//   1. yarn add -D @material/material-color-utilities
+//   2. the package ships ESM imports missing `.js` extensions; apply the patch
+//      kept at .yarn/patches/ (yarn patch @material/material-color-utilities)
+//   3. node scripts/generate-themes.mjs
+//   4. drop the dependency again so it stays out of the committed lockfile
+//      (it pins to a private registry that breaks public CI).
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { Hct, argbFromHex, hexFromArgb } from '@material/material-color-utilities';

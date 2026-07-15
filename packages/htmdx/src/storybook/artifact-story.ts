@@ -31,7 +31,7 @@ export function createArtifactStory(
 function extractEmbeddedHtmdx(artifactHtml: string) {
   const artifact = new DOMParser().parseFromString(artifactHtml, 'text/html');
   const sourceElements = artifact.querySelectorAll(
-    'htmdx-code > script[type="text/htmdx"], htmdx-code > template[type="text/htmdx"]',
+    'script[type="text/htmdx"], template[type="text/htmdx"]',
   );
 
   if (sourceElements.length !== 1) {

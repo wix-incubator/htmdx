@@ -12,18 +12,18 @@ Start with one HTML file:
     <script src="https://unpkg.com/@wix/htmdx@<exact-version>/dist/browser.js" defer></script>
   </head>
   <body>
-    <htmdx-code>
-      <script type="text/htmdx" data-htmdx-edit-instruction="Edit only this script content. HTMDX format.">
+    <script type="text/htmdx" data-htmdx-edit-instruction="Edit only this script content. HTMDX format.">
 # Artifact title
 
 <ExecutiveSummary>
 The HTML is viewable as-is. Agents edit only this source block.
 </ExecutiveSummary>
-      </script>
-    </htmdx-code>
+    </script>
   </body>
 </html>
 ```
+
+The runtime auto-mounts each bare source block: it wraps the script in a generated `<htmdx-code>` host in place and renders there. Write `<htmdx-code>` yourself only when you need explicit output placement or `src`; disable scanning with `register({ automount: false })`.
 
 Source block notes:
 
@@ -36,9 +36,10 @@ CDN caveats:
 - Generated artifacts can load the browser bundle from [unpkg](https://unpkg.com/) after the package is published to npm.
 - Pin an explicit package version in generated artifacts. Do not use floating aliases like `@latest`, because saved HTML artifacts must keep rendering the same runtime over time.
 
-External source files are supported too:
+External source files are supported too, in both forms:
 
 ```html
+<script type="text/htmdx" src="./artifact.mdx"></script>
 <htmdx-code src="./artifact.mdx"></htmdx-code>
 ```
 

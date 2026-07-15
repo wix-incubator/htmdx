@@ -227,6 +227,52 @@ Card body.
     expect(document.getElementById('htmdx-theme-brand')?.textContent).toContain('--htmdx-accent');
   });
 
+  test('auto-mounts bare source scripts into generated hosts by default', async () => {
+    document.body.innerHTML = `<script type="text/htmdx">
+# Bare source
+
+Rendered without an authored host.
+</script>`;
+
+    register({ tagName: 'htmdx-automount' });
+
+    await Promise.resolve();
+    await Promise.resolve();
+
+    const host = document.querySelector('htmdx-automount');
+    expect(host).not.toBeNull();
+    expect(document.body.querySelector(':scope > script[type="text/htmdx"]')).toBeNull();
+    expect(host?.innerHTML).toContain('Rendered without an authored host.');
+  });
+
+  test('copies src from a bare source script to the generated host', () => {
+    document.body.innerHTML = '<script type="text/htmdx" src="./artifact.mdx"></script>';
+
+    register({ tagName: 'htmdx-automount-src' });
+
+    expect(document.querySelector('htmdx-automount-src')?.getAttribute('src')).toBe(
+      './artifact.mdx',
+    );
+  });
+
+  test('leaves sources inside registered hosts alone when auto-mounting', () => {
+    register({ tagName: 'htmdx-automount-wrapped' });
+    document.body.innerHTML = `<htmdx-automount-wrapped><script type="text/htmdx"># Wrapped</script></htmdx-automount-wrapped>`;
+
+    register({ tagName: 'htmdx-automount-wrapped' });
+
+    expect(document.querySelectorAll('htmdx-automount-wrapped').length).toBe(1);
+  });
+
+  test('skips auto-mounting when automount is disabled', () => {
+    document.body.innerHTML = '<script type="text/htmdx"># Manual</script>';
+
+    register({ tagName: 'htmdx-automount-off', automount: false });
+
+    expect(document.querySelector('htmdx-automount-off')).toBeNull();
+    expect(document.body.querySelector(':scope > script[type="text/htmdx"]')).not.toBeNull();
+  });
+
   test('rerenders existing hosts after a consumer component script loads', async () => {
     register({ tagName: 'htmdx-late-extension' });
     document.body.innerHTML = `<htmdx-late-extension>

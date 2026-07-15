@@ -56,6 +56,7 @@ export type HtmdxRegisterOptions = {
   sourceSelector?: string;
   theme?: HtmdxThemeDefinition;
   tailwind?: boolean | { src?: string };
+  automount?: boolean;
 } & HtmdxCompileOptions;
 
 const STYLE_ID = 'htmdx-runtime-v1-styles';
@@ -181,18 +182,49 @@ export function register(options: HtmdxRegisterOptions = {}) {
 
   const tagName = options.tagName || DEFAULT_TAG_NAME;
   registeredTagNames.add(tagName);
-  if (customElements.get(tagName)) {
+  if (!customElements.get(tagName)) {
+    customElements.define(
+      tagName,
+      class HtmdxElement extends HTMLElement {
+        async connectedCallback() {
+          await renderHost(this, options);
+        }
+      },
+    );
+  }
+
+  if (options.automount !== false) {
+    mountBareSources(tagName, options);
+  }
+}
+
+function mountBareSources(tagName: string, options: HtmdxRegisterOptions) {
+  if (!document.body) {
     return;
   }
 
-  customElements.define(
-    tagName,
-    class HtmdxElement extends HTMLElement {
-      async connectedCallback() {
-        await renderHost(this, options);
-      }
-    },
-  );
+  const selector = options.sourceSelector || DEFAULT_SOURCE_SELECTOR;
+  const sources =
+    queryAllSafe(document.body, selector) || queryAllSafe(document.body, DEFAULT_SOURCE_SELECTOR);
+  const hostSelector = Array.from(registeredTagNames).join(', ');
+  for (const source of sources || []) {
+    if (source.closest(hostSelector)) {
+      continue;
+    }
+
+    const host = document.createElement(tagName);
+    const src = source.getAttribute('src');
+    if (src) {
+      host.setAttribute('src', src);
+    }
+
+    // The host is assembled before it enters the document because
+    // connectedCallback reads the source synchronously on insertion.
+    const marker = document.createComment('htmdx-source');
+    source.replaceWith(marker);
+    host.append(source);
+    marker.replaceWith(host);
+  }
 }
 
 export async function renderHost(host: Element, options: HtmdxRegisterOptions = {}) {
@@ -414,6 +446,14 @@ function querySourceElement(host: Element, options: HtmdxRegisterOptions) {
 function querySelectorSafe(root: Element, selector: string) {
   try {
     return root.querySelector(selector);
+  } catch {
+    return null;
+  }
+}
+
+function queryAllSafe(root: Element, selector: string) {
+  try {
+    return Array.from(root.querySelectorAll(selector));
   } catch {
     return null;
   }

@@ -12,27 +12,34 @@ Start with one HTML file:
     <script src="https://unpkg.com/@wix/htmdx@<exact-version>/dist/browser.js" defer></script>
   </head>
   <body>
-    <htmdx-code>
-      <template type="text/htmdx" data-htmdx-edit-instruction="Edit only this template content. HTMDX format.">
+    <script type="text/htmdx" data-htmdx-edit-instruction="Edit only this script content. HTMDX format.">
 # Artifact title
 
 <ExecutiveSummary>
 The HTML is viewable as-is. Agents edit only this source block.
 </ExecutiveSummary>
-      </template>
-    </htmdx-code>
+    </script>
   </body>
 </html>
 ```
+
+The runtime auto-mounts each bare source block: it wraps the script in a generated `<htmdx-code>` host in place and renders there. Write `<htmdx-code>` yourself only when you need explicit output placement or `src`; disable scanning with `register({ automount: false })`.
+
+Source block notes:
+
+- `<script type="text/htmdx">` is the canonical source holder. Browsers store its content as raw text, so component tag casing, code fences containing HTML, and angle brackets in prose survive byte-for-byte, and HTML formatters leave the content alone.
+- `<template type="text/htmdx">` is also supported, but its content is HTML-parsed and re-serialized, which can rewrite the source (lowercased component tags, restructured code fences).
+- A literal `</script>` inside the source ends the block early; keep such examples in an external `src` file instead.
 
 CDN caveats:
 
 - Generated artifacts can load the browser bundle from [unpkg](https://unpkg.com/) after the package is published to npm.
 - Pin an explicit package version in generated artifacts. Do not use floating aliases like `@latest`, because saved HTML artifacts must keep rendering the same runtime over time.
 
-External source files are supported too:
+External source files are supported too, in both forms:
 
 ```html
+<script type="text/htmdx" src="./artifact.mdx"></script>
 <htmdx-code src="./artifact.mdx"></htmdx-code>
 ```
 

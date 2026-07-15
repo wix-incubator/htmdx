@@ -12,19 +12,28 @@ Start with one HTML file:
     <script src="https://unpkg.com/@wix/htmdx@<exact-version>/dist/browser.js" defer></script>
   </head>
   <body>
-    <htmdx-code>
-      <template
-        type="text/htmdx"
-        data-htmdx-edit-instruction="Edit only this template content. HTMDX format."
-      >
-        # Title
+    <!-- prettier-ignore -->
+    <script
+      type="text/htmdx"
+      data-htmdx-edit-instruction="Edit only this script content. HTMDX format."
+    >
+# Title
 
-        <ExecutiveSummary> Agents edit source. Users view rendered HTML. </ExecutiveSummary>
-      </template>
-    </htmdx-code>
+<ExecutiveSummary>
+Agents edit source. Users view rendered HTML.
+</ExecutiveSummary>
+    </script>
   </body>
 </html>
 ```
+
+The runtime auto-mounts each bare source block: it wraps the script in a generated `<htmdx-code>` host in place and renders there. Write `<htmdx-code>` yourself only when you need explicit output placement or `src`; disable scanning with `register({ automount: false })`.
+
+Source block notes:
+
+- `<script type="text/htmdx">` is the canonical source holder. Browsers store its content as raw text, so component tag casing, code fences containing HTML, and angle brackets in prose survive byte-for-byte, and HTML formatters leave the content alone.
+- `<template type="text/htmdx">` is also supported, but its content is HTML-parsed and re-serialized, which can rewrite the source (lowercased component tags, restructured code fences).
+- A literal `</script>` inside the source ends the block early; keep such examples in an external `src` file instead.
 
 CDN caveats:
 
@@ -43,9 +52,10 @@ Use the same exact version as the artifact's runtime URL. The manifest is a buil
 
 Manifest entries declare one enforced body format: `markdown`, `label-value-list`, `label-number-list`, `gfm-table`, or `markdown-list-cards`. Bodies must be non-empty, Markdown-shaped one-level JSX. Imports, exports, MDX expressions, and nested JSX are forbidden. Invalid global syntax or a body that does not match its declared format fails compilation of the whole HTMDX artifact. Browser hosts then display the error fallback and raw artifact source rather than partial output.
 
-Use `src` when the source should live next to the HTML:
+Use `src` when the source should live next to the HTML, in either form:
 
 ```html
+<script type="text/htmdx" src="./artifact.mdx"></script>
 <htmdx-code src="./artifact.mdx"></htmdx-code>
 ```
 

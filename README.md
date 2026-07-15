@@ -13,17 +13,23 @@ Start with one HTML file:
   </head>
   <body>
     <htmdx-code>
-      <template type="text/htmdx" data-htmdx-edit-instruction="Edit only this template content. HTMDX format.">
+      <script type="text/htmdx" data-htmdx-edit-instruction="Edit only this script content. HTMDX format.">
 # Artifact title
 
 <ExecutiveSummary>
 The HTML is viewable as-is. Agents edit only this source block.
 </ExecutiveSummary>
-      </template>
+      </script>
     </htmdx-code>
   </body>
 </html>
 ```
+
+Source block notes:
+
+- `<script type="text/htmdx">` is the canonical source holder. Browsers store its content as raw text, so component tag casing, code fences containing HTML, and angle brackets in prose survive byte-for-byte, and HTML formatters leave the content alone.
+- `<template type="text/htmdx">` is also supported, but its content is HTML-parsed and re-serialized, which can rewrite the source (lowercased component tags, restructured code fences).
+- A literal `</script>` inside the source ends the block early; keep such examples in an external `src` file instead.
 
 CDN caveats:
 

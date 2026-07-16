@@ -71,11 +71,11 @@ The source remains declarative: imports, MDX `{expressions}`, and function-value
 
 ## Components
 
-The runtime ships 85 components. Its exact-version `dist/components.json` manifest documents every component, prop, allowed value, and example.
+The runtime ships 82 components. Its exact-version `dist/components.json` manifest documents every component, prop, allowed value, and example.
 
 **Report built-ins** cover summaries, callouts, metrics, charts, tables, timelines, findings, evidence, and risks. Composable components accept Markdown and nested components; structured components validate their expected list or table format.
 
-**shadcn/ui pack** provides 19 families — including cards, tabs, accordions, dialogs, tables, and tooltips — with real Radix state and a Tailwind v4 theme. On name collisions such as `Card`, shadcn wins.
+**shadcn/ui pack** provides 16 vendored families on real Radix state with a bundled Tailwind v4 theme — `Card` (with `CardHeader`, `CardTitle`, `CardContent`, …), `Badge`, `Button`, `Tabs`, `Accordion`, `Alert`, `Avatar`, `Breadcrumb`, `Dialog`, `HoverCard`, `Popover`, `Progress`, `Separator`, `Table`, `Tooltip`, and `AspectRatio`. `Card` is provided exclusively by the shadcn pack.
 
 ## Source blocks
 

@@ -33,8 +33,8 @@ manifest, one browser bundle.
   body and keep their body contracts: parsing, validation, and content markup
   reuse the existing helpers.
 - `@wix/htmdx/react/shadcn` — vendored shadcn/ui components (new-york) plus a
-  Tailwind v4 theme. Included in the default runtime; on the `Card` name
-  collision the shadcn component wins.
+  Tailwind v4 theme. Included in the default runtime; `Card` is provided by
+  this pack rather than the built-in catalog.
 - `dist/browser.js` — self-contained IIFE (React + built-ins + shadcn pack +
   theme + Tailwind injection) that auto-registers. It also exposes the
   bundled React on `window.Htmdx.React` for extension scripts.

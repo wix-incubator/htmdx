@@ -1,71 +1,188 @@
 <!doctype html>
+<!--
+  Creator Kit htmdx@2 artifact. Before you edit ANY part of this document, you
+  MUST read ~/.agents/skills/ck-internal-htmdx/SKILL.md first — it defines the
+  htmdx@2 contract. Edit ONLY the content inside <script type="text/htmdx">;
+  the runtime script, metadata, and source-block attributes are fixed by the
+  contract.
+-->
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Product Strategy</title>
-    <script src="../../dist/browser.js" defer></script>
+    <meta name="ck-artifact-format" content="htmdx@2" />
+    <meta name="ck-renderer" content="@wix/htmdx@2.2.1" />
+    <meta name="ck-template-skill" content="ck-product-strategy" />
+    <title>Product Strategy — Native File Upload on Product Pages</title>
+    <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@2.2.1/dist/browser.js" defer></script>
   </head>
   <body>
-    <htmdx-code>
-      <!-- prettier-ignore -->
-      <script
-        type="text/htmdx"
-        data-htmdx-edit-instruction="Edit only this script content. HTMDX format."
-      >
+    <!-- prettier-ignore -->
+    <script
+      type="text/htmdx"
+      data-ck-source="primary"
+      data-ck-format="htmdx@2"
+    >
 ---
-project: SEO Settings
-theme: purple
+title: "Product Strategy — Native File Upload on Product Pages"
 logo: creator-kit
 logo-alt: Creator Kit
 ---
 
-# Product Strategy
-
-Bring bulk SEO management to SEO Settings by adopting Wix's proven URL Redirect Manager pattern — a CSV export, template, and safe merge-on-import round-trip — so teams work on the whole set at once, not one row at a time.
-
 ## Overview
 
 <ExecutiveSummary>
-3–4 sentences max. No subsections. Orients any reader before they go deeper.
+**Direction —** Wix Stores will let store owners collect customer files natively during purchase by extending the existing product-modifier framework with a **File upload** type, so Self-Creators selling customizable products can fulfill orders without manual workarounds.
+
+**The gap —** Today the customization pipeline is text-only from product editor to order, so a store owner cannot collect a buyer's image or design file anywhere in the purchase flow — pushing ~3,755 custom-product stores into poorly-rated third-party apps, Velo hacks, or pasted links. This is validated, sustained pain: 55 support mentions with activity as recent as March 2026.
 </ExecutiveSummary>
-
-### Supporting evidence
-
-<DecisionTable>
-- User research: Qualitative signals from interviews or surveys
-- Quantitative data: Metrics, funnel data, population sizes
-- Competitive signals: What competitors are doing or not doing
-- Customer feedback: Support tickets, verbatims, direct quotes
-- Internal data: BI reports, usage analytics, cohort analysis
-</DecisionTable>
-
-_Each evidence item links to its source artifact via an evidence badge_
 
 ## Target audience
 
-_TBD_
+<Finding>
+- **Self-Creator store owners — Primary:** Owners running print-on-demand, engraving, photo-gift, and custom-apparel businesses who need customers to submit artwork. Priority: High · Segment size: 3,755 active stores (0.91% of 412,476) · Relevance: $89.8M annual GPV and 3pp lower churn (21.3% vs 24.3%).
+- **Customers / buyers (UoU) — Secondary:** People buying customizable products who must submit a file to complete an order. Priority: Medium · Segment size: buyers across the 3,755 stores ($4.3M modifier GPV / 90 days) · Relevance: buyer friction drives abandonment.
+- **Partners / agencies — Secondary:** Freelancers building custom-product Wix stores, forced into Velo/apps today. Priority: Low · Segment size: subset of partner ecosystem (qualitative) · Relevance: removes fragile custom-code maintenance.
+</Finding>
 
 ## The problem
 
-_TBD_
+### Root-cause chain (5 Whys)
+
+<Timeline>
+- Symptom: Store owners can't collect files during purchase
+- Why 1: No native file-upload input exists on the product page
+- Why 2: The modifier framework has no file render type
+- Why 3: The customization pipeline is string-only end to end
+- Why 4: No mechanism carries a file reference through cart to order
+- Root cause: The purchase flow has no data path for file attachments
+</Timeline>
+
+<Spacer />
+
+<Card>
+<CardHeader>
+<CardTitle>Problem</CardTitle>
+</CardHeader>
+<CardContent>
+There is no native way to collect files at purchase, so owners fall back to FUP (rated 1.8/5), unreliable Velo, or pasted links — causing manual follow-up, order errors, and abandonment. 55 support mentions, privacy rejections, and churn threats confirm the pain.
+</CardContent>
+<CardHeader>
+<CardTitle>Root cause</CardTitle>
+</CardHeader>
+<CardContent>
+The purchase flow lacks a file-attachment data path; Forms upload, Media Manager, and modifiers all exist but were never wired to the cart-to-order pipeline.
+</CardContent>
+<CardHeader>
+<CardTitle>Opportunity</CardTitle>
+</CardHeader>
+<CardContent>
+Connecting existing upload infrastructure to the modifier framework and order lifecycle makes the custom-product vertical first-class, protects $89.8M GPV, and differentiates Wix vs. Shopify.
+</CardContent>
+</Card>
 
 ## Intents & feelings
 
-_TBD_
+### Primary — Self-Creator
+
+<Finding>
+- **#int-001 · Blocker — Collect files at purchase:** "I want customers to attach their file when they order, so I can fulfill custom products." Feelings: Frustrated → Confident.
+- **#int-002 · Critical — Control accepted files:** "I want to set file types, size, and quantity, so I only receive usable files." Feelings: Anxious → In control.
+- **#int-003 · Critical — See files in the order:** "I want the uploaded file in order details, so I can fulfill without chasing the buyer." Feelings: Overwhelmed → Organized.
+- **#int-004 · Nice to have — Required vs optional:** "I want to mark upload required per product, so orders arrive complete." Feelings: Uncertain → Assured.
+</Finding>
+
+### Secondary — Buyer
+
+<Finding>
+- **#int-001 · Blocker — Upload in one step:** "I want to add my file while ordering, so I don't need extra emails." Feelings: Confused → Reassured.
+- **#int-002 · Critical — Confirm it worked:** "I want to see my file was received in the right format, so I trust the order." Feelings: Doubtful → Confident.
+</Finding>
 
 ## The solution
 
-_TBD_
+<Card>
+<CardHeader>
+<CardTitle>Summary</CardTitle>
+</CardHeader>
+<CardContent>
+Add a native **File upload** modifier type — configuration of accepted types, size, quantity, and required toggle (#int-002, #int-004), one-step buyer upload with real-time validation (buyer #int-001, #int-002), persisted through cart → checkout → order into order details (#int-001, #int-003).
+</CardContent>
+</Card>
+
+### How we chose this direction
+
+<DataTable>
+| Direction | Key trade-off | Chosen |
+| --- | --- | --- |
+| Extend modifiers with a `FILE_UPLOAD` type | Reuses a known framework and the proven cart→order path; needs new file plumbing | ✓ Yes |
+| Standalone file-upload widget | Design freedom, but splits where owners manage customizations and lowers reuse | No |
+| Recommend a third-party app | Fast and no core eng, but leaves the string-only pipeline and privacy/quality gaps (FUP 1.8/5) unsolved | No |
+</DataTable>
+
+### What ships
+
+<Compare>
+- **V1:** File-upload modifier type (types/size/quantity + required toggle), one-step buyer upload with validation and confirmation, Media Manager storage, persistence through cart→checkout→order, and the customer file + download link in order details.
+- **Later:** Checkout-stage upload, thumbnails/preview, fulfillment integrations, in-product image editing / live preview, and multi-file drag-and-drop.
+</Compare>
+
+### Why it's feasible
+
+<Callout>
+Media Manager's `generateFileUploadUrl` and the Wix Forms production upload field already exist. The new work is a `FILE_UPLOAD` render type + settings, a media-reference carrier on the line item, and a file-display affordance in order details.
+</Callout>
+
+### Open questions & assumptions
+
+<Callout>
+- Server storage / proxy contract is out of scope here — evaluate `extendedFields` or Form Submissions as the carrier first.
+- Media Manager quota and economics for buyer uploads are undecided.
+- The churn advantage is correlational, not yet causal.
+- The product page is the V1 surface (4:1 signal); checkout upload is deferred.
+</Callout>
 
 ## Why now
 
-_TBD_
+<Card>
+<CardHeader>
+<CardTitle>Why now</CardTitle>
+</CardHeader>
+<CardContent>
+A high-value, low-churn vertical ($89.8M GPV, 3pp lower churn) is underserved by Wix while BigCommerce and Ecwid already ship native file upload and Shopify shares the gap — a time-limited window to differentiate.
+</CardContent>
+<CardHeader>
+<CardTitle>Business impact</CardTitle>
+</CardHeader>
+<CardContent>
+Protects and grows ~2x per-store GPV against a conservative $89.8M floor, reduces third-party-app reliance, and attracts merchants currently evaluating competitors.
+</CardContent>
+</Card>
 
 ## Business KPIs
 
-_TBD_
-      </script>
-    </htmdx-code>
+### Wix impact
+
+<MetricStrip>
+- ↑ Active stores using upload: **baseline 0**
+- ↑ GPV from upload stores: **$89.8M floor**
+- ↓ Churn, custom-product stores: **21.3%**
+</MetricStrip>
+
+### User impact
+
+<MetricStrip>
+- ↑ Upload completion rate: **baseline 0**
+- ↑ Orders with an attached file: **baseline 0**
+- ↓ File-upload support tickets: **55**
+</MetricStrip>
+
+### Monitoring
+
+<MetricStrip>
+- ↑ Feature adoption: **baseline TBD**
+- ↓ Upload error rate: **baseline TBD**
+</MetricStrip>
+    </script>
   </body>
 </html>

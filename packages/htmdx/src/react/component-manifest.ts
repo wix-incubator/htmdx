@@ -16,7 +16,7 @@ export type HtmdxReactComponentManifest = {
 };
 
 const MANIFEST_NOTE =
-  'This manifest lists the components in the htmdx React runtime (dist/browser.js and the module entries): the built-in catalog plus the shadcn/ui pack. On the Card name collision the shadcn component wins. shadcn components allow nested composition and markdown bodies; builtin components keep their declared body format. Attributes are data only: class -> className, kebab-case -> camelCase, values parse as booleans/numbers/JSON. Imports, expressions, and function-valued props cannot be expressed.';
+  'This manifest lists the components in the htmdx React runtime (dist/browser.js and the module entries): the built-in catalog plus the shadcn/ui pack. shadcn components allow nested composition and markdown bodies; builtin components keep their declared body format. Attributes are data only: class -> className, kebab-case -> camelCase, values parse as booleans/numbers/JSON. Imports, expressions, and function-valued props cannot be expressed.';
 
 const shadcnNames = new Set(shadcnManifestComponents.map((component) => component.name));
 

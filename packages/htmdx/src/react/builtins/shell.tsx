@@ -26,7 +26,7 @@ export function Block({
   children: ReactNode;
 }) {
   return (
-    <section data-htmdx-component={name} className={cn('my-6', className)}>
+    <section data-htmdx-component={name} className={cn('htmdx-component', className)}>
       {children}
     </section>
   );

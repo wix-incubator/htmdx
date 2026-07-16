@@ -12,9 +12,8 @@ describe('component manifest', () => {
     expect(manifest.format).toBe('htmdx-react@1');
 
     const builtinEntries = manifest.components.filter((entry) => entry.source === 'builtin');
-    // The shadcn Card shadows the built-in Card in the merged runtime.
     expect(builtinEntries.map(({ name }) => name)).toEqual(
-      builtInComponents.filter(({ name }) => name !== 'Card').map(({ name }) => name),
+      builtInComponents.map(({ name }) => name),
     );
     expect(manifest.components.some((entry) => entry.source === 'shadcn')).toBe(true);
     for (const component of manifest.components) {

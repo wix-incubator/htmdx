@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>htmdx — component tour</title>
-    <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@2.0.0/dist/browser.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@2.1.0/dist/browser.js" defer></script>
   </head>
   <body>
     <!-- prettier-ignore -->
@@ -35,7 +35,7 @@ shadcn <Badge variant="secondary">Badge</Badge> inside it.
 <MetricStrip>
 - Format: **HTML**
 - Source: **HTMDX**
-- Components: **33**
+- Components: **85**
 - Eval: **none**
 </MetricStrip>
 
@@ -149,6 +149,136 @@ shadcn <Badge variant="secondary">Badge</Badge> inside it.
     <AccordionContent>type="single" collapsible comes straight from attributes.</AccordionContent>
   </AccordionItem>
 </Accordion>
+
+## Alerts and separators
+
+<Alert>
+  <AlertTitle>Display-only components</AlertTitle>
+  <AlertDescription>Alert, Table, Avatar, Progress and Skeleton render statically — no interaction required.</AlertDescription>
+</Alert>
+
+<Alert variant="destructive">
+  <AlertTitle>Heads up</AlertTitle>
+  <AlertDescription>The destructive variant signals errors or blocked states.</AlertDescription>
+</Alert>
+
+<Separator orientation="horizontal" />
+
+## Tables
+
+<Table class="max-w-xl">
+  <TableCaption>Quarterly plan revenue</TableCaption>
+  <TableHeader>
+    <TableRow>
+      <TableHead>Plan</TableHead>
+      <TableHead>Users</TableHead>
+      <TableHead>MRR</TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    <TableRow>
+      <TableCell>Free</TableCell>
+      <TableCell>48</TableCell>
+      <TableCell>$0</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell>Pro</TableCell>
+      <TableCell>12</TableCell>
+      <TableCell>$1,140</TableCell>
+    </TableRow>
+  </TableBody>
+</Table>
+
+## Avatars, progress, and skeletons
+
+<Avatar>
+  <AvatarImage src="https://github.com/shadcn.png" alt="shadcn" />
+  <AvatarFallback>CN</AvatarFallback>
+</Avatar>
+
+<Progress value="72" class="max-w-xl" />
+
+<Skeleton class="h-4 w-48" />
+
+## Breadcrumbs
+
+<Breadcrumb>
+  <BreadcrumbList>
+    <BreadcrumbItem>
+      <BreadcrumbLink href="./index.html">Examples</BreadcrumbLink>
+    </BreadcrumbItem>
+    <BreadcrumbSeparator />
+    <BreadcrumbItem>
+      <BreadcrumbPage>Component tour</BreadcrumbPage>
+    </BreadcrumbItem>
+  </BreadcrumbList>
+</Breadcrumb>
+
+## Aspect ratio
+
+<AspectRatio ratio="1.7778" class="max-w-md overflow-hidden rounded-lg border">
+  <img src="https://images.unsplash.com/photo-1535025183041-0991a977e25b?w=800" alt="Landscape" class="h-full w-full object-cover" />
+</AspectRatio>
+
+## Overlays: hover, click, and modal
+
+Tooltip and HoverCard open on hover; Popover and Dialog open on click. Each
+renders its floating content in a portal outside the source block.
+
+<Tooltip>
+  <TooltipTrigger>
+    <Button variant="outline">Hover for a tooltip</Button>
+  </TooltipTrigger>
+  <TooltipContent>Portalled tooltip content.</TooltipContent>
+</Tooltip>
+
+<HoverCard>
+  <HoverCardTrigger>
+    <Button variant="link">Hover for a card</Button>
+  </HoverCardTrigger>
+  <HoverCardContent>A richer preview shown on hover.</HoverCardContent>
+</HoverCard>
+
+<Popover>
+  <PopoverTrigger>
+    <Button variant="outline">Open a popover</Button>
+  </PopoverTrigger>
+  <PopoverContent>Click-triggered floating panel.</PopoverContent>
+</Popover>
+
+<Dialog>
+  <DialogTrigger>
+    <Button>Open a dialog</Button>
+  </DialogTrigger>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Real modal dialog</DialogTitle>
+      <DialogDescription>Opened by a real click; closes with the X or Escape.</DialogDescription>
+    </DialogHeader>
+    <DialogFooter>
+      <DialogClose>
+        <Button variant="outline">Close</Button>
+      </DialogClose>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+
+## Collapsible and toggles
+
+<Collapsible class="max-w-xl">
+  <CollapsibleTrigger>
+    <Button variant="outline">Toggle extra detail</Button>
+  </CollapsibleTrigger>
+  <CollapsibleContent>Revealed only when the collapsible is open.</CollapsibleContent>
+</Collapsible>
+
+<Toggle variant="outline">Bold</Toggle>
+
+<ToggleGroup type="single" variant="outline">
+  <ToggleGroupItem value="left">Left</ToggleGroupItem>
+  <ToggleGroupItem value="center">Center</ToggleGroupItem>
+  <ToggleGroupItem value="right">Right</ToggleGroupItem>
+</ToggleGroup>
 
 Back to the [examples index](./index.html).
     </script>

@@ -117,6 +117,200 @@ describe('react renderer with shadcn/ui', () => {
     unmount(host, root);
   });
 
+  test('Alert renders titled variant markup', () => {
+    const html = renderToStaticMarkup(
+      compileToReact(
+        `<Alert variant="destructive">
+  <AlertTitle>Blocked</AlertTitle>
+  <AlertDescription>Migration cannot proceed.</AlertDescription>
+</Alert>`,
+        { components: shadcnComponents },
+      ),
+    );
+    expect(html).toContain('data-slot="alert"');
+    expect(html).toContain('data-slot="alert-title"');
+    expect(html).toContain('data-slot="alert-description"');
+    expect(html).toContain('text-destructive');
+    expect(html).toContain('Migration cannot proceed.');
+  });
+
+  test('Table family renders semantic table markup', () => {
+    const html = renderToStaticMarkup(
+      compileToReact(
+        `<Table>
+  <TableCaption>Plans</TableCaption>
+  <TableHeader>
+    <TableRow>
+      <TableHead>Plan</TableHead>
+      <TableHead>MRR</TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    <TableRow>
+      <TableCell>Pro</TableCell>
+      <TableCell>$1,140</TableCell>
+    </TableRow>
+  </TableBody>
+</Table>`,
+        { components: shadcnComponents },
+      ),
+    );
+    expect(html).toContain('data-slot="table-container"');
+    expect(html).toContain('data-slot="table"');
+    expect(html).toContain('data-slot="table-header"');
+    expect(html).toContain('data-slot="table-body"');
+    expect(html).toContain('data-slot="table-caption"');
+    expect(html).toContain('<th');
+    expect(html).toContain('$1,140');
+  });
+
+  test('Avatar family renders fallback and slot markers', () => {
+    const html = renderToStaticMarkup(
+      compileToReact(
+        `<Avatar>
+  <AvatarImage src="https://example.com/a.png" alt="A" />
+  <AvatarFallback>CN</AvatarFallback>
+</Avatar>`,
+        { components: shadcnComponents },
+      ),
+    );
+    expect(html).toContain('data-slot="avatar"');
+    expect(html).toContain('data-slot="avatar-fallback"');
+    expect(html).toContain('CN');
+  });
+
+  test('Progress renders indicator with numeric value', () => {
+    const html = renderToStaticMarkup(
+      compileToReact('<Progress value="60" />', { components: shadcnComponents }),
+    );
+    expect(html).toContain('data-slot="progress"');
+    expect(html).toContain('data-slot="progress-indicator"');
+    expect(html).toContain('translateX(-40%)');
+  });
+
+  test('Separator and Skeleton render their slot markers', () => {
+    const separator = renderToStaticMarkup(
+      compileToReact('<Separator orientation="vertical" />', { components: shadcnComponents }),
+    );
+    expect(separator).toContain('data-slot="separator"');
+    expect(separator).toContain('data-orientation="vertical"');
+
+    const skeleton = renderToStaticMarkup(
+      compileToReact('<Skeleton class="h-4 w-32" />', { components: shadcnComponents }),
+    );
+    expect(skeleton).toContain('data-slot="skeleton"');
+    expect(skeleton).toContain('animate-pulse');
+    expect(skeleton).toContain('h-4');
+  });
+
+  test('Breadcrumb family renders trail markup', () => {
+    const html = renderToStaticMarkup(
+      compileToReact(
+        `<Breadcrumb>
+  <BreadcrumbList>
+    <BreadcrumbItem>
+      <BreadcrumbLink href="/">Home</BreadcrumbLink>
+    </BreadcrumbItem>
+    <BreadcrumbSeparator />
+    <BreadcrumbItem>
+      <BreadcrumbPage>Reports</BreadcrumbPage>
+    </BreadcrumbItem>
+  </BreadcrumbList>
+</Breadcrumb>`,
+        { components: shadcnComponents },
+      ),
+    );
+    expect(html).toContain('data-slot="breadcrumb"');
+    expect(html).toContain('data-slot="breadcrumb-link"');
+    expect(html).toContain('data-slot="breadcrumb-page"');
+    expect(html).toContain('data-slot="breadcrumb-separator"');
+    expect(html).toContain('aria-current="page"');
+  });
+
+  test('Toggle resolves variant classes through CVA', () => {
+    const html = renderToStaticMarkup(
+      compileToReact('<Toggle variant="outline">Bold</Toggle>', { components: shadcnComponents }),
+    );
+    expect(html).toContain('data-slot="toggle"');
+    expect(html).toContain('border-input');
+    expect(html).toContain('Bold');
+  });
+
+  test('Dialog opens on trigger click and portals content outside the host', () => {
+    const { host, root } = mount(`<Dialog>
+  <DialogTrigger>
+    <Button variant="outline">Open dialog</Button>
+  </DialogTrigger>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Confirm migration</DialogTitle>
+      <DialogDescription>This is a real modal.</DialogDescription>
+    </DialogHeader>
+  </DialogContent>
+</Dialog>`);
+
+    expect(document.querySelector('[data-slot="dialog-content"]')).toBeNull();
+
+    const trigger = host.querySelector<HTMLElement>('[data-slot="dialog-trigger"]');
+    expect(trigger).not.toBeNull();
+
+    act(() => {
+      trigger?.click();
+    });
+
+    const content = document.querySelector('[data-slot="dialog-content"]');
+    expect(content).not.toBeNull();
+    expect(content?.textContent).toContain('Confirm migration');
+    // The dialog is portalled: it appears in the document but not inside the host.
+    expect(host.querySelector('[data-slot="dialog-content"]')).toBeNull();
+
+    unmount(host, root);
+    expect(document.querySelector('[data-slot="dialog-content"]')).toBeNull();
+  });
+
+  test('Collapsible toggles open state from its trigger', () => {
+    const { host, root } = mount(`<Collapsible>
+  <CollapsibleTrigger>
+    <Button variant="outline">Toggle details</Button>
+  </CollapsibleTrigger>
+  <CollapsibleContent>Hidden until expanded.</CollapsibleContent>
+</Collapsible>`);
+
+    const trigger = host.querySelector<HTMLElement>('[data-slot="collapsible-trigger"]');
+    expect(trigger).not.toBeNull();
+    expect(trigger?.getAttribute('data-state')).toBe('closed');
+
+    act(() => {
+      trigger?.click();
+    });
+    expect(trigger?.getAttribute('data-state')).toBe('open');
+
+    act(() => {
+      trigger?.click();
+    });
+    expect(trigger?.getAttribute('data-state')).toBe('closed');
+    unmount(host, root);
+  });
+
+  test('ToggleGroup selects an item on click', () => {
+    const { host, root } = mount(`<ToggleGroup type="single" variant="outline">
+  <ToggleGroupItem value="left">Left</ToggleGroupItem>
+  <ToggleGroupItem value="center">Center</ToggleGroupItem>
+  <ToggleGroupItem value="right">Right</ToggleGroupItem>
+</ToggleGroup>`);
+
+    const items = Array.from(host.querySelectorAll<HTMLElement>('[data-slot="toggle-group-item"]'));
+    expect(items).toHaveLength(3);
+    const center = items.find((item) => item.textContent?.includes('Center'));
+    expect(center?.getAttribute('data-state')).toBe('off');
+
+    act(() => {
+      center?.click();
+    });
+    expect(center?.getAttribute('data-state')).toBe('on');
+    unmount(host, root);
+  });
+
   test('full document: markdown narrative around interactive shadcn blocks', () => {
     const { host, root } = mount(`## Findings
 

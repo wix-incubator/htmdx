@@ -1,3 +1,6 @@
+// Pure rendering utilities shared by the React runtime: heading slugs, link
+// scheme checks, and HTML escaping for the error fallback. Markdown itself is
+// rendered as React elements in ../react/markdown.
 export type HtmdxHeading = {
   id: string;
   label: string;
@@ -8,55 +11,7 @@ export type RenderContext = {
   slugCounts: Map<string, number>;
 };
 
-export function renderMarkdown(markdown: string, context?: RenderContext) {
-  return markdown
-    .split(/\n{2,}/)
-    .map((part) => part.trim())
-    .filter(Boolean)
-    .map((block) => renderMarkdownBlock(block, context))
-    .join('');
-}
-
-function renderMarkdownBlock(block: string, context?: RenderContext) {
-  if (block.startsWith('### ')) {
-    return `<h3>${inline(block.slice(4))}</h3>`;
-  }
-  if (block.startsWith('## ')) {
-    const label = block.slice(3);
-    const id = context ? uniqueSlug(label, context) : slugify(label);
-    if (context) {
-      context.headings.push({ id, label });
-    }
-    return `<h2 id="${id}">${inline(label)}</h2>`;
-  }
-  if (block.startsWith('# ')) {
-    return `<h1>${inline(block.slice(2))}</h1>`;
-  }
-  if (block.startsWith('- ')) {
-    return `<ul>${parseList(block)
-      .map((item) => `<li>${inline(item)}</li>`)
-      .join('')}</ul>`;
-  }
-
-  return `<p>${inline(block.replace(/\n/g, ' '))}</p>`;
-}
-
-function parseList(body: string) {
-  return body
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter((line) => line.startsWith('- '))
-    .map((line) => line.slice(2).trim());
-}
-
-function uniqueSlug(value: string, context: RenderContext) {
-  const base = slugify(value);
-  const count = context.slugCounts.get(base) || 0;
-  context.slugCounts.set(base, count + 1);
-  return count === 0 ? base : `${base}-${count + 1}`;
-}
-
-function slugify(value: string) {
+export function slugify(value: string) {
   const slug = value
     .toLowerCase()
     .replace(/&/g, ' and ')
@@ -66,17 +21,16 @@ function slugify(value: string) {
   return slug || 'section';
 }
 
-export function inline(text: string) {
-  return escapeHtml(text)
-    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-    .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_match, label: string, href: string) => {
-      const safeHref = sanitizeHref(href);
-      return safeHref ? `<a href="${safeHref}">${label}</a>` : label;
-    });
+export function uniqueSlug(value: string, context: RenderContext) {
+  const base = slugify(value);
+  const count = context.slugCounts.get(base) || 0;
+  context.slugCounts.set(base, count + 1);
+  return count === 0 ? base : `${base}-${count + 1}`;
 }
 
-function sanitizeHref(value: string) {
+// Returns a safe href (http/https/mailto or relative), or null for blocked
+// schemes. React encodes the attribute, so the value is returned undecorated.
+export function safeHref(value: string): string | null {
   const decoded = value
     .replace(/&amp;/g, '&')
     .replace(/&quot;/g, '"')
@@ -91,11 +45,11 @@ function sanitizeHref(value: string) {
 
   const schemeMatch = compact.match(/^([a-z][a-z0-9+.-]*):/i);
   if (!schemeMatch) {
-    return compact.startsWith('//') ? null : escapeHtml(decoded);
+    return compact.startsWith('//') ? null : decoded;
   }
 
   const allowedSchemes = new Set(['http', 'https', 'mailto']);
-  return allowedSchemes.has(schemeMatch[1].toLowerCase()) ? escapeHtml(decoded) : null;
+  return allowedSchemes.has(schemeMatch[1].toLowerCase()) ? decoded : null;
 }
 
 export function escapeHtml(value: string) {

@@ -14,7 +14,8 @@ import {
   type ReactNode,
 } from 'react';
 import { markdownSyntaxSource } from '../components/body-contracts';
-import { inline, renderMarkdown, type RenderContext } from '../components/rendering';
+import type { RenderContext } from '../components/rendering';
+import { renderInline, renderMarkdown } from './markdown';
 
 // oxlint-disable-next-line no-explicit-any -- component prop shapes are caller-defined
 export type HtmdxReactComponent = ComponentType<any>;
@@ -38,7 +39,7 @@ export function compileToReact(source: string, options: HtmdxReactOptions = {}):
 
   const children = blocks.map((block, index) => {
     if (block.type === 'markdown') {
-      return rawHtml('div', renderMarkdown(block.value, context), `md-${index}`);
+      return createElement('div', { key: `md-${index}` }, renderMarkdown(block.value, context));
     }
     return renderComponentBlock(block, components, `c-${index}`);
   });
@@ -70,7 +71,7 @@ export function compileDocument(source: string, options: HtmdxReactOptions = {})
 
   const children = blocks.map((block, index) => {
     if (block.type === 'markdown') {
-      return rawHtml('div', renderMarkdown(block.value, context), `md-${index}`);
+      return createElement('div', { key: `md-${index}` }, renderMarkdown(block.value, context));
     }
     return renderComponentBlock(block, components, `c-${index}`);
   });
@@ -83,7 +84,7 @@ export function compileDocument(source: string, options: HtmdxReactOptions = {})
 
   const masthead = title
     ? createElement('header', { className: 'htmdx-masthead', key: 'masthead' }, [
-        rawHtml('h1', inline(title), 'title'),
+        createElement('h1', { key: 'title' }, renderInline(title)),
       ])
     : null;
 
@@ -110,12 +111,15 @@ function renderToc(headings: { id: string; label: string }[]) {
     createElement(
       'li',
       { className: 'htmdx-toc-item', key: heading.id },
-      createElement('a', {
-        className: 'htmdx-toc-link',
-        href: `#${heading.id}`,
-        'data-htmdx-target': heading.id,
-        dangerouslySetInnerHTML: { __html: inline(heading.label) },
-      }),
+      createElement(
+        'a',
+        {
+          className: 'htmdx-toc-link',
+          href: `#${heading.id}`,
+          'data-htmdx-target': heading.id,
+        },
+        renderInline(heading.label),
+      ),
     ),
   );
 
@@ -171,8 +175,8 @@ function renderComponentBlock(
   const component = components[block.name];
   const props = { ...attrsToProps(block.attrs), key };
 
-  // Raw-body components (bridged string built-ins) consume the body
-  // themselves — validation and rendering stay in the string pipeline.
+  // Raw-body built-ins (structured JSX components) parse and validate their
+  // own HTMDX body through the body contracts instead of taking children.
   if ((component as { htmdxRawBody?: boolean }).htmdxRawBody) {
     return createElement(component, { ...props, body: block.body });
   }
@@ -193,7 +197,11 @@ function bodyToChildren(
   // or fences (markdown literals) don't get parsed as component markup.
   const hasElements = /<[A-Za-z][A-Za-z0-9]*(\s[^>]*)?\/?>/.test(markdownSyntaxSource(body));
   if (!hasElements) {
-    return rawHtml('div', renderMarkdown(body, { headings: [], slugCounts: new Map() }), keyPrefix);
+    return createElement(
+      'div',
+      { key: keyPrefix },
+      renderMarkdown(body, { headings: [], slugCounts: new Map() }),
+    );
   }
 
   const nodes = parseBodyNodes(body);
@@ -210,7 +218,7 @@ function nodeToReact(node: Node, components: HtmdxReactComponents, key: string):
     if (!text.trim()) {
       return null;
     }
-    return rawHtml('span', inline(text.trim()), key);
+    return createElement('span', { key }, renderInline(text.trim()));
   }
 
   if (node.nodeType !== Node.ELEMENT_NODE) {
@@ -366,10 +374,6 @@ function parseAttrValue(value: string): unknown {
     }
   }
   return value;
-}
-
-function rawHtml(tag: string, html: string, key: string) {
-  return createElement(tag, { key, dangerouslySetInnerHTML: { __html: html } });
 }
 
 function stripFrontmatterAndComments(source: string) {

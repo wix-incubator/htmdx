@@ -1,6 +1,6 @@
 import type { ReactElement, ReactNode } from 'react';
-import { inline } from '../../components/rendering';
 import { cn } from '../shadcn/utils';
+import { renderInline } from '../markdown';
 
 export type RawBodyProps = { body?: string };
 
@@ -32,11 +32,10 @@ export function Block({
   );
 }
 
-// Inline markdown (bold, code, sanitized links) reuses the string runtime's
-// escaper — the same trusted-formatting/escaped-values contract the markdown
-// blocks already use in the React renderer.
+// Inline markdown (bold, code, sanitized links) rendered as real React nodes,
+// shared with the markdown block renderer.
 export function Inline({ text }: { text: string }) {
-  return <span dangerouslySetInnerHTML={{ __html: inline(text) }} />;
+  return <>{renderInline(text)}</>;
 }
 
 export function stripWrappingBold(value: string) {

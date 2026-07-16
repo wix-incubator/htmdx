@@ -131,3 +131,65 @@ window.Htmdx.register({ tailwind: { src: './tailwind-browser.js' } });
 ```
 
 Use the browser compiler for portable artifacts and prototypes. Production hosts that need a compiled CSS pipeline can disable it and provide their own CSS with `registerTheme`.
+
+## React renderer (MDX minus JavaScript)
+
+The `@wix/htmdx/react` entry renders the same HTMDX source through React, so
+the components map can hold real React components — including the bundled
+shadcn/ui pack. The source stays declarative data: component tags, nested
+composition, and attribute props work; imports, `{expressions}`, and function
+props are rejected by design.
+
+One script tag turns a plain HTML artifact into a React + shadcn/ui page:
+
+```html
+<script src="https://unpkg.com/@wix/htmdx@<exact-version>/dist/browser-react.js" defer></script>
+<!-- prettier-ignore -->
+<script type="text/htmdx">
+# Q3 Report
+
+<Card class="max-w-xl">
+  <CardHeader>
+    <CardTitle>Revenue</CardTitle>
+    <CardDescription>Audited quarterly numbers</CardDescription>
+  </CardHeader>
+  <CardContent>
+    Revenue grew **12%** quarter over quarter.
+    <Badge variant="secondary">audited</Badge>
+  </CardContent>
+</Card>
+
+<Tabs defaultValue="summary">
+  <TabsList>
+    <TabsTrigger value="summary">Summary</TabsTrigger>
+    <TabsTrigger value="details">Details</TabsTrigger>
+  </TabsList>
+  <TabsContent value="summary">Topline numbers.</TabsContent>
+  <TabsContent value="details">Full cost breakdown.</TabsContent>
+</Tabs>
+</script>
+```
+
+`dist/browser-react.js` bundles React, the shadcn/ui pack (Card, Badge,
+Button, Tabs, Accordion), and its theme (~90KB gzip). The string-only
+`dist/browser.js` is unchanged and stays the default.
+
+React host apps use the module entries instead (react/react-dom are optional
+peer dependencies):
+
+```tsx
+import { Htmdx } from '@wix/htmdx/react';
+import { shadcnComponents, injectShadcnTheme } from '@wix/htmdx/react/shadcn';
+
+injectShadcnTheme();
+<Htmdx source={artifactSource} components={{ ...shadcnComponents, MyChart }} />;
+```
+
+Attribute conventions: `class` -> `className`, kebab-case -> camelCase, and
+values parse as booleans/numbers/JSON when they look like data. Well-formed
+bodies are parsed as XML, so camelCase attributes like `defaultValue` survive
+verbatim; malformed bodies fall back to forgiving HTML parsing.
+
+Security note: unlike the string renderer's inert HTML output, the React path
+runs the registered component code with agent-authored props. Components are
+host-owned and whitelisted; the source still cannot express code, only data.

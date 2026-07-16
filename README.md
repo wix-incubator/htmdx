@@ -61,6 +61,18 @@ The runtime ships 33 components. `dist/components.json` (served next to the runt
 
 The runtime auto-mounts each bare source block by wrapping it in a generated `<htmdx-code>` host. Write `<htmdx-code>` yourself only for explicit placement or `src`; disable scanning with `register({ automount: false })`.
 
+## Themes
+
+An artifact picks its accent palette with a frontmatter key:
+
+```yaml
+---
+theme: teal
+---
+```
+
+Ten built-in ids: `blue` (default), `purple`, `green`, `teal`, `amber`, `magenta`, `fuchsia`, `rose`, `lime`, `coral`. An omitted or unknown value falls back to `blue`. Every palette shares the same DNA — the default blue tokens hue-rotated in OKLCh with lightness and chroma kept, then contrast-checked to WCAG AA — so switching themes never changes the artifact's weight or readability. For anything beyond accent color, hosts register custom CSS with `registerTheme` (below).
+
 ## Extending the catalog
 
 Host code — not the artifact — registers extra React components and theme CSS through `window.Htmdx`. The bundle exposes its React copy so extension scripts need no build step:

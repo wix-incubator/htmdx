@@ -1,10 +1,20 @@
 # htmdx
 
-`@wix/htmdx` renders editable, MDX-like source inside a plain HTML file. It is built for artifacts that people view as finished pages and agents edit as text — a report, brief, or dashboard that stays a single self-contained file.
+`@wix/htmdx` creates rich HTML artifacts that humans can review and agents can edit.
+
+Each artifact stays in one portable HTML file. Its source is concise, declarative, and readable — without JSX boilerplate, project scaffolding, or a build step.
+
+- **One file:** Share, render, review, and modify the complete artifact.
+- **Human- and agent-readable:** Edit meaningful Markdown and component tags instead of generated markup.
+- **Token-efficient:** Benchmarks show 2–3× fewer tokens than hand-written HTML with Tailwind.
+- **Rich by default:** Use interactive components, themes, charts, and structured report elements.
+- **Safe by design:** Artifact source cannot contain imports, JavaScript expressions, or function-valued props.
 
 **Live examples:** [examples index](https://wix-incubator.github.io/htmdx/) · [decision brief](https://wix-incubator.github.io/htmdx/decision-brief.html) · [component tour](https://wix-incubator.github.io/htmdx/component-tour.html) · [Storybook](https://wix-incubator.github.io/htmdx/storybook/). Every example page is itself an htmdx artifact — view source to see exactly what an agent edits.
 
-## One file is the whole artifact
+## One file, two audiences
+
+A browser renders the file as a finished page. Humans and agents edit the readable HTMDX source inside it.
 
 ```html
 <!doctype html>
@@ -22,20 +32,64 @@
 The HTML is viewable as-is. Agents edit only this source block.
 </ExecutiveSummary>
 
-<Card>
-  <CardHeader><CardTitle>Revenue</CardTitle></CardHeader>
-  <CardContent>Grew **12%**. <Badge variant="secondary">audited</Badge></CardContent>
+<Card class="max-w-xl border-l-4 border-l-teal-500 shadow-lg">
+  <CardHeader class="flex-row items-center justify-between">
+    <CardTitle>Revenue</CardTitle>
+    <Badge variant="secondary">audited</Badge>
+  </CardHeader>
+  <CardContent class="text-2xl font-semibold text-teal-700">Grew **12%**</CardContent>
 </Card>
     </script>
   </body>
 </html>
 ```
 
+The HTML shell and pinned runtime stay stable. Editing the artifact means changing familiar Markdown, component tags, and Tailwind classes — not generated HTML, CSS, or application code. That keeps changes small, meaningful, and easy to review.
+
 The runtime script injects React, the component catalog, the shadcn/ui pack, a theme, and Tailwind's browser compiler, then renders each source block in place. The source itself stays declarative text.
 
 Pin an exact package version in artifacts. Saved files must keep rendering the same runtime over time, so never use floating aliases like `@latest`.
 
-## The language: MDX minus JavaScript
+## Token efficiency
+
+Writing an artifact as htmdx costs a fraction of the tokens that the same
+artifact costs in other HTML forms: 4.2–4.8× smaller than its own compiled HTML,
+2–3× smaller than hand-written HTML with Tailwind. A reproducible benchmark
+measures two report artifacts, each as the complete single file an agent
+would emit, tokenized with `gpt-tokenizer` (`o200k_base`):
+
+| Format | Decision brief | Executive report | Size vs htmdx |
+| --- | ---: | ---: | --- |
+| htmdx | 950 | 853 | — |
+| compiled HTML (`compile()` output) | 4589 | 3612 | 4.2-4.8x larger |
+| hand-written HTML + Tailwind | 1881 | 2568 | 2.0-3.0x larger |
+| React/JSX (assumes a platform hosts the runtime) | 1263 | 1790 | 1.3-2.1x larger |
+| plain markdown (no components) | 474 | 788 | 0.5-0.9x of htmdx |
+
+Edits are cheaper in the same range: adding an accordion item takes 91
+tokens in htmdx vs 428 in compiled HTML.
+
+Markdown is htmdx's floor, not a competitor. Plain markdown is valid htmdx
+source, so a document pays only for the component blocks it uses. Those
+blocks sometimes beat markdown itself: the executive report is smaller as
+htmdx source (734 tokens) than as plain markdown (788), because a
+`MetricStrip` list is denser than a markdown table. JSX has no such
+gradient: every paragraph pays JSX syntax, and the artifact renders nothing
+without its build pipeline.
+
+Run `yarn bench` to regenerate. Methodology, per-task edit costs, tokenizer
+cross-checks, and limitations:
+[`packages/htmdx/bench/RESULTS.md`](./packages/htmdx/bench/RESULTS.md).
+
+## Familiar standards, constrained source
+
+HTMDX does not introduce a new component model. Agents author artifacts with familiar Markdown, HTML-like component tags, typed props, and standard Tailwind utility classes. `dist/components.json` tells them which components and props are available.
+
+The artifact contains no JavaScript or JSX. Hosts extend its component catalog with standard React components, either by registering them through `window.Htmdx` or passing them to `<Htmdx>` in a React application.
+
+- **Artifact authors** compose approved components using readable declarative source.
+- **Component authors** build ordinary React components with the existing React and Tailwind ecosystem.
+- **Hosts** decide which components the artifact may use.
 
 HTMDX looks like MDX but carries data, not code:
 
@@ -106,9 +160,9 @@ theme: teal
 
 Ten built-in ids: `blue` (default), `purple`, `green`, `teal`, `amber`, `magenta`, `fuchsia`, `rose`, `lime`, `coral`. An omitted or unknown value falls back to `blue`. Every palette shares the same DNA — the default blue tokens hue-rotated in OKLCh with lightness and chroma kept, then contrast-checked to WCAG AA — so switching themes never changes the artifact's weight or readability. For anything beyond accent color, hosts register custom CSS with `registerTheme` (below).
 
-## Extending the catalog
+## Extending the catalog with React
 
-Host code — not the artifact — registers extra React components and theme CSS through `window.Htmdx`. The bundle exposes its React copy so extension scripts need no build step:
+Host code — not the artifact — registers ordinary React components and theme CSS through `window.Htmdx`. The bundle exposes its React copy so extension scripts need no build step:
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@3.0.0/dist/browser.js" defer></script>
@@ -149,40 +203,9 @@ injectShadcnTheme();
 
 `compile(source)` from `@wix/htmdx` returns a static HTML snapshot of the same tree — useful for previews and validation. It needs a DOM (browser or jsdom).
 
-## Token efficiency
-
-Writing an artifact as htmdx costs a fraction of the tokens that the same
-artifact costs in any HTML form: 2.9-4.5x fewer than its own compiled HTML,
-2-3x fewer than hand-written HTML with Tailwind. A reproducible benchmark
-measures two report artifacts, each as the complete single file an agent
-would emit, tokenized with `gpt-tokenizer` (`o200k_base`):
-
-| Format | Decision brief | Executive report | Size vs htmdx |
-| --- | ---: | ---: | --- |
-| htmdx | 950 | 853 | — |
-| compiled HTML (`compile()` output) | 4589 | 3612 | 4.2-4.8x larger |
-| hand-written HTML + Tailwind | 1881 | 2568 | 2.0-3.0x larger |
-| React/JSX (assumes a platform hosts the runtime) | 1263 | 1790 | 1.3-2.1x larger |
-| plain markdown (no components) | 474 | 788 | 0.5-0.9x of htmdx |
-
-Edits are cheaper in the same range: adding an accordion item takes 91
-tokens in htmdx vs 428 in compiled HTML.
-
-Markdown is htmdx's floor, not a competitor. Plain markdown is valid htmdx
-source, so a document pays only for the component blocks it uses. Those
-blocks sometimes beat markdown itself: the executive report is smaller as
-htmdx source (734 tokens) than as plain markdown (788), because a
-`MetricStrip` list is denser than a markdown table. JSX has no such
-gradient: every paragraph pays JSX syntax, and the artifact renders nothing
-without its build pipeline.
-
-Run `yarn bench` to regenerate. Methodology, per-task edit costs, tokenizer
-cross-checks, and limitations:
-[`packages/htmdx/bench/RESULTS.md`](./packages/htmdx/bench/RESULTS.md).
-
 ## Package
 
-- npm: `@wix/htmdx` · CDN entry: `dist/browser.js` (~90KB gzip) · module entries: `.`, `./react`, `./react/shadcn`
+- npm: `@wix/htmdx` · CDN entry: `dist/browser.js` (~125KB gzip) · module entries: `.`, `./react`, `./react/shadcn`
 - custom element: `<htmdx-code>` · browser API: `window.Htmdx`
 - component contract: `dist/components.json`
 - architecture decisions: [`adr/`](./adr/)

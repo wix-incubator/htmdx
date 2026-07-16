@@ -365,6 +365,13 @@ function renderComponentBlock(
     return createElement(component, { ...props, body: block.body });
   }
 
+  if (
+    (component as { htmdxInlineBody?: boolean }).htmdxInlineBody &&
+    !hasBodyElements(block.body)
+  ) {
+    return createElement(component, props, renderInline(block.body.trim()));
+  }
+
   return createElement(component, props, bodyToChildren(block.body, components, key));
 }
 
@@ -379,8 +386,7 @@ function bodyToChildren(
 
   // Element detection runs on the masked syntax so tags inside inline code
   // or fences (markdown literals) don't get parsed as component markup.
-  const hasElements = /<[A-Za-z][A-Za-z0-9]*(\s[^>]*)?\/?>/.test(markdownSyntaxSource(body));
-  if (!hasElements) {
+  if (!hasBodyElements(body)) {
     return createElement(
       'div',
       { key: keyPrefix },
@@ -394,6 +400,10 @@ function bodyToChildren(
     .map((node, index) => nodeToReact(node, components, `${keyPrefix}-${index}`))
     .filter((child) => child !== null);
   return children.length === 1 ? children[0] : children;
+}
+
+function hasBodyElements(body: string) {
+  return /<[A-Za-z][A-Za-z0-9]*(\s[^>]*)?\/?>/.test(markdownSyntaxSource(body));
 }
 
 function nodeToReact(node: Node, components: HtmdxReactComponents, key: string): ReactNode | null {

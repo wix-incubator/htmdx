@@ -55,6 +55,24 @@ describe('react renderer with shadcn/ui', () => {
     expect(html).toContain('h-8');
   });
 
+  test('renders top-level Badge and Button labels as inline children', () => {
+    const html = renderToStaticMarkup(
+      compileToReact(
+        '<Badge variant="secondary">audited</Badge><Button variant="outline">Download</Button>',
+        { components: shadcnComponents },
+      ),
+    );
+    const container = document.createElement('div');
+    container.innerHTML = html;
+
+    const badge = container.querySelector('[data-slot="badge"]');
+    const button = container.querySelector('[data-slot="button"]');
+    expect(badge?.textContent).toBe('audited');
+    expect(badge?.firstElementChild).toBeNull();
+    expect(button?.textContent).toBe('Download');
+    expect(button?.firstElementChild).toBeNull();
+  });
+
   test('badge variants resolve through CVA from HTMDX attributes', () => {
     const html = renderToStaticMarkup(
       compileToReact('<Badge variant="destructive">blocked</Badge>', {

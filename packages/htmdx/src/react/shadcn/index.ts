@@ -59,6 +59,10 @@ import { Toggle } from './toggle';
 import { ToggleGroup, ToggleGroupItem } from './toggle-group';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip';
 
+function inlineBody<T extends object>(component: T) {
+  return Object.assign(component, { htmdxInlineBody: true as const });
+}
+
 export const shadcnComponents = {
   Accordion,
   AccordionContent,
@@ -71,7 +75,7 @@ export const shadcnComponents = {
   Avatar,
   AvatarFallback,
   AvatarImage,
-  Badge,
+  Badge: inlineBody(Badge),
   Breadcrumb,
   BreadcrumbEllipsis,
   BreadcrumbItem,
@@ -79,7 +83,7 @@ export const shadcnComponents = {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-  Button,
+  Button: inlineBody(Button),
   Card,
   CardAction,
   CardContent,

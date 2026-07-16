@@ -206,19 +206,12 @@ describe('react renderer with shadcn/ui', () => {
     expect(html).toContain('translateX(-40%)');
   });
 
-  test('Separator, Skeleton, and Spacer render their slot markers', () => {
+  test('Separator and Spacer render their slot markers', () => {
     const separator = renderToStaticMarkup(
       compileToReact('<Separator orientation="vertical" />', { components: shadcnComponents }),
     );
     expect(separator).toContain('data-slot="separator"');
     expect(separator).toContain('data-orientation="vertical"');
-
-    const skeleton = renderToStaticMarkup(
-      compileToReact('<Skeleton class="h-4 w-32" />', { components: shadcnComponents }),
-    );
-    expect(skeleton).toContain('data-slot="skeleton"');
-    expect(skeleton).toContain('animate-pulse');
-    expect(skeleton).toContain('h-4');
 
     const spacer = renderToStaticMarkup(
       compileToReact('<Spacer />', { components: shadcnComponents }),

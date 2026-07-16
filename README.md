@@ -51,7 +51,7 @@ The runtime ships 85 components. `dist/components.json` (served next to the runt
 
 **Report built-ins.** `ExecutiveSummary`, `Callout`, and `SourceQuote` take markdown bodies and compose — other components work inside them. The structured ones enforce a body format and fail the whole artifact when it does not match: `MetricStrip`, `Stat`, `DecisionTable`, `Timeline` (label–value lists), `ChartBar`, `ChartArea`, `ChartLine`, `ChartPie` (label–number lists), `DataTable` (GFM table), `Compare`, `Finding`, `Evidence`, `RiskTable` (markdown list cards). Every built-in renders as native shadcn/Tailwind JSX.
 
-**shadcn/ui pack.** 19 vendored shadcn families on real Radix state, with a bundled Tailwind v4 theme — `Card` (with `CardHeader`, `CardTitle`, `CardContent`, …), `Badge`, `Button`, `Tabs`, `Accordion`, `Alert`, `Avatar`, `Breadcrumb`, `Dialog`, `HoverCard`, `Popover`, `Progress`, `Separator`, `Skeleton`, `Table`, `Toggle`, `ToggleGroup`, `Tooltip`, and `AspectRatio`. `Card` is provided exclusively by the shadcn pack.
+**shadcn/ui pack.** 18 vendored shadcn families on real Radix state, with a bundled Tailwind v4 theme — `Card` (with `CardHeader`, `CardTitle`, `CardContent`, …), `Badge`, `Button`, `Tabs`, `Accordion`, `Alert`, `Avatar`, `Breadcrumb`, `Dialog`, `HoverCard`, `Popover`, `Progress`, `Separator`, `Table`, `Toggle`, `ToggleGroup`, `Tooltip`, and `AspectRatio`. `Card` is provided exclusively by the shadcn pack.
 
 ## Source blocks
 

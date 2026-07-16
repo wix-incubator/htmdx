@@ -43,7 +43,6 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from './hover-card';
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from './popover';
 import { Progress } from './progress';
 import { Separator } from './separator';
-import { Skeleton } from './skeleton';
 import { Spacer } from './spacer';
 import {
   Table,
@@ -114,7 +113,6 @@ export const shadcnComponents = {
   PopoverTrigger,
   Progress,
   Separator,
-  Skeleton,
   Spacer,
   Table,
   TableBody,

@@ -6,8 +6,8 @@ import { shadcnComponents } from '../src/react/shadcn';
 
 const merged = { ...builtInReactComponents, ...shadcnComponents };
 
-describe('bridged string built-ins in the React path', () => {
-  test('renders ExecutiveSummary and MetricStrip with string-pipeline markup', () => {
+describe('built-ins in the React path', () => {
+  test('renders the ExecutiveSummary shell and MetricStrip as native JSX', () => {
     const html = renderToStaticMarkup(
       compileToReact(
         `<ExecutiveSummary>
@@ -24,7 +24,7 @@ Ship **one HTML file** with editable HTMDX source.
 
     expect(html).toContain('htmdx-executive-summary');
     expect(html).toContain('<strong>one HTML file</strong>');
-    expect(html).toContain('htmdx-metric-strip');
+    expect(html).toContain('data-htmdx-component="MetricStrip"');
     expect(html).toContain('HTMDX');
   });
 

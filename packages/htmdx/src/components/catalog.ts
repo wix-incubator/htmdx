@@ -84,32 +84,3 @@ function validateExample(component: HtmdxComponent) {
       break;
   }
 }
-
-export type BuiltInRenderer = (name: string, body: string) => string;
-
-export function createBuiltInRenderer(component: HtmdxComponent): BuiltInRenderer {
-  return (name, rawBody) => {
-    switch (component.body) {
-      case 'markdown': {
-        const body = parseComponentBody(name, component.body, rawBody, component.validate);
-        return component.renderer(name, body);
-      }
-      case 'label-value-list': {
-        const body = parseComponentBody(name, component.body, rawBody, component.validate);
-        return component.renderer(name, body);
-      }
-      case 'label-number-list': {
-        const body = parseComponentBody(name, component.body, rawBody, component.validate);
-        return component.renderer(name, body);
-      }
-      case 'gfm-table': {
-        const body = parseComponentBody(name, component.body, rawBody, component.validate);
-        return component.renderer(name, body);
-      }
-      case 'markdown-list-cards': {
-        const body = parseComponentBody(name, component.body, rawBody, component.validate);
-        return component.renderer(name, body);
-      }
-    }
-  };
-}

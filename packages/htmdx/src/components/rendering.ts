@@ -1,5 +1,3 @@
-import type { LabelNumber, LabelValue, MarkdownListCards } from './body-contracts';
-
 export type HtmdxHeading = {
   id: string;
   label: string;
@@ -43,97 +41,12 @@ function renderMarkdownBlock(block: string, context?: RenderContext) {
   return `<p>${inline(block.replace(/\n/g, ' '))}</p>`;
 }
 
-export function renderNarrativeContent(body: string) {
-  return renderMarkdown(body);
-}
-
-export function renderMetricsContent(body: LabelValue[]) {
-  const items = body
-    .map(
-      ({ label, value }) => `
-        <div class="htmdx-metric-item">
-          <span class="htmdx-metric-label">${escapeHtml(label)}</span>
-          <span class="htmdx-metric-value">${inline(stripWrappingBold(value))}</span>
-        </div>`,
-    )
-    .join('');
-
-  return `<div class="htmdx-metric-grid">${items}</div>`;
-}
-
-export function renderBarChartContent(name: string, body: LabelNumber[]) {
-  const max = Math.max(...body.map(({ value }) => value), 1);
-  const chartWidth = 640;
-  const chartHeight = 240;
-  const paddingX = 34;
-  const axisY = 206;
-  const slotWidth = (chartWidth - paddingX * 2) / body.length;
-  const barWidth = Math.max(28, Math.min(72, slotWidth * 0.68));
-  const bars = body
-    .map(({ label, value }, index) => {
-      const height = (value / max) * 172;
-      const x = paddingX + index * slotWidth + (slotWidth - barWidth) / 2;
-      const y = axisY - height;
-      return `
-        <rect class="htmdx-chart-bar" x="${x}" y="${y}" width="${barWidth}" height="${height}" rx="7">
-          <title>${escapeHtml(label)}: ${escapeHtml(String(value))}</title>
-        </rect>
-        <text class="htmdx-chart-label" x="${x + barWidth / 2}" y="234" text-anchor="middle">${escapeHtml(
-          truncateLabel(label),
-        )}</text>`;
-    })
-    .join('');
-
-  return `<div class="htmdx-chart"><svg viewBox="0 0 ${chartWidth} ${chartHeight}" role="img" aria-label="${escapeHtml(
-    name,
-  )} chart"><line class="htmdx-chart-axis" x1="${paddingX}" y1="${axisY}" x2="${
-    chartWidth - paddingX
-  }" y2="${axisY}" />${bars}</svg></div>`;
-}
-
-export function renderFeatureCardsContent(body: MarkdownListCards) {
-  return `<div class="htmdx-feature-grid">${body.items
-    .map((item) => renderFeatureItem(item))
-    .join('')}</div>`;
-}
-
-export function componentShell(name: string, body: string) {
-  return `
-    <section class="htmdx-component htmdx-${kebab(name)}" data-htmdx-component="${escapeHtml(name)}">
-      <div class="htmdx-component-header">${escapeHtml(name)}</div>
-      <div class="htmdx-component-body">${body}</div>
-    </section>`;
-}
-
-export function renderFeatureItem(item: string, tier = '') {
-  const match = item.match(/^\*\*([^*]+)\*\*:?\s*(.*)$/);
-  const tierAttribute = tier ? ` data-tier="${tier}"` : '';
-
-  if (!match) {
-    return `<div class="htmdx-feature-item"${tierAttribute}><span class="htmdx-feature-text">${inline(item)}</span></div>`;
-  }
-
-  return `
-    <div class="htmdx-feature-item"${tierAttribute}>
-      <span class="htmdx-feature-title">${escapeHtml(match[1])}</span>
-      <span class="htmdx-feature-text">${inline(match[2])}</span>
-    </div>`;
-}
-
 function parseList(body: string) {
   return body
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter((line) => line.startsWith('- '))
     .map((line) => line.slice(2).trim());
-}
-
-function stripWrappingBold(value: string) {
-  return value.replace(/^\*\*(.*)\*\*$/, '$1');
-}
-
-function kebab(value: string) {
-  return value.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
 }
 
 function uniqueSlug(value: string, context: RenderContext) {
@@ -151,10 +64,6 @@ function slugify(value: string) {
     .replace(/^-+|-+$/g, '');
 
   return slug || 'section';
-}
-
-function truncateLabel(value: string) {
-  return value.length > 22 ? `${value.slice(0, 19)}...` : value;
 }
 
 export function inline(text: string) {

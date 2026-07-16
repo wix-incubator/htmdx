@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>htmdx — component tour</title>
+    <script src="./browser.js" defer></script>
+  </head>
+  <body>
+    <!-- prettier-ignore -->
+    <script type="text/htmdx">
+# Component tour
+
+Every component below renders from this page's own source block. The
+machine-readable contract lives in `dist/components.json`.
+
+## Narrative built-ins
+
+<ExecutiveSummary>
+Summarize the artifact's most important conclusion — this block is the
+**ExecutiveSummary** component with a markdown body.
+</ExecutiveSummary>
+
+<Callout>
+**Callout** emphasizes a note or warning. Markdown bodies compose: here is a
+shadcn <Badge variant="secondary">Badge</Badge> inside it.
+</Callout>
+
+<SourceQuote>
+"SourceQuote displays a quotation attributed in the surrounding content."
+</SourceQuote>
+
+## Metrics and stats
+
+<MetricStrip>
+- Format: **HTML**
+- Source: **HTMDX**
+- Components: **33**
+- Eval: **none**
+</MetricStrip>
+
+<Stat>
+- Adoption: **72%**
+- Retention: **91%**
+</Stat>
+
+## Charts
+
+<ChartBar>
+- Free users: 48
+- Paid users: 12
+- Trials: 26
+</ChartBar>
+
+<ChartLine>
+- Week 1: 8
+- Week 2: 13
+- Week 3: 21
+- Week 4: 34
+</ChartLine>
+
+<ChartPie>
+- Direct: 62
+- Referral: 38
+</ChartPie>
+
+## Tables and structured findings
+
+<DataTable>
+| Plan | Users | MRR |
+| --- | ---: | ---: |
+| Free | 48 | $0 |
+| Pro | 12 | $1,140 |
+| Team | 5 | $2,400 |
+</DataTable>
+
+<Compare>
+- **Current:** Manual component discovery
+- **Proposed:** Versioned manifest served next to the runtime
+</Compare>
+
+<Finding>
+- **Drift:** Runtime support is not machine-discoverable.
+- **Coverage:** Charts share one visualization style.
+</Finding>
+
+<Evidence>
+- **Runtime:** The allowlist currently lives in implementation code.
+</Evidence>
+
+<RiskTable>
+- **Must-have:** Publish exact-version metadata.
+- **Differentiator:** Describe props with allowed values.
+- **Not now:** Describe host components.
+</RiskTable>
+
+<DecisionTable>
+- Scope: Built-in components plus the shadcn pack
+- Delivery: Versioned manifest
+- Owner: Runtime team
+</DecisionTable>
+
+<Timeline>
+- July: Publish the manifest
+- August: Adopt it in validators
+- September: Ship editor hints
+</Timeline>
+
+## shadcn/ui pack
+
+<Card class="max-w-xl">
+  <CardHeader>
+    <CardTitle>Card composition</CardTitle>
+    <CardDescription>CardHeader, CardTitle, CardDescription, CardContent, CardFooter</CardDescription>
+  </CardHeader>
+  <CardContent>
+    Markdown works inside: **bold**, `code`, [links](https://github.com/wix-incubator/htmdx).
+    <Badge>default</Badge>
+    <Badge variant="secondary">secondary</Badge>
+    <Badge variant="destructive">destructive</Badge>
+    <Badge variant="outline">outline</Badge>
+  </CardContent>
+  <CardFooter>
+    <Button size="sm">default</Button>
+    <Button variant="secondary" size="sm">secondary</Button>
+    <Button variant="outline" size="sm">outline</Button>
+    <Button variant="ghost" size="sm">ghost</Button>
+  </CardFooter>
+</Card>
+
+<Tabs defaultValue="one" class="max-w-xl">
+  <TabsList>
+    <TabsTrigger value="one">Interactive</TabsTrigger>
+    <TabsTrigger value="two">Radix state</TabsTrigger>
+    <TabsTrigger value="three">No source code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="one">Tabs are real Radix primitives — click through them.</TabsContent>
+  <TabsContent value="two">State lives inside the component, never in the source.</TabsContent>
+  <TabsContent value="three">The source only declares structure and data.</TabsContent>
+</Tabs>
+
+<Accordion type="single" collapsible class="max-w-xl">
+  <AccordionItem value="a">
+    <AccordionTrigger>Accordion item one</AccordionTrigger>
+    <AccordionContent>Expands and collapses with Radix state.</AccordionContent>
+  </AccordionItem>
+  <AccordionItem value="b">
+    <AccordionTrigger>Accordion item two</AccordionTrigger>
+    <AccordionContent>type="single" collapsible comes straight from attributes.</AccordionContent>
+  </AccordionItem>
+</Accordion>
+
+Back to the [examples index](./index.html).
+    </script>
+  </body>
+</html>

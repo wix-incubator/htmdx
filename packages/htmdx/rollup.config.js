@@ -10,12 +10,22 @@ const packageDirectory = dirname(fileURLToPath(import.meta.url));
 const packageJson = JSON.parse(await readFile(resolve(packageDirectory, 'package.json'), 'utf8'));
 const packageVersion = packageJson.version;
 
+// React and shadcn deps stay external in the ESM entries; consumers'
+// bundlers resolve them. The browser IIFEs bundle everything instead.
+const externalDependencies = (id) =>
+  !id.startsWith('.') && !id.startsWith('/') && !id.startsWith('virtual:');
+
 const moduleConfig = {
-  input: './src/index.ts',
+  input: {
+    index: './src/index.ts',
+    react: './src/react/index.ts',
+    'react-shadcn': './src/react/shadcn/index.ts',
+  },
+  external: externalDependencies,
   output: {
     format: 'esm',
     dir: './dist',
-    entryFileNames: 'index.js',
+    entryFileNames: '[name].js',
     chunkFileNames: '[name].js',
     sourcemap: true,
   },
@@ -45,6 +55,7 @@ export default defineConfig([
   {
     ...moduleConfig,
     input: './src/browser.ts',
+    external: undefined,
     output: {
       format: 'iife',
       file: './dist/browser.js',

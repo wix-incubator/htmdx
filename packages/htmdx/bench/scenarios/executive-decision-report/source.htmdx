@@ -1,0 +1,67 @@
+# Executive Decision Report
+
+## Consolidate customer support onto Northstar
+
+- **Decision owner:** Customer Operations
+- **Decision date:** 15 September 2026
+- **Scope:** North America support operations
+
+<ExecutiveSummary>
+Approve a phased consolidation of customer support onto **Northstar** beginning in Q4. The pilot indicates that one platform can reduce operating cost and time to resolution without lowering customer satisfaction. Release the remaining budget only after the first migration cohort meets the agreed service and reliability gates.
+</ExecutiveSummary>
+
+<MetricStrip>
+- Annual savings: **$1.2M**
+- Resolution time: **18% faster**
+- Agent adoption: **84%**
+- Payback period: **9 months**
+</MetricStrip>
+
+## Why decide now
+
+The current operation splits 420 agents across two systems. Duplicate licensing, reporting, and workflow maintenance add cost, while transfers between platforms delay complex cases. Both vendor contracts renew in December, creating a practical window to consolidate without early-termination fees.
+
+## Evidence from the eight-week pilot
+
+<Evidence>
+- **Service quality:** Median resolution time fell from 31 to 25 hours across 18,400 pilot cases, while customer satisfaction held at 4.6 out of 5.
+- **Agent readiness:** 84% of pilot agents completed core workflows without assistance by week three; the remaining gap was concentrated in billing escalations.
+- **Financial case:** Finance validated $1.2M in annualized license and support savings against $870K of one-time migration cost.
+- **Operational resilience:** Peak queue throughput improved 12%, but one identity-provider incident exposed a need for a documented fallback process.
+</Evidence>
+
+The pilot covered three general-support teams and one escalation team. It did not include regulated accounts or the holiday traffic peak, so those workloads remain explicit rollout gates rather than assumed benefits.
+
+## Options considered
+
+<Compare>
+- **Consolidate now:** Captures the full renewal-cycle savings and removes duplicate workflows, with migration risk managed through staged cohorts.
+- **Extend both platforms:** Avoids near-term disruption, but adds approximately $1.4M in duplicate annual cost and leaves transfer delays unresolved.
+- **Renegotiate and revisit:** Could improve contract terms, but postpones the operating-model decision and makes a 2027 migration more expensive.
+</Compare>
+
+## Risks and controls
+
+<RiskTable>
+- **Must-have:** Protect service levels with cohort gates, rollback criteria, and daily queue monitoring during migration.
+- **Differentiator:** Use Northstar's unified routing to reduce transfers and give agents one customer history.
+- **Not now:** Move regulated accounts before security and legal complete their control review.
+- **Won't do:** Run both platforms indefinitely as a permanent fallback.
+</RiskTable>
+
+## Recommendation
+
+Proceed with Northstar using a three-cohort rollout. Customer Operations should own delivery, Finance should validate realized savings after each cohort, and the steering group should pause expansion if either service or reliability falls below the approved thresholds.
+
+<DecisionTable>
+- Decision: Approve phased consolidation
+- Initial funding: $420K for cohort one
+- Service gate: CSAT at or above 4.5/5
+- Performance gate: Median resolution time at or below 28 hours
+- Reliability gate: No unresolved severity-one incident
+- Final review: 30 days after cohort one
+</DecisionTable>
+
+<Callout>
+**Executive action requested:** Approve cohort-one funding and authorize contract notice by **30 September 2026**. Expansion funding remains conditional on the service, performance, and reliability gates above.
+</Callout>

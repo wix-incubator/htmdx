@@ -1,0 +1,431 @@
+{
+  "metadata": {
+    "htmdxVersion": "2.1.0",
+    "encoding": "o200k_base",
+    "gptTokenizerVersion": "3.4.0"
+  },
+  "scenarios": [
+    {
+      "id": "decision-brief",
+      "title": "Checkout Migration — Decision Brief",
+      "formats": [
+        {
+          "format": "htmdx",
+          "authoring": {
+            "tokens": 834,
+            "chars": 3417
+          },
+          "read": {
+            "tokens": 950,
+            "chars": 3796
+          },
+          "edits": [
+            {
+              "id": "update-metric",
+              "description": "Change the legacy support-ticket volume from 340/month to 290/month",
+              "cost": {
+                "tokens": 8,
+                "chars": 26
+              }
+            },
+            {
+              "id": "add-badge",
+              "description": "Add a \"source: support dashboard\" badge to the Numbers card",
+              "cost": {
+                "tokens": 50,
+                "chars": 177
+              }
+            },
+            {
+              "id": "add-accordion-item",
+              "description": "Add a fourth risk item about the refund audit trail",
+              "cost": {
+                "tokens": 91,
+                "chars": 431
+              }
+            }
+          ],
+          "editTotal": {
+            "tokens": 149,
+            "chars": 634
+          }
+        },
+        {
+          "format": "compiled",
+          "authoring": {
+            "tokens": 4194,
+            "chars": 15946
+          },
+          "read": {
+            "tokens": 4286,
+            "chars": 16271
+          },
+          "edits": [
+            {
+              "id": "update-metric",
+              "description": "Change the legacy support-ticket volume from 340/month to 290/month",
+              "cost": {
+                "tokens": 24,
+                "chars": 70
+              }
+            },
+            {
+              "id": "add-badge",
+              "description": "Add a \"source: support dashboard\" badge to the Numbers card",
+              "cost": {
+                "tokens": 163,
+                "chars": 629
+              }
+            },
+            {
+              "id": "add-accordion-item",
+              "description": "Add a fourth risk item about the refund audit trail",
+              "cost": {
+                "tokens": 434,
+                "chars": 1618
+              }
+            }
+          ],
+          "editTotal": {
+            "tokens": 621,
+            "chars": 2317
+          }
+        },
+        {
+          "format": "hand",
+          "authoring": {
+            "tokens": 1881,
+            "chars": 7346
+          },
+          "read": {
+            "tokens": 1881,
+            "chars": 7346
+          },
+          "edits": [
+            {
+              "id": "update-metric",
+              "description": "Change the legacy support-ticket volume from 340/month to 290/month",
+              "cost": {
+                "tokens": 28,
+                "chars": 98
+              }
+            },
+            {
+              "id": "add-badge",
+              "description": "Add a \"source: support dashboard\" badge to the Numbers card",
+              "cost": {
+                "tokens": 130,
+                "chars": 444
+              }
+            },
+            {
+              "id": "add-accordion-item",
+              "description": "Add a fourth risk item about the refund audit trail",
+              "cost": {
+                "tokens": 112,
+                "chars": 519
+              }
+            }
+          ],
+          "editTotal": {
+            "tokens": 270,
+            "chars": 1061
+          }
+        },
+        {
+          "format": "jsx",
+          "authoring": {
+            "tokens": 1263,
+            "chars": 5573
+          },
+          "read": {
+            "tokens": 1263,
+            "chars": 5573
+          },
+          "edits": [
+            {
+              "id": "update-metric",
+              "description": "Change the legacy support-ticket volume from 340/month to 290/month",
+              "cost": {
+                "tokens": 14,
+                "chars": 52
+              }
+            },
+            {
+              "id": "add-badge",
+              "description": "Add a \"source: support dashboard\" badge to the Numbers card",
+              "cost": {
+                "tokens": 50,
+                "chars": 187
+              }
+            },
+            {
+              "id": "add-accordion-item",
+              "description": "Add a fourth risk item about the refund audit trail",
+              "cost": {
+                "tokens": 93,
+                "chars": 527
+              }
+            }
+          ],
+          "editTotal": {
+            "tokens": 157,
+            "chars": 766
+          }
+        },
+        {
+          "format": "md",
+          "authoring": {
+            "tokens": 474,
+            "chars": 2057
+          },
+          "read": {
+            "tokens": 474,
+            "chars": 2057
+          },
+          "edits": [
+            {
+              "id": "update-metric",
+              "description": "Change the legacy support-ticket volume from 340/month to 290/month",
+              "cost": {
+                "tokens": 8,
+                "chars": 26
+              }
+            },
+            {
+              "id": "add-badge",
+              "description": "Add a \"source: support dashboard\" badge to the Numbers card",
+              "cost": {
+                "tokens": 57,
+                "chars": 150
+              }
+            },
+            {
+              "id": "add-accordion-item",
+              "description": "Add a fourth risk item about the refund audit trail",
+              "cost": {
+                "tokens": 48,
+                "chars": 254
+              }
+            }
+          ],
+          "editTotal": {
+            "tokens": 113,
+            "chars": 430
+          }
+        }
+      ]
+    },
+    {
+      "id": "executive-decision-report",
+      "title": "Executive Decision Report: Support Platform Consolidation",
+      "formats": [
+        {
+          "format": "htmdx",
+          "authoring": {
+            "tokens": 734,
+            "chars": 3693
+          },
+          "read": {
+            "tokens": 853,
+            "chars": 4094
+          },
+          "edits": [
+            {
+              "id": "update-savings",
+              "description": "Change the annual-savings metric from $1.2M to $1.4M",
+              "cost": {
+                "tokens": 20,
+                "chars": 50
+              }
+            },
+            {
+              "id": "add-callout",
+              "description": "Add a data-freshness callout right after the executive summary",
+              "cost": {
+                "tokens": 40,
+                "chars": 169
+              }
+            },
+            {
+              "id": "change-date",
+              "description": "Move the decision date from 15 to 22 September 2026",
+              "cost": {
+                "tokens": 10,
+                "chars": 34
+              }
+            }
+          ],
+          "editTotal": {
+            "tokens": 70,
+            "chars": 253
+          }
+        },
+        {
+          "format": "compiled",
+          "authoring": {
+            "tokens": 2333,
+            "chars": 8989
+          },
+          "read": {
+            "tokens": 2428,
+            "chars": 9336
+          },
+          "edits": [
+            {
+              "id": "update-savings",
+              "description": "Change the annual-savings metric from $1.2M to $1.4M",
+              "cost": {
+                "tokens": 22,
+                "chars": 68
+              }
+            },
+            {
+              "id": "add-callout",
+              "description": "Add a data-freshness callout right after the executive summary",
+              "cost": {
+                "tokens": 103,
+                "chars": 380
+              }
+            },
+            {
+              "id": "change-date",
+              "description": "Move the decision date from 15 to 22 September 2026",
+              "cost": {
+                "tokens": 22,
+                "chars": 68
+              }
+            }
+          ],
+          "editTotal": {
+            "tokens": 147,
+            "chars": 516
+          }
+        },
+        {
+          "format": "hand",
+          "authoring": {
+            "tokens": 2568,
+            "chars": 10341
+          },
+          "read": {
+            "tokens": 2568,
+            "chars": 10341
+          },
+          "edits": [
+            {
+              "id": "update-savings",
+              "description": "Change the annual-savings metric from $1.2M to $1.4M",
+              "cost": {
+                "tokens": 46,
+                "chars": 112
+              }
+            },
+            {
+              "id": "add-callout",
+              "description": "Add a data-freshness callout right after the executive summary",
+              "cost": {
+                "tokens": 111,
+                "chars": 455
+              }
+            },
+            {
+              "id": "change-date",
+              "description": "Move the decision date from 15 to 22 September 2026",
+              "cost": {
+                "tokens": 10,
+                "chars": 34
+              }
+            }
+          ],
+          "editTotal": {
+            "tokens": 167,
+            "chars": 601
+          }
+        },
+        {
+          "format": "jsx",
+          "authoring": {
+            "tokens": 1790,
+            "chars": 7769
+          },
+          "read": {
+            "tokens": 1790,
+            "chars": 7769
+          },
+          "edits": [
+            {
+              "id": "update-savings",
+              "description": "Change the annual-savings metric from $1.2M to $1.4M",
+              "cost": {
+                "tokens": 16,
+                "chars": 28
+              }
+            },
+            {
+              "id": "add-callout",
+              "description": "Add a data-freshness callout right after the executive summary",
+              "cost": {
+                "tokens": 66,
+                "chars": 299
+              }
+            },
+            {
+              "id": "change-date",
+              "description": "Move the decision date from 15 to 22 September 2026",
+              "cost": {
+                "tokens": 10,
+                "chars": 34
+              }
+            }
+          ],
+          "editTotal": {
+            "tokens": 92,
+            "chars": 361
+          }
+        },
+        {
+          "format": "md",
+          "authoring": {
+            "tokens": 788,
+            "chars": 4211
+          },
+          "read": {
+            "tokens": 788,
+            "chars": 4211
+          },
+          "edits": [
+            {
+              "id": "update-savings",
+              "description": "Change the annual-savings metric from $1.2M to $1.4M",
+              "cost": {
+                "tokens": 12,
+                "chars": 14
+              }
+            },
+            {
+              "id": "add-callout",
+              "description": "Add a data-freshness callout right after the executive summary",
+              "cost": {
+                "tokens": 47,
+                "chars": 226
+              }
+            },
+            {
+              "id": "change-date",
+              "description": "Move the decision date from 15 to 22 September 2026",
+              "cost": {
+                "tokens": 10,
+                "chars": 34
+              }
+            }
+          ],
+          "editTotal": {
+            "tokens": 69,
+            "chars": 274
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -7,12 +7,12 @@ export const editTasks: EditTask[] = [
     id: 'update-savings',
     description: 'Change the annual-savings metric from $1.2M to $1.4M',
     htmdx: {
-      oldString: 'Annual savings: **$1.2M**',
-      newString: 'Annual savings: **$1.4M**',
+      oldString: '**$1.2M**',
+      newString: '**$1.4M**',
     },
     hand: {
-      oldString: '<dd class="text-2xl font-bold text-slate-900">$1.2M</dd>',
-      newString: '<dd class="text-2xl font-bold text-slate-900">$1.4M</dd>',
+      oldString: '>$1.2M</dd>',
+      newString: '>$1.4M</dd>',
     },
     jsx: {
       oldString: 'value: "$1.2M"',
@@ -35,10 +35,10 @@ Pilot metrics are current as of **1 September 2026**; Finance refreshes them wee
 </Callout>`,
     },
     hand: {
-      oldString: `          service and reliability gates.
+      oldString: `gates.
         </p>
       </section>`,
-      newString: `          service and reliability gates.
+      newString: `gates.
         </p>
       </section>
 

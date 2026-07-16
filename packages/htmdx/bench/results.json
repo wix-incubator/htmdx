@@ -11,29 +11,29 @@
       "formats": [
         {
           "format": "htmdx",
-          "authoring": {
-            "tokens": 834,
-            "chars": 3417
-          },
-          "read": {
+          "artifact": {
             "tokens": 950,
             "chars": 3796
+          },
+          "payload": {
+            "tokens": 834,
+            "chars": 3417
           },
           "edits": [
             {
               "id": "update-metric",
               "description": "Change the legacy support-ticket volume from 340/month to 290/month",
               "cost": {
-                "tokens": 8,
-                "chars": 26
+                "tokens": 4,
+                "chars": 18
               }
             },
             {
               "id": "add-badge",
               "description": "Add a \"source: support dashboard\" badge to the Numbers card",
               "cost": {
-                "tokens": 50,
-                "chars": 177
+                "tokens": 38,
+                "chars": 123
               }
             },
             {
@@ -46,19 +46,19 @@
             }
           ],
           "editTotal": {
-            "tokens": 149,
-            "chars": 634
+            "tokens": 133,
+            "chars": 572
           }
         },
         {
           "format": "compiled",
-          "authoring": {
-            "tokens": 4194,
-            "chars": 15946
-          },
-          "read": {
+          "artifact": {
             "tokens": 4286,
             "chars": 16271
+          },
+          "payload": {
+            "tokens": 4194,
+            "chars": 15946
           },
           "edits": [
             {
@@ -93,29 +93,26 @@
         },
         {
           "format": "hand",
-          "authoring": {
+          "artifact": {
             "tokens": 1881,
             "chars": 7346
           },
-          "read": {
-            "tokens": 1881,
-            "chars": 7346
-          },
+          "payload": null,
           "edits": [
             {
               "id": "update-metric",
               "description": "Change the legacy support-ticket volume from 340/month to 290/month",
               "cost": {
-                "tokens": 28,
-                "chars": 98
+                "tokens": 4,
+                "chars": 18
               }
             },
             {
               "id": "add-badge",
               "description": "Add a \"source: support dashboard\" badge to the Numbers card",
               "cost": {
-                "tokens": 130,
-                "chars": 444
+                "tokens": 66,
+                "chars": 224
               }
             },
             {
@@ -128,35 +125,32 @@
             }
           ],
           "editTotal": {
-            "tokens": 270,
-            "chars": 1061
+            "tokens": 182,
+            "chars": 761
           }
         },
         {
           "format": "jsx",
-          "authoring": {
+          "artifact": {
             "tokens": 1263,
             "chars": 5573
           },
-          "read": {
-            "tokens": 1263,
-            "chars": 5573
-          },
+          "payload": null,
           "edits": [
             {
               "id": "update-metric",
               "description": "Change the legacy support-ticket volume from 340/month to 290/month",
               "cost": {
-                "tokens": 14,
-                "chars": 52
+                "tokens": 4,
+                "chars": 18
               }
             },
             {
               "id": "add-badge",
               "description": "Add a \"source: support dashboard\" badge to the Numbers card",
               "cost": {
-                "tokens": 50,
-                "chars": 187
+                "tokens": 38,
+                "chars": 133
               }
             },
             {
@@ -169,35 +163,32 @@
             }
           ],
           "editTotal": {
-            "tokens": 157,
-            "chars": 766
+            "tokens": 135,
+            "chars": 678
           }
         },
         {
           "format": "md",
-          "authoring": {
+          "artifact": {
             "tokens": 474,
             "chars": 2057
           },
-          "read": {
-            "tokens": 474,
-            "chars": 2057
-          },
+          "payload": null,
           "edits": [
             {
               "id": "update-metric",
               "description": "Change the legacy support-ticket volume from 340/month to 290/month",
               "cost": {
-                "tokens": 8,
-                "chars": 26
+                "tokens": 4,
+                "chars": 18
               }
             },
             {
               "id": "add-badge",
               "description": "Add a \"source: support dashboard\" badge to the Numbers card",
               "cost": {
-                "tokens": 57,
-                "chars": 150
+                "tokens": 29,
+                "chars": 78
               }
             },
             {
@@ -210,8 +201,8 @@
             }
           ],
           "editTotal": {
-            "tokens": 113,
-            "chars": 430
+            "tokens": 81,
+            "chars": 350
           }
         }
       ]
@@ -222,21 +213,21 @@
       "formats": [
         {
           "format": "htmdx",
-          "authoring": {
-            "tokens": 734,
-            "chars": 3693
-          },
-          "read": {
+          "artifact": {
             "tokens": 853,
             "chars": 4094
+          },
+          "payload": {
+            "tokens": 734,
+            "chars": 3693
           },
           "edits": [
             {
               "id": "update-savings",
               "description": "Change the annual-savings metric from $1.2M to $1.4M",
               "cost": {
-                "tokens": 20,
-                "chars": 50
+                "tokens": 14,
+                "chars": 18
               }
             },
             {
@@ -257,19 +248,19 @@
             }
           ],
           "editTotal": {
-            "tokens": 70,
-            "chars": 253
+            "tokens": 64,
+            "chars": 221
           }
         },
         {
           "format": "compiled",
-          "authoring": {
-            "tokens": 2333,
-            "chars": 8989
-          },
-          "read": {
+          "artifact": {
             "tokens": 2428,
             "chars": 9336
+          },
+          "payload": {
+            "tokens": 2333,
+            "chars": 8989
           },
           "edits": [
             {
@@ -304,29 +295,26 @@
         },
         {
           "format": "hand",
-          "authoring": {
+          "artifact": {
             "tokens": 2568,
             "chars": 10341
           },
-          "read": {
-            "tokens": 2568,
-            "chars": 10341
-          },
+          "payload": null,
           "edits": [
             {
               "id": "update-savings",
               "description": "Change the annual-savings metric from $1.2M to $1.4M",
               "cost": {
-                "tokens": 46,
-                "chars": 112
+                "tokens": 16,
+                "chars": 22
               }
             },
             {
               "id": "add-callout",
               "description": "Add a data-freshness callout right after the executive summary",
               "cost": {
-                "tokens": 111,
-                "chars": 455
+                "tokens": 105,
+                "chars": 387
               }
             },
             {
@@ -339,20 +327,17 @@
             }
           ],
           "editTotal": {
-            "tokens": 167,
-            "chars": 601
+            "tokens": 131,
+            "chars": 443
           }
         },
         {
           "format": "jsx",
-          "authoring": {
+          "artifact": {
             "tokens": 1790,
             "chars": 7769
           },
-          "read": {
-            "tokens": 1790,
-            "chars": 7769
-          },
+          "payload": null,
           "edits": [
             {
               "id": "update-savings",
@@ -386,14 +371,11 @@
         },
         {
           "format": "md",
-          "authoring": {
+          "artifact": {
             "tokens": 788,
             "chars": 4211
           },
-          "read": {
-            "tokens": 788,
-            "chars": 4211
-          },
+          "payload": null,
           "edits": [
             {
               "id": "update-savings",

@@ -41,8 +41,8 @@ type EditResult = { id: string; description: string; cost: Measure | null };
 
 type FormatResult = {
   format: FormatId;
-  authoring: Measure;
-  read: Measure;
+  artifact: Measure;
+  payload: Measure | null;
   edits: EditResult[];
   editTotal: Measure | null;
 };
@@ -102,13 +102,21 @@ function buildScenario(scenario: (typeof SCENARIOS)[number]): ScenarioResult {
     throw new Error(`${scenario.id}: compile() output is not deterministic`);
   }
 
-  const texts: Record<FormatId, string> = { htmdx: source, compiled: compiledHtml, hand, jsx, md };
-  const readTexts: Record<FormatId, string> = {
+  // Artifact = the complete file the agent emits (and later re-reads in
+  // context). htmdx and compiled include the single-file HTML shell so the
+  // headline comparison never credits htmdx for boilerplate someone else
+  // provides. Payload = the content-only size where the shell is fixed
+  // boilerplate a platform template could supply.
+  const artifactTexts: Record<FormatId, string> = {
     htmdx: wrapHtmdx(source.trimEnd(), scenario.title),
     compiled: wrapCompiled(compiledHtml, scenario.title),
     hand,
     jsx,
     md,
+  };
+  const payloadTexts: Partial<Record<FormatId, string>> = {
+    htmdx: source,
+    compiled: compiledHtml,
   };
 
   const edits: Record<FormatId, EditResult[]> = {
@@ -136,13 +144,16 @@ function buildScenario(scenario: (typeof SCENARIOS)[number]): ScenarioResult {
   return {
     id: scenario.id,
     title: scenario.title,
-    formats: FORMATS.map((format) => ({
-      format,
-      authoring: measure(texts[format]),
-      read: measure(readTexts[format]),
-      edits: edits[format],
-      editTotal: sumCosts(edits[format]),
-    })),
+    formats: FORMATS.map((format) => {
+      const payload = payloadTexts[format];
+      return {
+        format,
+        artifact: measure(artifactTexts[format]),
+        payload: payload === undefined ? null : measure(payload),
+        edits: edits[format],
+        editTotal: sumCosts(edits[format]),
+      };
+    }),
   };
 }
 
@@ -179,16 +190,19 @@ function renderMarkdown(scenarios: ScenarioResult[]): string {
     '',
     '## Metrics',
     '',
-    '- **Authoring** — tokens the agent emits to produce the artifact content:',
-    '  htmdx source, `compile()` HTML output, the full hand-written HTML file,',
-    '  the JSX module, or the markdown file.',
-    '- **Read** — tokens of the complete artifact file as it would sit in context.',
-    '  htmdx and compiled HTML are measured inside the single-file HTML shell used',
-    '  by `examples/decision-brief.html`; the other formats are already whole files.',
-    '- **Edit** — tokens of Edit-tool `oldString` + `newString` pairs summed over the',
-    "  scenario's three edit tasks. Compiled-HTML pairs are machine-derived by",
-    '  diffing `compile(before)` against `compile(after)` and expanding context',
-    '  until each `oldString` is unique.',
+    '- **Artifact** — tokens of the complete file the agent emits and later',
+    '  re-reads in context. htmdx and compiled HTML are measured inside the',
+    '  single-file HTML shell used by `examples/decision-brief.html`, so the',
+    '  headline ratio never credits htmdx for boilerplate someone else provides.',
+    '  The JSX row is only the component module (see limitations).',
+    '- **Payload** — content-only size for the formats whose shell is fixed',
+    '  boilerplate a platform template could supply: raw htmdx source and raw',
+    '  compiled markup. Blank where content and boilerplate are inseparable.',
+    '- **Edit** — tokens of Edit-tool `oldString` + `newString` pairs summed over',
+    "  the scenario's three edit tasks, using the smallest natural unique span in",
+    '  each format. Compiled-HTML pairs are machine-derived by diffing',
+    '  `compile(before)` against `compile(after)` and expanding context until each',
+    '  `oldString` is unique.',
     '',
   ];
 
@@ -199,15 +213,15 @@ function renderMarkdown(scenarios: ScenarioResult[]): string {
     }
     lines.push(`## Scenario: ${scenario.title}`, '');
     lines.push(
-      '| Format | Authoring tokens | Read tokens | Edit tokens (3 tasks) | Authoring chars | Authoring vs htmdx |',
+      '| Format | Artifact tokens | vs htmdx | Payload tokens | Edit tokens (3 tasks) | Artifact chars |',
       '| --- | ---: | ---: | ---: | ---: | ---: |',
     );
     for (const row of scenario.formats) {
-      const ratio = (row.authoring.tokens / htmdx.authoring.tokens).toFixed(2);
+      const ratio = (row.artifact.tokens / htmdx.artifact.tokens).toFixed(2);
       lines.push(
-        `| ${FORMAT_LABELS[row.format]} | ${row.authoring.tokens} | ${row.read.tokens} | ${
-          row.editTotal ? row.editTotal.tokens : 'n/a'
-        } | ${row.authoring.chars} | x${ratio} |`,
+        `| ${FORMAT_LABELS[row.format]} | ${row.artifact.tokens} | x${ratio} | ${
+          row.payload ? row.payload.tokens : '—'
+        } | ${row.editTotal ? row.editTotal.tokens : 'n/a'} | ${row.artifact.chars} |`,
       );
     }
     lines.push('', '### Edit-task token cost', '');
@@ -232,15 +246,19 @@ function renderMarkdown(scenarios: ScenarioResult[]): string {
     '- The hand-written HTML, JSX, and markdown fixtures are author-judgment',
     '  equivalents of the same content; a different author would produce somewhat',
     '  different sizes. They aim for idiomatic, not adversarially terse or verbose.',
+    '- As a check against inflating that baseline, the hand-written HTML fixtures',
+    '  were compared with versions independently authored by another agent from',
+    '  the same content spec, blind to this benchmark; the committed fixtures',
+    '  measured equal or smaller.',
     '- Plain markdown is not feature-equivalent (no tabs, accordions, badges, or',
     '  buttons); it is included as a lower bound on content size.',
     '- The JSX baseline counts only the component module. Running it needs a',
     '  hosting runtime the agent never emits (bundler, React, installed shadcn/ui',
     '  components) — the charitable assumption that the platform provides it, as',
-    '  Claude artifacts do. htmdx carries its own shell: the read metric includes',
-    '  the full single-file HTML wrapper, and the runtime is one CDN script tag.',
+    '  Claude artifacts do. htmdx carries its own shell: its artifact figure',
+    '  includes the full single-file HTML wrapper; the runtime is one CDN script.',
     '- Compiled HTML is a static snapshot: collapsed accordion panels and inactive',
-    '  tab panels are not present in the output, which understates its authoring',
+    '  tab panels are not present in the output, which understates its artifact',
     '  size and edit cost relative to a fully hydrated equivalent.',
     '- `o200k_base` approximates model tokenizers; absolute counts differ across',
     '  models, ratios are the signal. Character counts are reported alongside.',

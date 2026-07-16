@@ -104,6 +104,26 @@ injectShadcnTheme();
 
 `compile(source)` from `@wix/htmdx` returns a static HTML snapshot of the same tree — useful for previews and validation. It needs a DOM (browser or jsdom).
 
+## Token efficiency
+
+Agents author and edit the compact htmdx source, not the rendered markup. A
+reproducible benchmark measures the same two report artifacts across formats
+with `gpt-tokenizer` (`o200k_base`); each figure is the complete single-file
+artifact, shell included:
+
+| Format | Artifact tokens (decision-brief / exec-report) | vs htmdx |
+| --- | ---: | ---: |
+| htmdx | 950 / 853 | x1.00 |
+| compiled HTML (`compile()` output) | 4286 / 2428 | x4.51 / x2.85 |
+| hand-written HTML + Tailwind | 1881 / 2568 | x1.98 / x3.01 |
+| React/JSX component (module only) | 1263 / 1790 | x1.33 / x2.10 |
+| plain markdown (no components) | 474 / 788 | x0.50 / x0.92 |
+
+Edits follow the same pattern: adding an accordion item costs 91 tokens in
+htmdx vs 434 in compiled HTML. Regenerate with `yarn bench`; methodology,
+edit-cost tables, and limitations live in
+[`packages/htmdx/bench/RESULTS.md`](./packages/htmdx/bench/RESULTS.md).
+
 ## Package
 
 - npm: `@wix/htmdx` · CDN entry: `dist/browser.js` (~90KB gzip) · module entries: `.`, `./react`, `./react/shadcn`

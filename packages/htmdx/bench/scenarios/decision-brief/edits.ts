@@ -7,45 +7,43 @@ export const editTasks: EditTask[] = [
     id: 'update-metric',
     description: 'Change the legacy support-ticket volume from 340/month to 290/month',
     htmdx: {
-      oldString: '**340/month**',
-      newString: '**290/month**',
+      oldString: '340/month',
+      newString: '290/month',
     },
     hand: {
-      oldString: '<strong class="text-slate-900">340/month</strong>',
-      newString: '<strong class="text-slate-900">290/month</strong>',
+      oldString: '340/month',
+      newString: '290/month',
     },
     jsx: {
-      oldString: '<strong>340/month</strong>',
-      newString: '<strong>290/month</strong>',
+      oldString: '340/month',
+      newString: '290/month',
     },
     md: {
-      oldString: '**340/month**',
-      newString: '**290/month**',
+      oldString: '340/month',
+      newString: '290/month',
     },
   },
   {
     id: 'add-badge',
     description: 'Add a "source: support dashboard" badge to the Numbers card',
     htmdx: {
-      oldString: '<Badge variant="secondary">pilot: 0.3% error rate</Badge>',
+      oldString: 'pilot: 0.3% error rate</Badge>',
       newString:
-        '<Badge variant="secondary">pilot: 0.3% error rate</Badge>\n    <Badge variant="outline">source: support dashboard</Badge>',
+        'pilot: 0.3% error rate</Badge>\n    <Badge variant="outline">source: support dashboard</Badge>',
     },
     hand: {
-      oldString:
-        '<span class="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">pilot: 0.3% error rate</span>',
+      oldString: 'pilot: 0.3% error rate</span>',
       newString:
-        '<span class="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">pilot: 0.3% error rate</span>\n            <span class="inline-flex items-center rounded-md border border-slate-200 px-2 py-0.5 text-xs font-medium text-slate-700">source: support dashboard</span>',
+        'pilot: 0.3% error rate</span>\n            <span class="inline-flex items-center rounded-md border border-slate-200 px-2 py-0.5 text-xs font-medium text-slate-700">source: support dashboard</span>',
     },
     jsx: {
-      oldString: '<Badge variant="secondary">pilot: 0.3% error rate</Badge>',
+      oldString: 'pilot: 0.3% error rate</Badge>',
       newString:
-        '<Badge variant="secondary">pilot: 0.3% error rate</Badge>\n              <Badge variant="outline">source: support dashboard</Badge>',
+        'pilot: 0.3% error rate</Badge>\n              <Badge variant="outline">source: support dashboard</Badge>',
     },
     md: {
-      oldString: 'Labels: `legacy: 4.2% error rate` · `pilot: 0.3% error rate`',
-      newString:
-        'Labels: `legacy: 4.2% error rate` · `pilot: 0.3% error rate` · `source: support dashboard`',
+      oldString: '`pilot: 0.3% error rate`',
+      newString: '`pilot: 0.3% error rate` · `source: support dashboard`',
     },
   },
   {

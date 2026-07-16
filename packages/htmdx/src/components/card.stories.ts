@@ -3,7 +3,7 @@ import { createComponentStory, type ComponentStoryArgs } from '../storybook/comp
 import { card } from './card';
 
 const meta = {
-  title: 'Components/Card',
+  title: 'Components/default/Card',
   ...createComponentStory(card),
 } satisfies Meta<ComponentStoryArgs>;
 

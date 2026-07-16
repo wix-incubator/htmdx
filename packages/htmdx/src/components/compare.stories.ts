@@ -3,7 +3,7 @@ import { createComponentStory, type ComponentStoryArgs } from '../storybook/comp
 import { compare } from './compare';
 
 const meta = {
-  title: 'Components/Compare',
+  title: 'Components/default/Compare',
   ...createComponentStory(compare),
 } satisfies Meta<ComponentStoryArgs>;
 

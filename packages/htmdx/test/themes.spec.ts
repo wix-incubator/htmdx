@@ -28,39 +28,34 @@ function themeTokens(id: string): Record<string, string> {
 }
 
 describe('themes', () => {
-  const generated = THEME_IDS.filter((id) => id !== 'blue');
+  const generated = THEME_IDS.filter((id) => id !== 'purple');
 
-  test('default blue has no CSS block', () => {
-    expect(THEME_CSS).not.toContain('data-htmdx-theme="blue"');
+  test('default purple has no CSS block', () => {
+    expect(THEME_CSS).not.toContain('data-htmdx-theme="purple"');
   });
 
-  test('each generated theme defines the same token set', () => {
+  test('each generated theme defines the same M3 token set', () => {
     const expected = tokenNames(themeBlock(generated[0]));
-    expect(expected).toContain('htmdx-accent');
-    expect(expected).toContain('primary');
+    expect(expected).toContain('md-sys-color-primary');
+    expect(expected).toContain('md-sys-color-primary-container');
     for (const id of generated) {
       expect(tokenNames(themeBlock(id)), id).toEqual(expected);
     }
   });
 
-  test('accent and primary meet WCAG AA against white', () => {
-    for (const id of generated) {
-      const tokens = themeTokens(id);
-      for (const name of ['htmdx-accent', 'primary']) {
-        expect(
-          contrastRatio(tokens[name], '#FFFFFF'),
-          `${id}: --${name} on #FFFFFF`,
-        ).toBeGreaterThanOrEqual(4.5);
-      }
-    }
-  });
-
-  test('accent-foreground meets WCAG AA against accent', () => {
+  test('primary pairs meet WCAG AA', () => {
     for (const id of generated) {
       const tokens = themeTokens(id);
       expect(
-        contrastRatio(tokens['accent-foreground'], tokens['accent']),
-        `${id}: --accent-foreground on --accent`,
+        contrastRatio(tokens['md-sys-color-primary'], tokens['md-sys-color-on-primary']),
+        `${id}: primary pair`,
+      ).toBeGreaterThanOrEqual(4.5);
+      expect(
+        contrastRatio(
+          tokens['md-sys-color-primary-container'],
+          tokens['md-sys-color-on-primary-container'],
+        ),
+        `${id}: primary container pair`,
       ).toBeGreaterThanOrEqual(4.5);
     }
   });
@@ -71,7 +66,7 @@ describe('themes', () => {
     expect(rendered.ok && rendered.html).toContain('data-htmdx-theme="teal"');
   });
 
-  test.each(['blue', 'neon', ''])('theme "%s" falls back to the base palette', (theme) => {
+  test.each(['purple', 'neon', ''])('theme "%s" falls back to the base palette', (theme) => {
     const frontmatter = theme ? `---\ntheme: ${theme}\n---\n\n` : '';
     const rendered = compile(`${frontmatter}# Brief\n\nBody.`);
 

@@ -13,10 +13,10 @@ const preview: Preview = {
       },
     },
   },
-  initialGlobals: { theme: 'blue' },
+  initialGlobals: { theme: 'purple' },
   decorators: [
     (story, context) => {
-      const theme = (context.globals.theme as string) || 'blue';
+      const theme = (context.globals.theme as string) || 'purple';
       const el = story() as HTMLElement;
       // The runtime renders asynchronously and stamps the frontmatter theme
       // during render; re-apply the toolbar choice on its 'htmdx:rendered'

@@ -93,29 +93,30 @@ export function compileDocument(source: string, options: HtmdxReactOptions = {})
 
   const main = createElement(
     'main',
-    { className: 'htmdx-page', key: 'main' },
+    { className: 'htmdx-doc htmdx-page', key: 'main' },
     createElement('article', { className: 'htmdx-article' }, ...sectionElements),
   );
 
-  const body =
-    context.headings.length < 2
-      ? main
-      : createElement(
-          'div',
-          { className: 'htmdx-shell', key: 'shell' },
-          renderToc(context.headings, meta),
-          main,
-        );
+  const hasNav = context.headings.length >= 2;
+  const content = createElement(
+    'div',
+    { className: 'htmdx-content', key: 'content' },
+    title ? renderStickyHeader(title, meta) : null,
+    title ? renderHero(title, lead, meta) : null,
+    createElement('div', { className: 'htmdx-shell', key: 'shell' }, main),
+  );
 
   const theme = themeFromMeta(meta);
 
   return {
     element: createElement(
       'div',
-      { className: 'htmdx-app', ...(theme ? { 'data-htmdx-theme': theme } : {}) },
-      title ? renderStickyHeader(title, meta) : null,
-      title ? renderHero(title, lead, meta) : null,
-      body,
+      {
+        className: hasNav ? 'htmdx-app' : 'htmdx-app htmdx-app--no-nav',
+        ...(theme ? { 'data-htmdx-theme': theme } : {}),
+      },
+      hasNav ? renderToc(context.headings, meta) : null,
+      content,
     ),
     title,
     headings: context.headings,

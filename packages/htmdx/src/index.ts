@@ -372,6 +372,11 @@ function activateSectionRail(root: Element) {
 
     ticking = true;
     window.requestAnimationFrame(() => {
+      // The frame can fire after a test environment tears the window down.
+      if (!globalThis.window) {
+        ticking = false;
+        return;
+      }
       const threshold = window.innerHeight * 0.25;
       let current = heads[0].id;
       for (const heading of heads) {

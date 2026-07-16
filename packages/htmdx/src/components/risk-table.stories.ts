@@ -3,7 +3,7 @@ import { createComponentStory, type ComponentStoryArgs } from '../storybook/comp
 import { riskTable } from './risk-table';
 
 const meta = {
-  title: 'Components/RiskTable',
+  title: 'Components/default/RiskTable',
   ...createComponentStory(riskTable),
 } satisfies Meta<ComponentStoryArgs>;
 

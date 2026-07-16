@@ -75,7 +75,7 @@ export function renderBarChartContent(name: string, body: LabelNumber[]) {
       const x = paddingX + index * slotWidth + (slotWidth - barWidth) / 2;
       const y = axisY - height;
       return `
-        <rect class="htmdx-chart-bar" x="${x}" y="${y}" width="${barWidth}" height="${height}" rx="7">
+        <rect class="htmdx-chart-bar" data-series="${index % 5}" x="${x}" y="${y}" width="${barWidth}" height="${height}" rx="7">
           <title>${escapeHtml(label)}: ${escapeHtml(String(value))}</title>
         </rect>
         <text class="htmdx-chart-label" x="${x + barWidth / 2}" y="234" text-anchor="middle">${escapeHtml(
@@ -113,9 +113,11 @@ export function renderFeatureItem(item: string, tier = '') {
     return `<div class="htmdx-feature-item"${tierAttribute}><span class="htmdx-feature-text">${inline(item)}</span></div>`;
   }
 
+  const label = match[1].replace(/\s*:\s*$/, '');
+
   return `
     <div class="htmdx-feature-item"${tierAttribute}>
-      <span class="htmdx-feature-title">${escapeHtml(match[1])}</span>
+      <span class="htmdx-feature-title">${escapeHtml(label)}</span>
       <span class="htmdx-feature-text">${inline(match[2])}</span>
     </div>`;
 }

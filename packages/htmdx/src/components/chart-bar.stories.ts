@@ -3,7 +3,7 @@ import { createComponentStory, type ComponentStoryArgs } from '../storybook/comp
 import { chartBar } from './chart-bar';
 
 const meta = {
-  title: 'Components/ChartBar',
+  title: 'Components/default/ChartBar',
   ...createComponentStory(chartBar),
 } satisfies Meta<ComponentStoryArgs>;
 

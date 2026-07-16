@@ -104,9 +104,6 @@ export const shadcnThemeCss = `
 /* Minimal typography for markdown blocks rendered by the React path. */
 htmdx-code {
   display: block;
-  max-width: 44rem;
-  margin: 0 auto;
-  padding: 2.5rem 1.5rem;
   background: var(--background);
   color: var(--foreground);
   font-family: ui-sans-serif, system-ui, sans-serif;

@@ -3,7 +3,7 @@ import { createComponentStory, type ComponentStoryArgs } from '../storybook/comp
 import { decisionTable } from './decision-table';
 
 const meta = {
-  title: 'Components/DecisionTable',
+  title: 'Components/default/DecisionTable',
   ...createComponentStory(decisionTable),
 } satisfies Meta<ComponentStoryArgs>;
 

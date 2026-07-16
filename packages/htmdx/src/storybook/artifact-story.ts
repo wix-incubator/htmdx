@@ -1,5 +1,6 @@
 import type { Meta } from '@storybook/web-components-vite';
 import { register } from '../index';
+import { injectShadcnTheme } from '../react/shadcn';
 import { createHtmdxHost } from './component-story';
 
 export type ArtifactStoryArgs = {
@@ -9,7 +10,8 @@ export type ArtifactStoryArgs = {
 export function createArtifactStory(
   artifactHtml: string,
 ): Pick<Meta<ArtifactStoryArgs>, 'args' | 'argTypes' | 'parameters' | 'render'> {
-  register({ tailwind: false });
+  injectShadcnTheme();
+  register();
 
   return {
     args: {

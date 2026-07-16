@@ -3,7 +3,7 @@ import { createComponentStory, type ComponentStoryArgs } from '../storybook/comp
 import { dataTable } from './data-table';
 
 const meta = {
-  title: 'Components/DataTable',
+  title: 'Components/default/DataTable',
   ...createComponentStory(dataTable),
 } satisfies Meta<ComponentStoryArgs>;
 

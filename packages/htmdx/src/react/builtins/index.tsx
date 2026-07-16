@@ -9,7 +9,12 @@ import type { ReactNode } from 'react';
 import { builtInComponents } from '../../components/catalog';
 import type { HtmdxReactComponent, HtmdxReactComponents } from '../index';
 import { ChartArea, ChartBar, ChartLine, ChartPie } from './charts';
-import { Compare, Evidence, Finding, RiskTable, Timeline } from './cards';
+import { Audience } from './audience';
+import { Compare, Evidence, Finding, RiskTable, Sources, Timeline } from './cards';
+import { DecisionMatrix } from './decision-matrix';
+import { IntentList } from './intents';
+import { OpenQuestions } from './open-questions';
+import { SignalGrid } from './signal-grid';
 import { DataTable, DecisionTable } from './tables';
 import { MetricStrip, Stat } from './metrics';
 
@@ -45,6 +50,12 @@ const structured: HtmdxReactComponents = {
   Compare,
   Finding,
   Evidence,
+  Sources,
+  Audience,
+  IntentList,
+  SignalGrid,
+  DecisionMatrix,
+  OpenQuestions,
   RiskTable,
   DecisionTable,
   Timeline,

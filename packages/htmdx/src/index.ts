@@ -811,6 +811,15 @@ const RUNTIME_CSS = `
     letter-spacing: -0.02em;
     color: var(--md-sys-color-on-primary);
   }
+  .htmdx-hero-subtitle {
+    margin: 10px 0 0;
+    font-family: var(--md-ref-typeface-brand);
+    font-size: 1.35rem;
+    line-height: 1.2;
+    font-weight: 400;
+    opacity: 0.9;
+    color: var(--md-sys-color-on-primary);
+  }
   .htmdx-hero-desc {
     margin: 24px 0 0;
     font-family: var(--md-ref-typeface-brand);

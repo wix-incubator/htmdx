@@ -243,6 +243,13 @@ function renderHero(title: string, lead: string, meta: Record<string, string>) {
         renderInline(meta.project || '{Project Name}'),
       ),
       createElement('h1', { className: 'htmdx-hero-title', key: 'title' }, renderInline(title)),
+      meta.subtitle
+        ? createElement(
+            'p',
+            { className: 'htmdx-hero-subtitle', key: 'subtitle' },
+            renderInline(meta.subtitle),
+          )
+        : null,
       lead
         ? createElement('p', { className: 'htmdx-hero-desc', key: 'desc' }, renderInline(lead))
         : null,

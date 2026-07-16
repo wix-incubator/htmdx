@@ -1,6 +1,7 @@
 import { cva } from 'class-variance-authority';
 import { parseComponentBody } from '../../components/body-contracts';
 import { validateRiskTable } from '../../components/risk-table';
+import { cn } from '../shadcn/utils';
 import { Block, Inline, rawBody, splitFeature, type RawBodyProps } from './shell';
 
 // Compare / Finding / Evidence share a `**Title:** text` card grid.
@@ -38,6 +39,39 @@ function makeFeatureGrid(name: string) {
 export const Compare = makeFeatureGrid('Compare');
 export const Finding = makeFeatureGrid('Finding');
 export const Evidence = makeFeatureGrid('Evidence');
+
+// Provenance pills: each source artifact a section draws on, prefixed with a
+// ↗ glyph. A bold item is the current artifact and renders highlighted (blue)
+// so the reader can see where they are in the provenance chain.
+export const Sources = rawBody(({ body = '' }: RawBodyProps) => {
+  const parsed = parseComponentBody('Sources', 'markdown-list-cards', body);
+  return (
+    <Block name="Sources">
+      <div className="flex flex-wrap gap-2">
+        {parsed.items.map((item, index) => {
+          const highlighted = item.trimStart().startsWith('**');
+          const { title, text } = splitFeature(item);
+          return (
+            <span
+              key={index}
+              className={cn(
+                'inline-flex items-center gap-1 rounded-full border px-3 py-1 text-sm font-medium',
+                highlighted
+                  ? 'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-300'
+                  : 'border-border bg-muted/40 text-muted-foreground',
+              )}
+            >
+              <span aria-hidden className="text-xs">
+                ↗
+              </span>
+              <Inline text={title ?? text} />
+            </span>
+          );
+        })}
+      </div>
+    </Block>
+  );
+}, 'Sources');
 
 const TIERS = {
   'Must-have': 'must-have',
@@ -107,12 +141,12 @@ export const Timeline = rawBody(({ body = '' }: RawBodyProps) => {
             {index < items.length - 1 ? (
               <span className="absolute top-[18px] bottom-[-18px] left-1 w-0.5 bg-[var(--md-sys-color-primary)]" />
             ) : null}
-            <span className="text-[var(--md-sys-color-on-surface)]">
-              <Inline text={item.label} />:{' '}
-            </span>
-            <span className="text-[var(--md-sys-color-on-surface-variant)]">
+            <div className="text-xs font-semibold tracking-wide text-[var(--md-sys-color-primary)] uppercase">
+              <Inline text={item.label} />
+            </div>
+            <div className="mt-0.5 text-[var(--md-sys-color-on-surface)]">
               <Inline text={item.value} />
-            </span>
+            </div>
           </div>
         ))}
       </div>

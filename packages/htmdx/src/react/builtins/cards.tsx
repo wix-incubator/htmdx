@@ -100,19 +100,22 @@ export const Timeline = rawBody(({ body = '' }: RawBodyProps) => {
   const items = parseComponentBody('Timeline', 'label-value-list', body);
   return (
     <Block name="Timeline">
-      <ol className="flex flex-col gap-4 border-l border-border pl-6">
+      <div className="ml-1">
         {items.map((item, index) => (
-          <li key={index} className="relative">
-            <span className="absolute top-1 -left-[1.90rem] size-3 rounded-full border-2 border-background bg-primary" />
-            <div className="font-medium text-foreground">
-              <Inline text={item.label} />
-            </div>
-            <div className="text-sm text-muted-foreground">
+          <div key={index} className="relative pt-1.5 pr-0 pb-[22px] pl-7 last:pb-1">
+            <span className="absolute top-[13px] left-0 z-10 size-2.5 rounded-full border-2 border-[var(--md-sys-color-primary)] bg-[var(--md-sys-color-surface-container-lowest)]" />
+            {index < items.length - 1 ? (
+              <span className="absolute top-[18px] bottom-[-18px] left-1 w-0.5 bg-[var(--md-sys-color-primary)]" />
+            ) : null}
+            <span className="text-[var(--md-sys-color-on-surface)]">
+              <Inline text={item.label} />:{' '}
+            </span>
+            <span className="text-[var(--md-sys-color-on-surface-variant)]">
               <Inline text={item.value} />
-            </div>
-          </li>
+            </span>
+          </div>
         ))}
-      </ol>
+      </div>
     </Block>
   );
 }, 'Timeline');

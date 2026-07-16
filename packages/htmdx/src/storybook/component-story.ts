@@ -1,6 +1,7 @@
 import type { Meta } from '@storybook/web-components-vite';
 import { register } from '../index';
 import type { HtmdxComponent } from '../components/types';
+import { injectShadcnTheme } from '../react/shadcn';
 
 export type ComponentStoryArgs = {
   body: string;
@@ -9,7 +10,8 @@ export type ComponentStoryArgs = {
 export function createComponentStory(
   component: HtmdxComponent,
 ): Pick<Meta<ComponentStoryArgs>, 'args' | 'argTypes' | 'parameters' | 'render'> {
-  register({ tailwind: false });
+  injectShadcnTheme();
+  register();
 
   return {
     args: {

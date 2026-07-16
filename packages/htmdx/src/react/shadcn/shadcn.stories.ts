@@ -33,6 +33,12 @@ export default meta;
 type Story = StoryObj<ReactComponentStoryArgs>;
 
 export const Card: Story = story('Card');
+export const CardWithRegularText: Story = {
+  args: {
+    htmdx:
+      '<Card>\n  <CardContent>Regular text is padded inside the card content.</CardContent>\n</Card>',
+  },
+};
 export const Badge: Story = story('Badge');
 export const Button: Story = story('Button');
 export const Tabs: Story = story('Tabs');

@@ -1,6 +1,5 @@
 import { parseComponentBody } from './body-contracts';
 import { callout } from './callout';
-import { card } from './card';
 import { chartArea } from './chart-area';
 import { chartBar } from './chart-bar';
 import { chartLine } from './chart-line';
@@ -20,7 +19,6 @@ import type { HtmdxComponent } from './types';
 
 export const builtInComponents: readonly HtmdxComponent[] = [
   executiveSummary,
-  card,
   callout,
   sourceQuote,
   metricStrip,

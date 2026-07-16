@@ -1,6 +1,6 @@
 // The built-in catalog as React components.
 //
-// Markdown-bodied built-ins (ExecutiveSummary, Card, Callout, SourceQuote) are
+// Markdown-bodied built-ins (ExecutiveSummary, Callout, SourceQuote) are
 // composable shells: their children come from the renderer, so nested
 // components (shadcn included) work inside them. Structured-bodied built-ins
 // (metrics, charts, tables, card lists) own their body — they parse it through

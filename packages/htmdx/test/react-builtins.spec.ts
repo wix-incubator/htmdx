@@ -57,14 +57,6 @@ Artifacts should remain editable.
     expect(html).toContain('Artifacts should remain editable.');
   });
 
-  test('shadcn wins the Card name collision in the merged map', () => {
-    const html = renderToStaticMarkup(
-      compileToReact('<Card>plain body</Card>', { components: merged }),
-    );
-    expect(html).toContain('data-slot="card"');
-    expect(html).not.toContain('htmdx-card');
-  });
-
   test('react manifest covers exactly the merged component map', () => {
     const manifest = createReactComponentManifest();
     const manifestNames = manifest.components.map((component) => component.name).toSorted();

@@ -11,7 +11,10 @@ Start with one HTML file:
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@<exact-version>/dist/browser.js" defer></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/@wix/htmdx@<exact-version>/dist/browser.js"
+      defer
+    ></script>
   </head>
   <body>
     <!-- prettier-ignore -->
@@ -82,7 +85,10 @@ Extension API. Trusted host code can contribute React components and theme
 CSS from an inline or external script:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@<exact-version>/dist/browser.js" defer></script>
+<script
+  src="https://cdn.jsdelivr.net/npm/@wix/htmdx@<exact-version>/dist/browser.js"
+  defer
+></script>
 <script>
   window.addEventListener('htmdx:ready', () => {
     const { createElement } = window.Htmdx.React;
@@ -131,7 +137,10 @@ props are rejected by design.
 The standard runtime script gives an artifact the full catalog:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@<exact-version>/dist/browser.js" defer></script>
+<script
+  src="https://cdn.jsdelivr.net/npm/@wix/htmdx@<exact-version>/dist/browser.js"
+  defer
+></script>
 <!-- prettier-ignore -->
 <script type="text/htmdx">
 # Q3 Report

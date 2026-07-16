@@ -206,7 +206,7 @@ describe('react renderer with shadcn/ui', () => {
     expect(html).toContain('translateX(-40%)');
   });
 
-  test('Separator and Skeleton render their slot markers', () => {
+  test('Separator, Skeleton, and Spacer render their slot markers', () => {
     const separator = renderToStaticMarkup(
       compileToReact('<Separator orientation="vertical" />', { components: shadcnComponents }),
     );
@@ -219,6 +219,12 @@ describe('react renderer with shadcn/ui', () => {
     expect(skeleton).toContain('data-slot="skeleton"');
     expect(skeleton).toContain('animate-pulse');
     expect(skeleton).toContain('h-4');
+
+    const spacer = renderToStaticMarkup(
+      compileToReact('<Spacer />', { components: shadcnComponents }),
+    );
+    expect(spacer).toContain('data-slot="spacer"');
+    expect(spacer).toContain('aria-hidden="true"');
   });
 
   test('Breadcrumb family renders trail markup', () => {

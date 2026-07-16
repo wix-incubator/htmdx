@@ -100,7 +100,7 @@ export const Timeline = rawBody(({ body = '' }: RawBodyProps) => {
   const items = parseComponentBody('Timeline', 'label-value-list', body);
   return (
     <Block name="Timeline">
-      <div className="ml-1">
+      <div className="w-full rounded-[var(--md-sys-shape-corner-large)] border border-[var(--md-sys-color-outline-variant)] bg-[var(--md-sys-color-surface-container-lowest)] px-5 py-4 shadow-sm">
         {items.map((item, index) => (
           <div key={index} className="relative pt-1.5 pr-0 pb-[22px] pl-7 last:pb-1">
             <span className="absolute top-[13px] left-0 z-10 size-2.5 rounded-full border-2 border-[var(--md-sys-color-primary)] bg-[var(--md-sys-color-surface-container-lowest)]" />

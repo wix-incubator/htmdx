@@ -44,6 +44,7 @@ import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from './popove
 import { Progress } from './progress';
 import { Separator } from './separator';
 import { Skeleton } from './skeleton';
+import { Spacer } from './spacer';
 import {
   Table,
   TableBody,
@@ -114,6 +115,7 @@ export const shadcnComponents = {
   Progress,
   Separator,
   Skeleton,
+  Spacer,
   Table,
   TableBody,
   TableCaption,

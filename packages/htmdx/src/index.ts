@@ -215,7 +215,12 @@ export function register(options: HtmdxRegisterOptions = {}) {
 }
 
 function mountBareSources(tagName: string, options: HtmdxRegisterOptions) {
+  // Script ran in <head> without defer; retry once the document is parsed so
+  // bare sources still mount instead of failing silently.
   if (!document.body) {
+    document.addEventListener('DOMContentLoaded', () => mountBareSources(tagName, options), {
+      once: true,
+    });
     return;
   }
 

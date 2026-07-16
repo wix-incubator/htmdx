@@ -804,7 +804,7 @@ const RUNTIME_CSS = `
     margin: 0;
     font-family: var(--md-ref-typeface-brand);
     font-weight: 300;
-    font-size: 1.02rem;
+    font-size: 20px;
     line-height: 1.25;
     color: var(--md-sys-color-on-primary);
   }

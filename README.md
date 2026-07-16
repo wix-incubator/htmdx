@@ -5,6 +5,7 @@
 Each artifact stays in one portable HTML file. Its source is concise, declarative, and readable — without JSX boilerplate, project scaffolding, or a build step.
 
 - **One file:** Share, render, review, and modify the complete artifact.
+- **No source/output split:** Unlike MDX, HTMDX needs no build-time compilation or separate generated file.
 - **Human- and agent-readable:** Edit meaningful Markdown and component tags instead of generated markup.
 - **Token-efficient:** Benchmarks show 2–3× fewer tokens than hand-written HTML with Tailwind.
 - **Rich by default:** Use interactive components, themes, charts, and structured report elements.
@@ -15,6 +16,8 @@ Each artifact stays in one portable HTML file. Its source is concise, declarativ
 ## One file, two audiences
 
 A browser renders the file as a finished page. Humans and agents edit the readable HTMDX source inside it.
+
+Traditional MDX must be compiled before a browser can render it. When that rendered HTML is saved, the editable `.mdx` source and generated output are two files to keep in sync. HTMDX embeds its source in the HTML file itself, so the same file remains both the rendered artifact and the editing surface.
 
 ```html
 <!doctype html>

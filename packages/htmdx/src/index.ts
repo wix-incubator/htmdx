@@ -51,12 +51,24 @@ export type HtmdxSourceResult =
   | { ok: true; kind: 'embedded' | 'src'; source: string }
   | { ok: false; error: string; source?: string };
 
+export type HtmdxRenderOverrideResult = { components?: string[] } | void;
+
+export type HtmdxRenderOverride = (
+  host: Element,
+  source: string,
+) => HtmdxRenderOverrideResult | Promise<HtmdxRenderOverrideResult>;
+
 export type HtmdxRegisterOptions = {
   tagName?: string;
   sourceSelector?: string;
   theme?: HtmdxThemeDefinition;
   tailwind?: boolean | { src?: string };
   automount?: boolean;
+  // Replaces the string compile step while keeping source resolution,
+  // automount, error rendering, and lifecycle events. Used by the React
+  // renderer entry; not needed for regular string-based usage.
+  render?: HtmdxRenderOverride;
+  cleanup?: (host: Element) => void;
 } & HtmdxCompileOptions;
 
 const STYLE_ID = 'htmdx-runtime-v1-styles';
@@ -189,6 +201,10 @@ export function register(options: HtmdxRegisterOptions = {}) {
         async connectedCallback() {
           await renderHost(this, options);
         }
+
+        disconnectedCallback() {
+          options.cleanup?.(this);
+        }
       },
     );
   }
@@ -242,6 +258,33 @@ export async function renderHost(host: Element, options: HtmdxRegisterOptions = 
   }
 
   sourceCache.set(host, sourceResult);
+
+  if (options.render) {
+    try {
+      const result = await options.render(host, sourceResult.source);
+      host.dispatchEvent(
+        new CustomEvent('htmdx:rendered', {
+          detail: {
+            source: sourceResult.kind,
+            components: result?.components || [],
+            version: VERSION,
+          },
+          bubbles: true,
+        }),
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      renderError(host, message, sourceResult.source);
+      host.dispatchEvent(
+        new CustomEvent('htmdx:error', {
+          detail: { ok: false, error: message },
+          bubbles: true,
+        }),
+      );
+    }
+    return;
+  }
+
   const rendered = compile(sourceResult.source, options);
   if (!rendered.ok) {
     renderError(host, rendered.error, sourceResult.source);

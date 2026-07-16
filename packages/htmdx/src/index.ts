@@ -13,8 +13,10 @@ import {
   type HtmdxReactComponents,
 } from './react';
 import { shadcnComponents } from './react/shadcn';
+import { THEME_CSS } from './themes';
 import { VERSION } from './version';
 
+export { THEME_IDS, type HtmdxThemeId } from './themes';
 export { VERSION } from './version';
 export { injectShadcnTheme, shadcnComponents } from './react/shadcn';
 export {
@@ -178,7 +180,7 @@ export function register(options: HtmdxRegisterOptions = {}) {
   if (!document.getElementById(STYLE_ID)) {
     const style = document.createElement('style');
     style.id = STYLE_ID;
-    style.textContent = RUNTIME_CSS;
+    style.textContent = RUNTIME_CSS + THEME_CSS;
     document.head.append(style);
   }
   injectTailwindBrowser(options.tailwind);

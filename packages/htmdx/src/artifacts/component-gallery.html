@@ -20,8 +20,10 @@ A composed reference for reviewing the complete built-in Component set across pa
 This gallery brings every built-in Component into one Artifact so maintainers can assess hierarchy, rhythm, and responsive layout together.
 </ExecutiveSummary>
 
+<Spacer />
+
 <MetricStrip>
-- Components: **17 built-ins**
+- Components: **16 built-ins**
 - Format: **Standalone HTML**
 - Runtime: **Local build**
 </MetricStrip>
@@ -29,13 +31,22 @@ This gallery brings every built-in Component into one Artifact so maintainers ca
 ## Narrative Components
 
 <Card>
-### A complete visual workspace
+<CardHeader>
+<CardTitle>A complete visual workspace</CardTitle>
+<CardDescription>Review the built-in catalog as one composed deliverable.</CardDescription>
+</CardHeader>
+<CardContent>
 Use this page to compare isolated Component decisions in the context of a full deliverable.
+</CardContent>
 </Card>
+
+<Spacer />
 
 <Callout>
 **Try every viewport:** Review the gallery at desktop, tablet, and mobile widths before publishing layout changes.
 </Callout>
+
+<Spacer />
 
 <SourceQuote>
 “Components become a system when they work together on the same page.”
@@ -47,12 +58,16 @@ Use this page to compare isolated Component decisions in the context of a full d
 - Gallery coverage: **100%**
 </Stat>
 
+<Spacer />
+
 <ChartBar>
-- Narrative: 4
+- Narrative: 3
 - Metrics: 2
 - Charts: 4
 - Structured data: 7
 </ChartBar>
+
+<Spacer />
 
 <ChartArea>
 - January: 18
@@ -61,12 +76,16 @@ Use this page to compare isolated Component decisions in the context of a full d
 - April: 48
 </ChartArea>
 
+<Spacer />
+
 <ChartLine>
 - Week 1: 8
 - Week 2: 13
 - Week 3: 21
 - Week 4: 34
 </ChartLine>
+
+<Spacer />
 
 <ChartPie>
 - Direct: 62
@@ -84,20 +103,28 @@ Use this page to compare isolated Component decisions in the context of a full d
 | Mobile | 390 px | Readability and stacking |
 </DataTable>
 
+<Spacer />
+
 <Compare>
 - **Isolated stories:** Focused Component content and behavior
 - **Component Gallery:** Cross-component spacing and page composition
 </Compare>
+
+<Spacer />
 
 <Finding>
 - **Single source:** The committed HTML remains the gallery's source of truth.
 - **Fast feedback:** Storybook previews it with the TypeScript source runtime.
 </Finding>
 
+<Spacer />
+
 <Evidence>
 - **Real compiler:** Controlled edits follow the production compilation path.
 - **Real delivery:** The standalone file loads the repository's built browser bundle.
 </Evidence>
+
+<Spacer />
 
 <RiskTable>
 - **Must-have:** Keep every built-in Component represented.
@@ -106,12 +133,16 @@ Use this page to compare isolated Component decisions in the context of a full d
 - **Won't do:** Replace the standalone Artifact with a Storybook-only fixture.
 </RiskTable>
 
+<Spacer />
+
 <DecisionTable>
 - Artifact source: Committed HTML
 - Storybook runtime: TypeScript source
 - Standalone runtime: Local browser build
 - Editing surface: Embedded HTMDX only
 </DecisionTable>
+
+<Spacer />
 
 <Timeline>
 - Build: Generate the local browser runtime

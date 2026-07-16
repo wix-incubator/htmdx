@@ -901,6 +901,10 @@ const RUNTIME_CSS = `
     color: var(--md-sys-color-on-surface-variant);
     margin: 0 0 13px;
   }
+  .htmdx-doc-section-card > p:last-child,
+  .htmdx-doc-section-card > div:last-child > p:last-child {
+    margin-bottom: 0;
+  }
   .htmdx-doc-section-card a:not([data-slot]) {
     color: var(--md-sys-color-primary);
     text-underline-offset: 2px;

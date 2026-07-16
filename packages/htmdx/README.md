@@ -42,15 +42,23 @@ CDN caveats:
 
 ## Exact-version component manifest
 
-Every release includes its machine-readable built-in component contract at:
+Every release includes its machine-readable component contract at:
 
 ```text
 https://unpkg.com/@wix/htmdx@<exact-version>/dist/components.json
 ```
 
-Use the same exact version as the artifact's runtime URL. The manifest is a built-ins-only allowlist; host-registered components are outside its scope.
+Use the same exact version as the artifact's runtime URL. The manifest lists
+the full runtime catalog — built-ins plus the shadcn/ui pack, each entry
+tagged with its `source`, props (with allowed values), and an example.
 
-Manifest entries declare one enforced body format: `markdown`, `label-value-list`, `label-number-list`, `gfm-table`, or `markdown-list-cards`. Bodies must be non-empty, Markdown-shaped one-level JSX. Imports, exports, MDX expressions, and nested JSX are forbidden. Invalid global syntax or a body that does not match its declared format fails compilation of the whole HTMDX artifact. Browser hosts then display the error fallback and raw artifact source rather than partial output.
+Composable components (shadcn and markdown-bodied built-ins) accept markdown
+bodies and nested components. Structured built-ins declare an enforced body
+format: `label-value-list`, `label-number-list`, `gfm-table`, or
+`markdown-list-cards`; a body that does not match fails compilation of the
+whole artifact and browser hosts display the error fallback with the raw
+source. Imports, MDX `{expressions}`, and function-valued props cannot be
+expressed — the source is data, not code.
 
 Use `src` when the source should live next to the HTML, in either form:
 
@@ -68,54 +76,32 @@ register();
 const rendered = compile('# Title');
 ```
 
-Extension API prototype. Trusted host code can contribute components and theme
+Extension API. Trusted host code can contribute React components and theme
 CSS from an inline or external script:
 
 ```html
 <script src="https://unpkg.com/@wix/htmdx@<exact-version>/dist/browser.js" defer></script>
 <script>
   window.addEventListener('htmdx:ready', () => {
-    window.Htmdx.registerComponent(
-      'ProductCard',
-      ({ body, markdown }) => `<aside class="product-card">${markdown(body)}</aside>`,
+    const { createElement } = window.Htmdx.React;
+
+    window.Htmdx.registerComponent('ProductCard', (props) =>
+      createElement('aside', { className: 'product-card' }, props.children),
     );
 
     window.Htmdx.registerTheme({
       id: 'product',
-      css: `
-        htmdx-code { --htmdx-accent: #0057ff; }
-        .product-card { border: 1px solid var(--htmdx-line); padding: 16px; }
-      `,
+      css: `.product-card { border: 1px solid var(--border); padding: 16px; }`,
     });
   });
 </script>
 ```
 
-External scripts work too:
+Extension code is host-owned and explicit. The HTMDX source remains
+declarative; unknown capitalized tags fail compilation until registered.
 
-```html
-<script src="https://unpkg.com/@wix/htmdx@<exact-version>/dist/browser.js" defer></script>
-<script src="./product-components.js" defer></script>
-```
-
-```js
-window.Htmdx.registerComponents({
-  ProductCard: ({ body, markdown }) => `<aside class="product-card">${markdown(body)}</aside>`,
-});
-```
-
-Extension code is host-owned and explicit. The HTMDX source remains declarative;
-unknown components fail unless they are registered.
-
-Tailwind utilities work in registered component HTML by default:
-
-```js
-window.Htmdx.registerComponent(
-  'ProductCard',
-  ({ body, markdown }) =>
-    `<aside class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">${markdown(body)}</aside>`,
-);
-```
+Tailwind utilities work in registered components by default — the runtime
+injects Tailwind's browser compiler, so `className` values compile on the fly.
 
 The runtime injects Tailwind's browser compiler before rendering hosts:
 
@@ -132,18 +118,18 @@ window.Htmdx.register({ tailwind: { src: './tailwind-browser.js' } });
 
 Use the browser compiler for portable artifacts and prototypes. Production hosts that need a compiled CSS pipeline can disable it and provide their own CSS with `registerTheme`.
 
-## React renderer (MDX minus JavaScript)
+## React runtime (MDX minus JavaScript)
 
-The `@wix/htmdx/react` entry renders the same HTMDX source through React, so
-the components map can hold real React components — including the bundled
-shadcn/ui pack. The source stays declarative data: component tags, nested
+htmdx renders through React everywhere: built-ins are React components, the
+shadcn/ui pack is bundled, and the components map accepts any React
+component. The source stays declarative data: component tags, nested
 composition, and attribute props work; imports, `{expressions}`, and function
 props are rejected by design.
 
-One script tag turns a plain HTML artifact into a React + shadcn/ui page:
+The standard runtime script gives an artifact the full catalog:
 
 ```html
-<script src="https://unpkg.com/@wix/htmdx@<exact-version>/dist/browser-react.js" defer></script>
+<script src="https://unpkg.com/@wix/htmdx@<exact-version>/dist/browser.js" defer></script>
 <!-- prettier-ignore -->
 <script type="text/htmdx">
 # Q3 Report
@@ -170,18 +156,10 @@ One script tag turns a plain HTML artifact into a React + shadcn/ui page:
 </script>
 ```
 
-`dist/browser-react.js` bundles React, the shadcn/ui pack (Card, Badge,
-Button, Tabs, Accordion), the bridged string built-ins (ExecutiveSummary,
-MetricStrip, charts, ...  — same body contracts and markup as the string
-runtime), and the shadcn theme (~90KB gzip). The string-only
-`dist/browser.js` is unchanged and stays the default.
-
-The React runtime publishes its own exact-version manifest listing every
-available component (built-ins and shadcn, with props and examples):
-
-```text
-https://unpkg.com/@wix/htmdx@<exact-version>/dist/react-components.json
-```
+`dist/browser.js` bundles React, the built-in catalog (ExecutiveSummary,
+MetricStrip, charts, ...), the shadcn/ui pack (Card, Badge, Button, Tabs,
+Accordion), and the shadcn theme (~147KB gzip, including the static-render
+path that powers `compile()`).
 
 React host apps use the module entries instead (react/react-dom are optional
 peer dependencies):

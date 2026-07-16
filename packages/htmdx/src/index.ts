@@ -901,8 +901,14 @@ const RUNTIME_CSS = `
     color: var(--md-sys-color-on-surface-variant);
     margin: 0 0 13px;
   }
-  .htmdx-doc-section-card a { color: var(--md-sys-color-primary); text-underline-offset: 2px; }
-  .htmdx-doc-section-card strong { font-weight: 700; color: var(--md-sys-color-on-surface); }
+  .htmdx-doc-section-card a:not([data-slot]) {
+    color: var(--md-sys-color-primary);
+    text-underline-offset: 2px;
+  }
+  .htmdx-doc-section-card strong:not([data-slot]) {
+    font-weight: 700;
+    color: var(--md-sys-color-on-surface);
+  }
 
   .htmdx-card .htmdx-component-body {
     background: var(--md-sys-color-surface-container-lowest);

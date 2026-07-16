@@ -13,8 +13,10 @@ import {
   type HtmdxReactComponents,
 } from './react';
 import { shadcnComponents } from './react/shadcn';
+import { THEME_CSS } from './themes';
 import { VERSION } from './version';
 
+export { THEME_IDS, type HtmdxThemeId } from './themes';
 export { VERSION } from './version';
 export { injectShadcnTheme, shadcnComponents } from './react/shadcn';
 export {
@@ -61,6 +63,7 @@ export type HtmdxRegisterOptions = {
 } & HtmdxCompileOptions;
 
 const STYLE_ID = 'htmdx-runtime-v1-styles';
+const FONTS_LINK_ID = 'htmdx-fonts';
 const TAILWIND_SCRIPT_ID = 'htmdx-tailwind-browser';
 export const DEFAULT_TAG_NAME = 'htmdx-code';
 export const DEFAULT_TAILWIND_BROWSER_SRC = 'https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4';
@@ -72,6 +75,7 @@ const sourceCache = new WeakMap<Element, HtmdxSourceResult & { ok: true }>();
 
 type HostRoot = { root: Root; renderError: { current: unknown } };
 const reactRoots = new WeakMap<Element, HostRoot>();
+const stickyObservers = new WeakMap<Element, IntersectionObserver>();
 
 function componentsFor(options: HtmdxCompileOptions): HtmdxReactComponents {
   return {
@@ -177,9 +181,10 @@ export function register(options: HtmdxRegisterOptions = {}) {
   if (!document.getElementById(STYLE_ID)) {
     const style = document.createElement('style');
     style.id = STYLE_ID;
-    style.textContent = RUNTIME_CSS;
+    style.textContent = RUNTIME_CSS + THEME_CSS;
     document.head.append(style);
   }
+  injectFonts();
   injectTailwindBrowser(options.tailwind);
   injectThemeStyle(options.theme);
 
@@ -285,6 +290,7 @@ export async function renderHost(host: Element, options: HtmdxRegisterOptions = 
       throw hostRoot.renderError.current;
     }
     activateSectionRail(host);
+    activateStickyHeader(host);
     host.dispatchEvent(
       new CustomEvent('htmdx:rendered', {
         detail: { source: sourceResult.kind, components: doc.components, version: VERSION },
@@ -348,7 +354,7 @@ function activateSectionRail(root: Element) {
     root.querySelectorAll<HTMLAnchorElement>('.htmdx-toc-link[data-htmdx-target]'),
   );
   const heads = links
-    .map((link) => root.querySelector<HTMLElement>(`#${cssEscape(link.dataset.htmdxTarget || '')}`))
+    .map((link) => root.querySelector<HTMLElement>(idSelector(link.dataset.htmdxTarget || '')))
     .filter((heading): heading is HTMLElement => Boolean(heading));
   if (heads.length < 2) {
     return;
@@ -399,7 +405,7 @@ function activateSectionRail(root: Element) {
   for (const link of links) {
     link.addEventListener('click', (event) => {
       const id = link.dataset.htmdxTarget || '';
-      const target = root.querySelector<HTMLElement>(`#${cssEscape(id)}`);
+      const target = root.querySelector<HTMLElement>(idSelector(id));
       if (target) {
         event.preventDefault();
         pending = id;
@@ -419,6 +425,37 @@ function activateSectionRail(root: Element) {
   });
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
+}
+
+// Reveal the condensed sticky header once the hero has scrolled out of view.
+// An IntersectionObserver on the hero is cheaper and jank-free versus a scroll
+// handler; falls back to always-hidden where IntersectionObserver is absent.
+function activateStickyHeader(root: Element) {
+  if (!globalThis.window || !globalThis.document) {
+    return;
+  }
+
+  const header = root.querySelector<HTMLElement>('.htmdx-sticky-header');
+  const hero = root.querySelector<HTMLElement>('.htmdx-hero');
+  if (!header || !hero) {
+    return;
+  }
+
+  if (typeof IntersectionObserver !== 'function') {
+    return;
+  }
+
+  stickyObservers.get(root)?.disconnect();
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        header.classList.toggle('is-visible', !entry.isIntersecting);
+      }
+    },
+    { rootMargin: '-1px 0px 0px 0px' },
+  );
+  observer.observe(hero);
+  stickyObservers.set(root, observer);
 }
 
 export function tokenizeBlocks(source: string, options: HtmdxCompileOptions = {}): HtmdxToken[] {
@@ -496,6 +533,30 @@ function injectThemeStyle(theme: HtmdxThemeDefinition | undefined) {
   document.head.append(style);
 }
 
+function injectFonts() {
+  if (!globalThis.document || document.getElementById(FONTS_LINK_ID)) {
+    return;
+  }
+
+  const preconnectGstatic = document.createElement('link');
+  preconnectGstatic.rel = 'preconnect';
+  preconnectGstatic.href = 'https://fonts.gstatic.com';
+  preconnectGstatic.crossOrigin = 'anonymous';
+  document.head.append(preconnectGstatic);
+
+  const preconnectApis = document.createElement('link');
+  preconnectApis.rel = 'preconnect';
+  preconnectApis.href = 'https://fonts.googleapis.com';
+  document.head.append(preconnectApis);
+
+  const fonts = document.createElement('link');
+  fonts.id = FONTS_LINK_ID;
+  fonts.rel = 'stylesheet';
+  fonts.href =
+    'https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&family=Roboto:wght@400;500;700&display=swap';
+  document.head.append(fonts);
+}
+
 function injectTailwindBrowser(tailwind: HtmdxRegisterOptions['tailwind'] = true) {
   if (tailwind === false) {
     return;
@@ -515,201 +576,435 @@ function injectTailwindBrowser(tailwind: HtmdxRegisterOptions['tailwind'] = true
   document.head.append(script);
 }
 
-function cssEscape(value: string) {
-  return value.replace(/[^a-zA-Z0-9_-]/g, '\\$&');
+// Attribute selector instead of #id: slugs can start with a digit
+// (`## 1. Overview` -> id "1-overview"), which is invalid in an id selector.
+function idSelector(id: string) {
+  return `[id="${id.replace(/["\\]/g, '\\$&')}"]`;
 }
 
 const RUNTIME_CSS = `
   :root {
     color-scheme: light;
-    --htmdx-bg: #ffffff;
-    --htmdx-ink: #0f172a;
-    --htmdx-body: #334155;
-    --htmdx-soft: #64748b;
-    --htmdx-line: #e8eaee;
-    --htmdx-line-strong: #cbd2da;
-    --htmdx-panel: #f7f8fa;
-    --htmdx-accent: #3457d5;
-    --htmdx-accent-soft: #eef1fd;
-    --htmdx-accent-edge: #dfe4fb;
-    --htmdx-green: #15803d;
-    --htmdx-green-bg: #e7f6ec;
-    --htmdx-amber: #b45309;
-    --htmdx-amber-bg: #fdf0db;
-    --htmdx-gray: #64748b;
-    --htmdx-gray-bg: #eef1f4;
-    --htmdx-red: #b91c1c;
-    --htmdx-red-bg: #fdecec;
-    --htmdx-font: system-ui, -apple-system, "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+
+    --md-sys-color-primary: #6D4DE8;
+    --md-sys-color-on-primary: #FFFFFF;
+    --md-sys-color-primary-container: #E2E0FB;
+    --md-sys-color-on-primary-container: #1E0060;
+    --md-sys-color-secondary: #625B71;
+    --md-sys-color-on-secondary: #FFFFFF;
+    --md-sys-color-secondary-container: #E8DEF8;
+    --md-sys-color-on-secondary-container: #1D192B;
+    --md-sys-color-tertiary: #7D5260;
+    --md-sys-color-on-tertiary: #FFFFFF;
+    --md-sys-color-tertiary-container: #FFD8E4;
+    --md-sys-color-on-tertiary-container: #31111D;
+    --md-sys-color-error: #B3261E;
+    --md-sys-color-on-error: #FFFFFF;
+    --md-sys-color-error-container: #F9DEDC;
+    --md-sys-color-on-error-container: #410E0B;
+    --md-sys-color-surface: #FDFBFF;
+    --md-sys-color-on-surface: #1B1B1F;
+    --md-sys-color-surface-variant: #E4E1EC;
+    --md-sys-color-on-surface-variant: #47464F;
+    --md-sys-color-outline: #78767F;
+    --md-sys-color-outline-variant: #E3DFE7;
+    --md-sys-color-surface-container-lowest: #FFFFFF;
+    --md-sys-color-surface-container-low: #F6F3FB;
+    --md-sys-color-surface-container: #F6F1FA;
+    --md-sys-color-surface-container-high: #EAE7F0;
+    --md-sys-color-surface-container-highest: #E5E1EA;
+    --md-sys-color-nav-surface: #F3ECEE;
+    --md-sys-color-nav-active-container: #DCDAF7;
+    --md-sys-color-on-nav-active-container: #24172C;
+    --md-sys-color-shadow: #000000;
+
+    --md-ref-typeface-brand: "Figtree", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+    --md-ref-typeface-plain: "Roboto", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+
+    --md-sys-shape-corner-none: 0;
+    --md-sys-shape-corner-small: 8px;
+    --md-sys-shape-corner-medium: 16px;
+    --md-sys-shape-corner-large: 20px;
+    --md-sys-shape-corner-extra-large: 28px;
+    --md-sys-shape-corner-full: 9999px;
+
+    --md-sys-elevation-level0: none;
+    --md-sys-elevation-level1: 0px 1px 2px rgba(0,0,0,0.28), 0px 1px 3px 1px rgba(0,0,0,0.12);
+    --md-sys-elevation-level2: 0px 1px 2px rgba(0,0,0,0.28), 0px 2px 6px 2px rgba(0,0,0,0.12);
+    --md-sys-elevation-level3: 0px 4px 8px 3px rgba(0,0,0,0.12), 0px 1px 3px rgba(0,0,0,0.28);
+
+    --md-sys-state-hover-opacity: 0.08;
+    --md-sys-state-focus-opacity: 0.12;
+
+    --htmdx-bg: var(--md-sys-color-surface);
+    --htmdx-ink: var(--md-sys-color-on-surface);
+    --htmdx-body: var(--md-sys-color-on-surface-variant);
+    --htmdx-soft: var(--md-sys-color-on-surface-variant);
+    --htmdx-line: var(--md-sys-color-outline-variant);
+    --htmdx-line-strong: var(--md-sys-color-outline);
+    --htmdx-panel: var(--md-sys-color-surface-container);
+    --htmdx-accent: var(--md-sys-color-primary);
+    --htmdx-accent-soft: var(--md-sys-color-primary-container);
+    --htmdx-accent-edge: var(--md-sys-color-primary-container);
+    --htmdx-green: var(--md-sys-color-secondary);
+    --htmdx-green-bg: var(--md-sys-color-secondary-container);
+    --htmdx-amber: var(--md-sys-color-tertiary);
+    --htmdx-amber-bg: var(--md-sys-color-tertiary-container);
+    --htmdx-gray: var(--md-sys-color-on-surface-variant);
+    --htmdx-gray-light: var(--md-sys-color-outline);
+    --htmdx-gray-bg: var(--md-sys-color-surface-variant);
+    --htmdx-red: var(--md-sys-color-error);
+    --htmdx-red-bg: var(--md-sys-color-error-container);
+    --htmdx-font: var(--md-ref-typeface-plain);
     --htmdx-mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+
+    /* Keep the bundled shadcn pack on the same active M3 palette. */
+    --primary: var(--md-sys-color-primary);
+    --primary-foreground: var(--md-sys-color-on-primary);
+    --ring: var(--md-sys-color-primary);
+    --accent: var(--md-sys-color-primary-container);
+    --accent-foreground: var(--md-sys-color-on-primary-container);
   }
 
   htmdx-code {
     display: block;
-    background: var(--htmdx-bg);
-    color: var(--htmdx-body);
-    font-family: var(--htmdx-font);
-    font-size: 15px;
-    line-height: 1.55;
+    background: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+    font-family: var(--md-ref-typeface-plain);
+    font-size: 16px;
+    line-height: 1.5;
     font-variant-numeric: tabular-nums;
-    letter-spacing: 0;
   }
 
   html { scroll-behavior: smooth; }
   @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 
-  .htmdx-masthead {
-    max-width: 64rem;
-    margin: 0 auto;
-    padding: 44px 28px 0;
-  }
-  .htmdx-masthead h1 {
-    margin: 0;
-    padding-bottom: 18px;
-    font-size: 1.55rem;
-    font-weight: 800;
-    letter-spacing: 0;
-    color: var(--htmdx-ink);
-    line-height: 1.25;
-    border-bottom: 2px solid var(--htmdx-ink);
-  }
-
-  .htmdx-shell {
-    max-width: 64rem;
-    margin: 0 auto;
+  .htmdx-app {
     display: grid;
-    grid-template-columns: 220px minmax(0, 1fr);
-    gap: 40px;
-    align-items: start;
+    grid-template-columns: 240px minmax(0, 1fr);
+    min-height: 100vh;
+    background: var(--md-sys-color-surface);
   }
-
-  .htmdx-page { padding: 40px 28px 96px; }
+  .htmdx-app--no-nav { grid-template-columns: minmax(0, 1fr); }
 
   .htmdx-toc {
     position: sticky;
-    top: 20px;
-    max-height: calc(100vh - 40px);
+    top: 0;
+    align-self: start;
+    height: 100vh;
     overflow-y: auto;
-    padding: 40px 0 24px 16px;
+    background: var(--md-sys-color-nav-surface);
+    padding: 24px 12px;
+    box-sizing: border-box;
+    border-radius: 0 16px 16px 0;
   }
-  .htmdx-toc-list {
-    counter-reset: htmdx-nav;
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  .htmdx-toc-list { list-style: none; margin: 0; padding: 0; }
+  .htmdx-nav-logo {
+    position: fixed;
+    left: 30px;
+    bottom: 30px;
+    width: 54px;
+    height: 54px;
+    object-fit: contain;
+    object-position: bottom left;
+    pointer-events: none;
   }
   .htmdx-toc-link {
     display: block;
-    padding: 7px 0 7px 12px;
-    color: var(--htmdx-soft);
+    padding: 13px 18px;
+    margin-bottom: 2px;
+    border-radius: var(--md-sys-shape-corner-full);
+    color: var(--md-sys-color-on-surface-variant);
+    font-family: var(--md-ref-typeface-brand);
+    font-size: 0.875rem;
+    font-weight: 500;
     text-decoration: none;
-    font-size: 0.82rem;
-    line-height: 1.3;
-    border-left: 2px solid transparent;
+    line-height: 18px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
-  .htmdx-toc-link::before {
-    counter-increment: htmdx-nav;
-    content: counter(htmdx-nav, decimal-leading-zero);
-    color: var(--htmdx-accent);
-    font-weight: 800;
-    font-variant-numeric: tabular-nums;
-    letter-spacing: 0;
-    margin-right: 10px;
+  .htmdx-toc-link:hover {
+    background: color-mix(in srgb, var(--md-sys-color-primary) calc(var(--md-sys-state-hover-opacity) * 100%), transparent);
+    color: var(--md-sys-color-on-surface);
   }
-  .htmdx-toc-link:hover { color: var(--htmdx-ink); }
   .htmdx-toc-item.is-active .htmdx-toc-link {
-    color: var(--htmdx-ink);
-    font-weight: 700;
-    border-left-color: var(--htmdx-accent);
+    background: var(--md-sys-color-nav-active-container);
+    color: var(--md-sys-color-on-nav-active-container);
   }
 
-  .htmdx-error {
-    border: 1px solid #fed7aa;
-    border-left: 3px solid var(--htmdx-amber);
-    background: #fff7ed;
-    color: var(--htmdx-amber);
-    padding: 12px 14px;
-    margin-bottom: 14px;
-    border-radius: 6px;
-    font-weight: 700;
+  .htmdx-content {
+    box-sizing: border-box;
+    padding: 8px 8px 96px;
   }
 
-  .htmdx-raw-source {
-    white-space: pre-wrap;
-    overflow-x: auto;
-    background: var(--htmdx-panel);
-    border: 1px solid var(--htmdx-line);
-    border-radius: 6px;
-    padding: 14px;
-    font-family: var(--htmdx-mono);
+  .htmdx-sticky-header {
+    position: sticky;
+    top: 8px;
+    z-index: 50;
+    height: 0;
+    overflow: visible;
+    pointer-events: none;
   }
-
-  .htmdx-component-header { display: none; }
-  .htmdx-article { max-width: 46rem; margin: 0 auto; counter-reset: sec; }
-  .htmdx-article > h1 { display: none; }
-  .htmdx-article > h2 {
-    counter-increment: sec;
+  .htmdx-sticky-header-inner {
     display: flex;
     align-items: baseline;
     gap: 12px;
-    font-size: 0.8rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--htmdx-ink);
-    margin: 42px 0 16px;
-    padding-bottom: 9px;
-    border-bottom: 1px solid var(--htmdx-line-strong);
-    scroll-margin-top: 24px;
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    border-radius: var(--md-sys-shape-corner-medium);
+    padding: 18px 32px;
+    font-family: var(--md-ref-typeface-brand);
+    box-shadow: var(--md-sys-elevation-level2);
+    transform: translateY(-140%);
+    opacity: 0;
+    transition: transform 0.28s ease, opacity 0.28s ease;
   }
-  .htmdx-article > h2::before {
-    content: counter(sec, decimal-leading-zero);
-    color: var(--htmdx-accent);
-    font-variant-numeric: tabular-nums;
-    letter-spacing: 0;
-    font-weight: 800;
+  .htmdx-sticky-header.is-visible .htmdx-sticky-header-inner {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
   }
-  .htmdx-article > h2:first-of-type { margin-top: 0; }
-  .htmdx-article > h3 { font-size: 0.98rem; font-weight: 700; color: var(--htmdx-ink); margin: 22px 0 8px; }
-  .htmdx-article > p { margin: 0 0 13px; }
-  .htmdx-article a { color: var(--htmdx-accent); text-underline-offset: 2px; }
-  .htmdx-article strong { font-weight: 700; color: var(--htmdx-ink); }
-  section.htmdx-component { margin: 14px 0; }
+  .htmdx-sticky-title {
+    font-size: 1.0625rem;
+    font-weight: 600;
+  }
+  .htmdx-sticky-divider {
+    font-weight: 300;
+    opacity: 0.6;
+  }
+  .htmdx-sticky-project {
+    font-size: 1.0625rem;
+    font-weight: 300;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .htmdx-sticky-header-inner { transition: none; }
+  }
 
+  .htmdx-hero {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    border-radius: var(--md-sys-shape-corner-medium);
+    padding: 102px 0;
+    margin-bottom: 40px;
+    text-align: left;
+  }
+  .htmdx-hero-inner {
+    margin-left: 8.5%;
+    width: 60%;
+    box-sizing: border-box;
+  }
+  .htmdx-hero-eyebrow {
+    margin: 0;
+    font-family: var(--md-ref-typeface-brand);
+    font-weight: 300;
+    font-size: 1.02rem;
+    line-height: 1.25;
+    color: var(--md-sys-color-on-primary);
+  }
+  .htmdx-hero-title {
+    margin: 12px 0 0;
+    font-family: var(--md-ref-typeface-brand);
+    font-size: clamp(1.7rem, 5.44vw, 4.08rem);
+    line-height: 1.05;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    color: var(--md-sys-color-on-primary);
+  }
+  .htmdx-hero-desc {
+    margin: 24px 0 0;
+    font-family: var(--md-ref-typeface-brand);
+    font-size: 1.02rem;
+    line-height: 1.25;
+    font-weight: 300;
+    color: var(--md-sys-color-on-primary);
+  }
+  .htmdx-hero-labels {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 32px;
+  }
+  .htmdx-hero-label {
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: var(--md-sys-shape-corner-small);
+    padding: 4px 10px;
+    font-family: var(--md-ref-typeface-brand);
+    font-weight: 300;
+    font-size: 0.765rem;
+    line-height: 1.3;
+    color: var(--md-sys-color-on-primary);
+  }
+  .htmdx-hero-label b { font-weight: 500; }
+
+  .htmdx-doc-section { margin-bottom: 48px; }
+  .htmdx-doc-section:last-child { margin-bottom: 0; }
+  .htmdx-doc-section > h2 {
+    width: 75%;
+    box-sizing: border-box;
+    margin: 0 auto 16px;
+    padding: 0 24px;
+    text-align: left;
+    font-family: var(--md-ref-typeface-brand);
+    font-size: 2rem;
+    line-height: 2.5rem;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+    /* Clear the sticky page header (top offset + bar height) so a nav-click
+       scroll lands with the section title visible below the bar. */
+    scroll-margin-top: 80px;
+  }
+  .htmdx-doc-section-card {
+    width: 75%;
+    box-sizing: border-box;
+    margin-left: auto;
+    margin-right: auto;
+    background: var(--md-sys-color-surface-container);
+    border-radius: var(--md-sys-shape-corner-extra-large);
+    padding: 24px;
+  }
+
+  .htmdx-error {
+    border: 1px solid var(--md-sys-color-error);
+    background: var(--md-sys-color-error-container);
+    color: var(--md-sys-color-on-error-container);
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    border-radius: var(--md-sys-shape-corner-medium);
+    font-weight: 700;
+  }
+  .htmdx-raw-source {
+    white-space: pre-wrap;
+    overflow-x: auto;
+    background: var(--md-sys-color-surface-container-low);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-corner-medium);
+    padding: 14px;
+    font-family: var(--md-ref-typeface-plain);
+  }
+
+  .htmdx-component-header { display: none; }
+  section.htmdx-component { margin: 14px 0; }
+  section.htmdx-component:first-child { margin-top: 0; }
+  section.htmdx-component:last-child { margin-bottom: 0; }
+
+  .htmdx-doc-section-card > h3,
+  .htmdx-doc-section-card h3 {
+    font-family: var(--md-ref-typeface-brand);
+    font-size: 1.375rem;
+    line-height: 1.75rem;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+    margin: 8px 0 8px;
+  }
+  .htmdx-doc-section-card > h3 {
+    margin-top: 24px;
+  }
+  .htmdx-doc-section-card > p,
+  .htmdx-doc-section-card > ul,
+  .htmdx-doc-section-card > div > p,
+  .htmdx-doc-section-card > div > ul {
+    color: var(--md-sys-color-on-surface-variant);
+    margin: 0 0 13px;
+  }
+  .htmdx-doc-section-card a { color: var(--md-sys-color-primary); text-underline-offset: 2px; }
+  .htmdx-doc-section-card strong { font-weight: 700; color: var(--md-sys-color-on-surface); }
+
+  .htmdx-card .htmdx-component-body {
+    background: var(--md-sys-color-surface-container-lowest);
+    border-radius: var(--md-sys-shape-corner-large);
+    box-shadow: var(--md-sys-elevation-level1);
+    padding: 18px 22px;
+    color: var(--md-sys-color-on-surface);
+  }
   .htmdx-executive-summary .htmdx-component-body {
-    background: var(--htmdx-accent-soft);
-    border: 1px solid var(--htmdx-accent-edge);
-    border-left: 3px solid var(--htmdx-accent);
-    border-radius: 8px;
-    padding: 16px 20px;
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-surface);
+    border-radius: var(--md-sys-shape-corner-extra-large);
+    padding: 22px 26px;
+    font-family: var(--md-ref-typeface-brand);
   }
   .htmdx-executive-summary .htmdx-component-body p {
     margin: 0;
-    font-size: 1.05rem;
+    font-size: 1.0625rem;
     line-height: 1.55;
-    color: var(--htmdx-ink);
+    color: var(--md-sys-color-on-surface);
   }
+  .htmdx-callout .htmdx-component-body {
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-secondary-container);
+    border-radius: var(--md-sys-shape-corner-large);
+    padding: 18px 22px;
+    font-family: var(--md-ref-typeface-brand);
+  }
+  .htmdx-callout .htmdx-component-body p { margin: 0 0 8px; color: var(--md-sys-color-on-secondary-container); }
+  .htmdx-callout .htmdx-component-body p:last-child { margin-bottom: 0; }
 
   .htmdx-source-quote .htmdx-component-body p {
-    font-size: 0.85rem;
-    color: var(--htmdx-soft);
-    border-left: 2px solid var(--htmdx-line-strong);
-    padding-left: 13px;
-    margin: 5px 0;
-    line-height: 1.5;
+    font-size: 0.9375rem;
+    color: var(--md-sys-color-on-surface-variant);
+    border-left: 3px solid var(--md-sys-color-primary);
+    padding-left: 16px;
+    margin: 6px 0;
+    line-height: 1.55;
+  }
+
+  .htmdx-doc-section-card table:not([data-slot]) { width: 100%; border-collapse: collapse; font-size: 0.9375rem; margin: 6px 0; }
+  .htmdx-doc-section-card table:not([data-slot]) thead th {
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--md-sys-color-on-surface-variant);
+    background: var(--md-sys-color-surface-container-high);
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--md-sys-color-outline);
+    white-space: nowrap;
+  }
+  .htmdx-doc-section-card table:not([data-slot]) tbody th {
+    width: 30%;
+    text-align: left;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface-variant);
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    border-right: 1px solid var(--md-sys-color-outline-variant);
+    vertical-align: top;
+  }
+  .htmdx-doc-section-card table:not([data-slot]) tbody td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    text-align: left;
+    vertical-align: top;
+    color: var(--md-sys-color-on-surface);
+  }
+  .htmdx-doc-section-card table:not([data-slot]) tbody tr:last-child td,
+  .htmdx-doc-section-card table:not([data-slot]) tbody tr:last-child th { border-bottom: none; }
+  .htmdx-doc-section-card table:not([data-slot]) tbody tr:hover td,
+  .htmdx-doc-section-card table:not([data-slot]) tbody tr:hover th {
+    background: color-mix(in srgb, var(--md-sys-color-primary) calc(var(--md-sys-state-hover-opacity) * 100%), transparent);
+  }
+  /* SourceQuote (a markdown-bodied shell) sits inside a card. */
+  .htmdx-source-quote .htmdx-component-body {
+    background: var(--md-sys-color-surface-container-lowest);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-corner-large);
+    padding: 16px 20px;
   }
 
   @media (max-width: 960px) {
-    .htmdx-shell {
-      display: block;
-      max-width: 46rem;
-    }
+    .htmdx-app { grid-template-columns: minmax(0, 1fr); }
     .htmdx-toc { display: none; }
-    .htmdx-masthead { max-width: 46rem; }
+    .htmdx-content { padding: 16px 20px 64px; }
+    .htmdx-hero { padding: 48px 0; border-radius: var(--md-sys-shape-corner-medium); }
+    .htmdx-hero-inner { margin-left: 0; width: auto; padding: 0 24px; }
+    .htmdx-doc-section-card { width: auto; }
+    .htmdx-doc-section > h2 { width: auto; }
   }
-
   @media (max-width: 720px) {
-    htmdx-code { font-size: 14px; }
-    .htmdx-article { max-width: 100%; }
+    .htmdx-hero-title { font-size: 2.5rem; }
+    .htmdx-doc-section-card { padding: 16px; }
   }
 `;

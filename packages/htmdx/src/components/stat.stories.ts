@@ -3,7 +3,7 @@ import { createComponentStory, type ComponentStoryArgs } from '../storybook/comp
 import { stat } from './stat';
 
 const meta = {
-  title: 'Components/Stat',
+  title: 'Components/default/Stat',
   ...createComponentStory(stat),
 } satisfies Meta<ComponentStoryArgs>;
 

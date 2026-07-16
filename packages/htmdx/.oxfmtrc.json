@@ -1,5 +1,6 @@
 {
   "$schema": "../../node_modules/oxfmt/configuration_schema.json",
+  "ignorePatterns": ["bench/scenarios/**", "bench/RESULTS.md", "bench/results.json"],
   "tabWidth": 2,
   "useTabs": false,
   "singleQuote": true,

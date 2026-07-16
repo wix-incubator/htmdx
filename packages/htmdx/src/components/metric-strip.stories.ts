@@ -3,7 +3,7 @@ import { createComponentStory, type ComponentStoryArgs } from '../storybook/comp
 import { metricStrip } from './metric-strip';
 
 const meta = {
-  title: 'Components/MetricStrip',
+  title: 'Components/default/MetricStrip',
   ...createComponentStory(metricStrip),
 } satisfies Meta<ComponentStoryArgs>;
 

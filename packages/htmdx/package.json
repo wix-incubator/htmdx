@@ -1,6 +1,6 @@
 {
   "name": "@wix/htmdx",
-  "version": "2.1.0",
+  "version": "2.2.1",
   "description": "Render editable HTMDX source inside plain HTML artifacts.",
   "keywords": [
     "agents",
@@ -67,7 +67,8 @@
     "build-storybook": "../../node_modules/.bin/storybook build",
     "storybook": "../../node_modules/.bin/storybook dev -p 6006",
     "typecheck": "tsc --noEmit",
-    "test": "vitest"
+    "test": "vitest",
+    "bench": "vitest run --config bench/vitest.config.ts"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.15",
@@ -95,6 +96,8 @@
     "@storybook/web-components-vite": "^10.4.6",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
+    "diff": "^9.0.0",
+    "gpt-tokenizer": "^3.4.0",
     "jsdom": "^27.2.0",
     "lit": "^3.3.2",
     "oxfmt": "^0.54.0",

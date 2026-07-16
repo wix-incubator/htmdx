@@ -3,7 +3,7 @@ import { createComponentStory, type ComponentStoryArgs } from '../storybook/comp
 import { callout } from './callout';
 
 const meta = {
-  title: 'Components/Callout',
+  title: 'Components/default/Callout',
   ...createComponentStory(callout),
 } satisfies Meta<ComponentStoryArgs>;
 

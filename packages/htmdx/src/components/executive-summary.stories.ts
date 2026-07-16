@@ -3,7 +3,7 @@ import { createComponentStory, type ComponentStoryArgs } from '../storybook/comp
 import { executiveSummary } from './executive-summary';
 
 const meta = {
-  title: 'Components/ExecutiveSummary',
+  title: 'Components/default/ExecutiveSummary',
   ...createComponentStory(executiveSummary),
 } satisfies Meta<ComponentStoryArgs>;
 

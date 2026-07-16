@@ -3,7 +3,7 @@ import { createComponentStory, type ComponentStoryArgs } from '../storybook/comp
 import { sourceQuote } from './source-quote';
 
 const meta = {
-  title: 'Components/SourceQuote',
+  title: 'Components/default/SourceQuote',
   ...createComponentStory(sourceQuote),
 } satisfies Meta<ComponentStoryArgs>;
 

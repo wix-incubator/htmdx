@@ -61,6 +61,51 @@ The runtime ships 33 components. `dist/components.json` (served next to the runt
 
 The runtime auto-mounts each bare source block by wrapping it in a generated `<htmdx-code>` host. Write `<htmdx-code>` yourself only for explicit placement or `src`; disable scanning with `register({ automount: false })`.
 
+## Frontmatter
+
+An optional YAML-style frontmatter block at the top of the HTMDX source sets
+document metadata. All fields are single-line strings; unknown fields are
+ignored.
+
+```mdx
+---
+title: Product Strategy
+project: SEO Settings
+owner: Jane Doe
+phase: Discovery
+updated: 2026-07-16
+theme: blue
+logo: creator-kit
+logo-alt: Creator Kit
+---
+```
+
+| Field | Effect |
+| --- | --- |
+| `title` | Document title; overrides the first `# heading` in the hero and sticky header. |
+| `project` | Project name shown in the hero eyebrow and sticky header. |
+| `owner` | Owner label in the hero. |
+| `phase` | Phase label in the hero. |
+| `updated` | Updated label in the hero. |
+| `theme` | Built-in color theme (see Themes below). |
+| `logo` | Logo pinned to the bottom-left of the section nav. Either a built-in logo name (`creator-kit`) or an image URL. Because artifacts are portable single files, use an absolute URL or a `data:` URI, not a relative path. |
+| `logo-alt` | Alt text for the logo image. Omit for a decorative logo. |
+
+The Creator Kit logo ships built into the runtime for now (`logo: creator-kit`);
+this placement will be revisited (see `adr/frontmatter-driven-nav-logo.md`).
+
+## Themes
+
+An artifact picks its accent palette with a frontmatter key:
+
+```yaml
+---
+theme: teal
+---
+```
+
+Ten built-in ids: `blue` (default), `purple`, `green`, `teal`, `amber`, `magenta`, `fuchsia`, `rose`, `lime`, `coral`. An omitted or unknown value falls back to `blue`. Every palette shares the same DNA — the default blue tokens hue-rotated in OKLCh with lightness and chroma kept, then contrast-checked to WCAG AA — so switching themes never changes the artifact's weight or readability. For anything beyond accent color, hosts register custom CSS with `registerTheme` (below).
+
 ## Extending the catalog
 
 Host code — not the artifact — registers extra React components and theme CSS through `window.Htmdx`. The bundle exposes its React copy so extension scripts need no build step:
@@ -103,6 +148,37 @@ injectShadcnTheme();
 ```
 
 `compile(source)` from `@wix/htmdx` returns a static HTML snapshot of the same tree — useful for previews and validation. It needs a DOM (browser or jsdom).
+
+## Token efficiency
+
+Writing an artifact as htmdx costs a fraction of the tokens that the same
+artifact costs in any HTML form: 2.9-4.5x fewer than its own compiled HTML,
+2-3x fewer than hand-written HTML with Tailwind. A reproducible benchmark
+measures two report artifacts, each as the complete single file an agent
+would emit, tokenized with `gpt-tokenizer` (`o200k_base`):
+
+| Format | Decision brief | Executive report | Size vs htmdx |
+| --- | ---: | ---: | --- |
+| htmdx | 950 | 853 | — |
+| compiled HTML (`compile()` output) | 4286 | 2428 | 2.9-4.5x larger |
+| hand-written HTML + Tailwind | 1881 | 2568 | 2.0-3.0x larger |
+| React/JSX (assumes a platform hosts the runtime) | 1263 | 1790 | 1.3-2.1x larger |
+| plain markdown (no components) | 474 | 788 | 0.5-0.9x of htmdx |
+
+Edits are cheaper in the same range: adding an accordion item takes 91
+tokens in htmdx vs 434 in compiled HTML.
+
+Markdown is htmdx's floor, not a competitor. Plain markdown is valid htmdx
+source, so a document pays only for the component blocks it uses. Those
+blocks sometimes beat markdown itself: the executive report is smaller as
+htmdx source (734 tokens) than as plain markdown (788), because a
+`MetricStrip` list is denser than a markdown table. JSX has no such
+gradient: every paragraph pays JSX syntax, and the artifact renders nothing
+without its build pipeline.
+
+Run `yarn bench` to regenerate. Methodology, per-task edit costs, tokenizer
+cross-checks, and limitations:
+[`packages/htmdx/bench/RESULTS.md`](./packages/htmdx/bench/RESULTS.md).
 
 ## Package
 

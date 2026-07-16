@@ -884,9 +884,6 @@ const RUNTIME_CSS = `
   }
 
   .htmdx-component-header { display: none; }
-  section.htmdx-component { margin: 14px 0; }
-  section.htmdx-component:first-child { margin-top: 0; }
-  section.htmdx-component:last-child { margin-bottom: 0; }
 
   .htmdx-doc-section-card > h3,
   .htmdx-doc-section-card h3 {
@@ -895,10 +892,7 @@ const RUNTIME_CSS = `
     line-height: 1.75rem;
     font-weight: 500;
     color: var(--md-sys-color-on-surface);
-    margin: 8px 0 8px;
-  }
-  .htmdx-doc-section-card > h3 {
-    margin-top: 24px;
+    margin: 20px 0;
   }
   .htmdx-doc-section-card > p,
   .htmdx-doc-section-card > ul,

@@ -15,6 +15,7 @@ import {
 } from 'react';
 import { markdownSyntaxSource } from '../components/body-contracts';
 import { inline, renderMarkdown, uniqueSlug, type RenderContext } from '../components/rendering';
+import { BUILT_IN_LOGOS } from '../logos';
 import { THEME_IDS } from '../themes';
 
 // oxlint-disable-next-line no-explicit-any -- component prop shapes are caller-defined
@@ -102,7 +103,7 @@ export function compileDocument(source: string, options: HtmdxReactOptions = {})
       : createElement(
           'div',
           { className: 'htmdx-shell', key: 'shell' },
-          renderToc(context.headings),
+          renderToc(context.headings, meta),
           main,
         );
 
@@ -269,7 +270,7 @@ function renderHero(title: string, lead: string, meta: Record<string, string>) {
   );
 }
 
-function renderToc(headings: { id: string; label: string }[]) {
+function renderToc(headings: { id: string; label: string }[], meta: Record<string, string>) {
   const items = headings.map((heading) =>
     createElement(
       'li',
@@ -283,10 +284,20 @@ function renderToc(headings: { id: string; label: string }[]) {
     ),
   );
 
+  const logoSrc = meta.logo && (BUILT_IN_LOGOS.get(meta.logo.toLowerCase()) ?? meta.logo);
+
   return createElement(
     'nav',
     { className: 'htmdx-toc', 'aria-label': 'Sections', key: 'toc' },
     createElement('ol', { className: 'htmdx-toc-list' }, ...items),
+    logoSrc
+      ? createElement('img', {
+          className: 'htmdx-nav-logo',
+          src: logoSrc,
+          alt: meta['logo-alt'] || '',
+          key: 'logo',
+        })
+      : null,
   );
 }
 

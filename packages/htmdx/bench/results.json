@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "htmdxVersion": "2.1.0",
+    "htmdxVersion": "3.0.0",
     "encoding": "o200k_base",
     "gptTokenizerVersion": "3.4.0"
   },
@@ -54,13 +54,13 @@
         {
           "format": "compiled",
           "artifact": {
-            "tokens": 4286,
-            "chars": 16271
+            "tokens": 4589,
+            "chars": 17303
           },
-          "artifactAltTokens": 4329,
+          "artifactAltTokens": 4624,
           "payload": {
-            "tokens": 4194,
-            "chars": 15946
+            "tokens": 4497,
+            "chars": 16978
           },
           "edits": [
             {
@@ -83,14 +83,14 @@
               "id": "add-accordion-item",
               "description": "Add a fourth risk item about the refund audit trail",
               "cost": {
-                "tokens": 434,
-                "chars": 1618
+                "tokens": 428,
+                "chars": 1622
               }
             }
           ],
           "editTotal": {
-            "tokens": 621,
-            "chars": 2317
+            "tokens": 615,
+            "chars": 2321
           }
         },
         {
@@ -261,20 +261,20 @@
         {
           "format": "compiled",
           "artifact": {
-            "tokens": 2428,
-            "chars": 9336
+            "tokens": 3612,
+            "chars": 13805
           },
-          "artifactAltTokens": 2435,
+          "artifactAltTokens": 3627,
           "payload": {
-            "tokens": 2333,
-            "chars": 8989
+            "tokens": 3517,
+            "chars": 13458
           },
           "edits": [
             {
               "id": "update-savings",
               "description": "Change the annual-savings metric from $1.2M to $1.4M",
               "cost": {
-                "tokens": 22,
+                "tokens": 26,
                 "chars": 68
               }
             },
@@ -282,8 +282,8 @@
               "id": "add-callout",
               "description": "Add a data-freshness callout right after the executive summary",
               "cost": {
-                "tokens": 103,
-                "chars": 380
+                "tokens": 113,
+                "chars": 424
               }
             },
             {
@@ -296,8 +296,8 @@
             }
           ],
           "editTotal": {
-            "tokens": 147,
-            "chars": 516
+            "tokens": 161,
+            "chars": 560
           }
         },
         {

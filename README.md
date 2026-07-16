@@ -11,7 +11,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@2.0.0/dist/browser.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@3.0.0/dist/browser.js" defer></script>
   </head>
   <body>
     <!-- prettier-ignore -->
@@ -47,11 +47,11 @@ Three things are rejected on purpose: imports, MDX `{expressions}`, and function
 
 ## Components
 
-The runtime ships 33 components. `dist/components.json` (served next to the runtime at the same exact version) is the machine-readable contract: every component with its purpose, props, allowed values, and a canonical example.
+The runtime ships 85 components. `dist/components.json` (served next to the runtime at the same exact version) is the machine-readable contract: every component with its purpose, props, allowed values, and a canonical example.
 
-**Report built-ins.** `ExecutiveSummary`, `Callout`, `SourceQuote`, and `Evidence` take markdown bodies and compose — other components work inside them. The structured ones enforce a body format and fail the whole artifact when it does not match: `MetricStrip`, `Stat`, `DecisionTable`, `Timeline` (label–value lists), `ChartBar`, `ChartArea`, `ChartLine`, `ChartPie` (label–number lists), `DataTable` (GFM table), `Compare`, `Finding`, `RiskTable` (markdown list cards).
+**Report built-ins.** `ExecutiveSummary`, `Callout`, and `SourceQuote` take markdown bodies and compose — other components work inside them. The structured ones enforce a body format and fail the whole artifact when it does not match: `MetricStrip`, `Stat`, `DecisionTable`, `Timeline` (label–value lists), `ChartBar`, `ChartArea`, `ChartLine`, `ChartPie` (label–number lists), `DataTable` (GFM table), `Compare`, `Finding`, `Evidence`, `RiskTable` (markdown list cards). Every built-in renders as native shadcn/Tailwind JSX.
 
-**shadcn/ui pack.** `Card` (with `CardHeader`, `CardTitle`, `CardDescription`, `CardContent`, `CardFooter`, `CardAction`), `Badge`, `Button`, `Tabs`, and `Accordion` — vendored shadcn components on real Radix state, with a bundled Tailwind v4 theme. Where both catalogs name a `Card`, the shadcn component wins.
+**shadcn/ui pack.** 19 vendored shadcn families on real Radix state, with a bundled Tailwind v4 theme — `Card` (with `CardHeader`, `CardTitle`, `CardContent`, …), `Badge`, `Button`, `Tabs`, `Accordion`, `Alert`, `Avatar`, `Breadcrumb`, `Dialog`, `HoverCard`, `Popover`, `Progress`, `Separator`, `Skeleton`, `Table`, `Toggle`, `ToggleGroup`, `Tooltip`, and `AspectRatio`. Where both catalogs name a `Card`, the shadcn component wins.
 
 ## Source blocks
 
@@ -111,7 +111,7 @@ Ten built-in ids: `blue` (default), `purple`, `green`, `teal`, `amber`, `magenta
 Host code — not the artifact — registers extra React components and theme CSS through `window.Htmdx`. The bundle exposes its React copy so extension scripts need no build step:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@2.0.0/dist/browser.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@3.0.0/dist/browser.js" defer></script>
 <script>
   window.addEventListener('htmdx:ready', () => {
     const { createElement } = window.Htmdx.React;
@@ -160,13 +160,13 @@ would emit, tokenized with `gpt-tokenizer` (`o200k_base`):
 | Format | Decision brief | Executive report | Size vs htmdx |
 | --- | ---: | ---: | --- |
 | htmdx | 950 | 853 | — |
-| compiled HTML (`compile()` output) | 4286 | 2428 | 2.9-4.5x larger |
+| compiled HTML (`compile()` output) | 4589 | 3612 | 4.2-4.8x larger |
 | hand-written HTML + Tailwind | 1881 | 2568 | 2.0-3.0x larger |
 | React/JSX (assumes a platform hosts the runtime) | 1263 | 1790 | 1.3-2.1x larger |
 | plain markdown (no components) | 474 | 788 | 0.5-0.9x of htmdx |
 
 Edits are cheaper in the same range: adding an accordion item takes 91
-tokens in htmdx vs 434 in compiled HTML.
+tokens in htmdx vs 428 in compiled HTML.
 
 Markdown is htmdx's floor, not a competitor. Plain markdown is valid htmdx
 source, so a document pays only for the component blocks it uses. Those

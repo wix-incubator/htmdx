@@ -198,6 +198,7 @@ values parse as booleans/numbers/JSON when they look like data. Well-formed
 bodies are parsed as XML, so camelCase attributes like `defaultValue` survive
 verbatim; malformed bodies fall back to forgiving HTML parsing.
 
-Security note: unlike the string renderer's inert HTML output, the React path
-runs the registered component code with agent-authored props. Components are
-host-owned and whitelisted; the source still cannot express code, only data.
+Security note: the React runtime runs the registered component code with
+agent-authored props (`compile()` can still emit a static HTML snapshot of the
+same tree). Components are host-owned and whitelisted; the source still cannot
+express code, only data.

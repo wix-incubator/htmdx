@@ -712,6 +712,16 @@ const RUNTIME_CSS = `
     margin: 0;
     padding: 0;
   }
+  .htmdx-nav-logo {
+    position: fixed;
+    left: 30px;
+    bottom: 30px;
+    width: 54px;
+    height: 54px;
+    object-fit: contain;
+    object-position: bottom left;
+    pointer-events: none;
+  }
   .htmdx-toc-link {
     display: block;
     padding: 7px 0 7px 12px;
@@ -968,6 +978,7 @@ const RUNTIME_CSS = `
       max-width: 46rem;
     }
     .htmdx-toc { display: none; }
+    .htmdx-nav-logo { display: none; }
     .htmdx-hero { max-width: 46rem; }
   }
 

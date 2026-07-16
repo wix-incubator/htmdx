@@ -61,6 +61,39 @@ The runtime ships 33 components. `dist/components.json` (served next to the runt
 
 The runtime auto-mounts each bare source block by wrapping it in a generated `<htmdx-code>` host. Write `<htmdx-code>` yourself only for explicit placement or `src`; disable scanning with `register({ automount: false })`.
 
+## Frontmatter
+
+An optional YAML-style frontmatter block at the top of the HTMDX source sets
+document metadata. All fields are single-line strings; unknown fields are
+ignored.
+
+```mdx
+---
+title: Product Strategy
+project: SEO Settings
+owner: Jane Doe
+phase: Discovery
+updated: 2026-07-16
+theme: blue
+logo: creator-kit
+logo-alt: Creator Kit
+---
+```
+
+| Field | Effect |
+| --- | --- |
+| `title` | Document title; overrides the first `# heading` in the hero and sticky header. |
+| `project` | Project name shown in the hero eyebrow and sticky header. |
+| `owner` | Owner label in the hero. |
+| `phase` | Phase label in the hero. |
+| `updated` | Updated label in the hero. |
+| `theme` | Built-in color theme (see Themes below). |
+| `logo` | Logo pinned to the bottom-left of the section nav. Either a built-in logo name (`creator-kit`) or an image URL. Because artifacts are portable single files, use an absolute URL or a `data:` URI, not a relative path. |
+| `logo-alt` | Alt text for the logo image. Omit for a decorative logo. |
+
+The Creator Kit logo ships built into the runtime for now (`logo: creator-kit`);
+this placement will be revisited (see `adr/frontmatter-driven-nav-logo.md`).
+
 ## Themes
 
 An artifact picks its accent palette with a frontmatter key:

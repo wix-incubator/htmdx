@@ -13,8 +13,10 @@ import {
   type HtmdxReactComponents,
 } from './react';
 import { shadcnComponents } from './react/shadcn';
+import { THEME_CSS } from './themes';
 import { VERSION } from './version';
 
+export { THEME_IDS, type HtmdxThemeId } from './themes';
 export { VERSION } from './version';
 export { injectShadcnTheme, shadcnComponents } from './react/shadcn';
 export {
@@ -178,7 +180,7 @@ export function register(options: HtmdxRegisterOptions = {}) {
   if (!document.getElementById(STYLE_ID)) {
     const style = document.createElement('style');
     style.id = STYLE_ID;
-    style.textContent = RUNTIME_CSS;
+    style.textContent = RUNTIME_CSS + THEME_CSS;
     document.head.append(style);
   }
   injectTailwindBrowser(options.tailwind);
@@ -710,6 +712,16 @@ const RUNTIME_CSS = `
     margin: 0;
     padding: 0;
   }
+  .htmdx-nav-logo {
+    position: fixed;
+    left: 30px;
+    bottom: 30px;
+    width: 54px;
+    height: 54px;
+    object-fit: contain;
+    object-position: bottom left;
+    pointer-events: none;
+  }
   .htmdx-toc-link {
     display: block;
     padding: 7px 0 7px 12px;
@@ -966,6 +978,7 @@ const RUNTIME_CSS = `
       max-width: 46rem;
     }
     .htmdx-toc { display: none; }
+    .htmdx-nav-logo { display: none; }
     .htmdx-hero { max-width: 46rem; }
   }
 

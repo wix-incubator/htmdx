@@ -124,6 +124,15 @@ htmdx vs 434 in compiled HTML. Regenerate with `yarn bench`; methodology,
 edit-cost tables, and limitations live in
 [`packages/htmdx/bench/RESULTS.md`](./packages/htmdx/bench/RESULTS.md).
 
+Markdown is the floor, not a competitor: plain markdown is valid htmdx
+source, so a document only pays for the component blocks it opts into (plus
+the fixed shell). Component shorthands can even beat markdown — the
+executive report's htmdx source (734 tokens) is smaller than its plain
+markdown equivalent (788) because `MetricStrip`/`RiskTable` lists are denser
+than markdown tables. JSX has no such gradient: every paragraph pays JSX
+syntax, and the file cannot degrade to readable text without its build
+pipeline.
+
 ## Package
 
 - npm: `@wix/htmdx` · CDN entry: `dist/browser.js` (~90KB gzip) · module entries: `.`, `./react`, `./react/shadcn`

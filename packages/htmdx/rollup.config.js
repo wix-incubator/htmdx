@@ -10,19 +10,29 @@ const packageDirectory = dirname(fileURLToPath(import.meta.url));
 const packageJson = JSON.parse(await readFile(resolve(packageDirectory, 'package.json'), 'utf8'));
 const packageVersion = packageJson.version;
 
+// React and shadcn deps stay external in the ESM entries; consumers'
+// bundlers resolve them. The browser IIFEs bundle everything instead.
+const externalDependencies = (id) =>
+  !id.startsWith('.') && !id.startsWith('/') && !id.startsWith('virtual:');
+
 const moduleConfig = {
-  input: './src/index.ts',
+  input: {
+    index: './src/index.ts',
+    react: './src/react/index.ts',
+    'react-shadcn': './src/react/shadcn/index.ts',
+  },
+  external: externalDependencies,
   output: {
     format: 'esm',
     dir: './dist',
-    entryFileNames: 'index.js',
+    entryFileNames: '[name].js',
     chunkFileNames: '[name].js',
     sourcemap: true,
   },
   plugins: [packageVersionPlugin(packageVersion), typescript(), terser()],
 };
 
-function emitComponentManifest() {
+function emitComponentManifest(targetFile) {
   return {
     name: 'emit-component-manifest',
     async writeBundle(outputOptions) {
@@ -31,7 +41,7 @@ function emitComponentManifest() {
       const { default: manifest } = await import(moduleUrl);
 
       await writeFile(
-        resolve(packageDirectory, 'dist/components.json'),
+        resolve(packageDirectory, targetFile),
         `${JSON.stringify(manifest, null, 2)}\n`,
       );
       await unlink(outputFile);
@@ -43,22 +53,16 @@ function emitComponentManifest() {
 export default defineConfig([
   moduleConfig,
   {
-    ...moduleConfig,
-    input: './src/browser.ts',
-    output: {
-      format: 'iife',
-      file: './dist/browser.js',
-      name: 'Htmdx',
-      sourcemap: true,
-    },
-  },
-  {
     input: './src/component-manifest.ts',
     output: {
       format: 'esm',
       file: './dist/.components-manifest.js',
       sourcemap: true,
     },
-    plugins: [packageVersionPlugin(packageVersion), typescript(), emitComponentManifest()],
+    plugins: [
+      packageVersionPlugin(packageVersion),
+      typescript(),
+      emitComponentManifest('dist/components.json'),
+    ],
   },
 ]);

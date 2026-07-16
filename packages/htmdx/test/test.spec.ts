@@ -1,3 +1,4 @@
+import { createElement, type ReactNode } from 'react';
 import { describe, expect, test, vi } from 'vitest';
 import {
   DEFAULT_TAG_NAME,
@@ -98,8 +99,8 @@ Context.`);
 </ProductCard>`,
       {
         components: {
-          ProductCard: ({ body, markdown }) =>
-            `<aside class="product-card">${markdown(body)}</aside>`,
+          ProductCard: (props: { children?: ReactNode }) =>
+            createElement('aside', { className: 'product-card' }, props.children),
         },
       },
     );
@@ -117,7 +118,8 @@ Context.`);
   test('renders globally registered consumer components', () => {
     registerComponent(
       'LaunchPlan',
-      ({ body, markdown }) => `<aside class="launch-plan">${markdown(body)}</aside>`,
+      (props: { children?: ReactNode }) =>
+        createElement('aside', { className: 'launch-plan' }, props.children),
       { rerender: false },
     );
 
@@ -135,9 +137,10 @@ Context.`);
   test('registers multiple consumer components', () => {
     registerComponents(
       {
-        ProductCard: ({ body, markdown }) =>
-          `<aside class="product-card">${markdown(body)}</aside>`,
-        ProductBadge: ({ body, inline }) => `<span class="product-badge">${inline(body)}</span>`,
+        ProductCard: (props: { children?: ReactNode }) =>
+          createElement('aside', { className: 'product-card' }, props.children),
+        ProductBadge: (props: { children?: ReactNode }) =>
+          createElement('span', { className: 'product-badge' }, props.children),
       },
       { rerender: false },
     );
@@ -276,11 +279,11 @@ Rendered without an authored host.
   test('rerenders existing hosts after a consumer component script loads', async () => {
     register({ tagName: 'htmdx-late-extension' });
     document.body.innerHTML = `<htmdx-late-extension>
-      <template type="text/htmdx">
+      <script type="text/htmdx">
 <LateCard>
 Loaded after runtime.
 </LateCard>
-      </template>
+      </script>
     </htmdx-late-extension>`;
 
     await Promise.resolve();
@@ -290,7 +293,9 @@ Loaded after runtime.
       'unknown component',
     );
 
-    await registerComponent('LateCard', ({ body, markdown }) => `<aside>${markdown(body)}</aside>`);
+    await registerComponent('LateCard', (props: { children?: ReactNode }) =>
+      createElement('aside', null, props.children),
+    );
 
     expect(document.querySelector('htmdx-late-extension')?.innerHTML).toContain(
       'Loaded after runtime.',
@@ -340,14 +345,13 @@ Context.</script>`;
     expect(() => tokenizeBlocks('<Nope>content</Nope>')).toThrow('unknown component <Nope>');
   });
 
-  test('rejects raw nested HTML inside component bodies', () => {
-    expect(() =>
-      tokenizeBlocks(`<Card>
-<div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">Test</div>
-</Card>`),
-    ).toThrow(
-      'Invalid body for <Card> at body line 1, column 1: nested JSX is not allowed; expected one-level HTMDX without nested JSX.',
-    );
+  test('allows nested HTML inside composable component bodies', () => {
+    const rendered = compile(`<Card>
+<div class="rounded-lg border p-4">Test</div>
+</Card>`);
+
+    expect(rendered).toMatchObject({ ok: true, components: ['Card'] });
+    expect(rendered.ok && rendered.html).toContain('class="rounded-lg border p-4"');
   });
 
   test('strips unsafe link schemes', () => {

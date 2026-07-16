@@ -5,24 +5,22 @@ import { builtInComponents } from '../src/components/catalog';
 import { VERSION } from '../src';
 
 describe('component manifest', () => {
-  test('projects the ordered built-in catalog without executable fields', () => {
+  test('projects the merged runtime catalog without executable fields', () => {
     const manifest = createComponentManifest();
 
     expect(Object.keys(manifest)).toEqual(['format', 'runtime', 'note', 'components']);
-    expect(manifest.format).toBe('htmdx@1');
-    expect(manifest.components.map(({ name }) => name)).toEqual(
-      builtInComponents.map(({ name }) => name),
+    expect(manifest.format).toBe('htmdx-react@1');
+
+    const builtinEntries = manifest.components.filter((entry) => entry.source === 'builtin');
+    // The shadcn Card shadows the built-in Card in the merged runtime.
+    expect(builtinEntries.map(({ name }) => name)).toEqual(
+      builtInComponents.filter(({ name }) => name !== 'Card').map(({ name }) => name),
     );
-    expect(manifest.components).toEqual(
-      builtInComponents.map(({ name, body, purpose, example }) => ({
-        name,
-        body,
-        purpose,
-        example,
-      })),
-    );
+    expect(manifest.components.some((entry) => entry.source === 'shadcn')).toBe(true);
     for (const component of manifest.components) {
-      expect(Object.keys(component)).toEqual(['name', 'body', 'purpose', 'example']);
+      expect(component.name).toBeTruthy();
+      expect(component.purpose).toBeTruthy();
+      expect('renderer' in component).toBe(false);
     }
   });
 
@@ -36,13 +34,11 @@ describe('component manifest', () => {
   test('documents the global authoring and failure contract', () => {
     const note = createComponentManifest().note;
 
-    expect(note).toContain('built-ins only');
-    expect(note).toContain('one-level JSX');
-    expect(note).toContain('imports');
-    expect(note).toContain('exports');
+    expect(note).toContain('built-in catalog');
+    expect(note).toContain('shadcn');
+    expect(note).toContain('Imports');
     expect(note).toContain('expressions');
-    expect(note).toContain('nested JSX');
-    expect(note).toContain('fails compilation of the whole HTMDX artifact');
+    expect(note).toContain('function-valued props');
   });
 
   test.each(['ChartArea', 'ChartLine', 'ChartPie'])(

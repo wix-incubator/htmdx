@@ -20,7 +20,6 @@
     "dist/**/*.js",
     "dist/**/*.d.ts",
     "dist/components.json",
-    "dist/react-components.json",
     "!dist/src/**/*.stories.d.ts",
     "!dist/src/storybook/**",
     "!dist/src/react/demo/**",
@@ -50,10 +49,6 @@
     "./react/shadcn": {
       "types": "./dist/src/react/shadcn/index.d.ts",
       "default": "./dist/react-shadcn.js"
-    },
-    "./browser-react": {
-      "types": "./dist/src/react/browser.d.ts",
-      "default": "./dist/browser-react.js"
     }
   },
   "publishConfig": {
@@ -66,8 +61,8 @@
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
     "build": "yarn build:library && yarn build-storybook",
-    "build:library": "yarn typecheck && rollup -c && yarn build:browser-react",
-    "build:browser-react": "vite build -c vite.browser-react.config.ts",
+    "build:library": "yarn typecheck && rollup -c && yarn build:browser",
+    "build:browser": "vite build -c vite.browser.config.ts",
     "build:react-demo": "vite build -c vite.demo.config.ts && cp src/react/demo/index.html dist/react-demo/ && cp src/react/demo/artifact.html dist/",
     "build-storybook": "../../node_modules/.bin/storybook build",
     "storybook": "../../node_modules/.bin/storybook dev -p 6006",

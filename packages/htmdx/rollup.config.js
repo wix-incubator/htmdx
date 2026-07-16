@@ -53,17 +53,6 @@ function emitComponentManifest(targetFile) {
 export default defineConfig([
   moduleConfig,
   {
-    ...moduleConfig,
-    input: './src/browser.ts',
-    external: undefined,
-    output: {
-      format: 'iife',
-      file: './dist/browser.js',
-      name: 'Htmdx',
-      sourcemap: true,
-    },
-  },
-  {
     input: './src/component-manifest.ts',
     output: {
       format: 'esm',
@@ -74,19 +63,6 @@ export default defineConfig([
       packageVersionPlugin(packageVersion),
       typescript(),
       emitComponentManifest('dist/components.json'),
-    ],
-  },
-  {
-    input: './src/react/component-manifest.ts',
-    output: {
-      format: 'esm',
-      file: './dist/.react-components-manifest.js',
-      sourcemap: true,
-    },
-    plugins: [
-      packageVersionPlugin(packageVersion),
-      typescript(),
-      emitComponentManifest('dist/react-components.json'),
     ],
   },
 ]);

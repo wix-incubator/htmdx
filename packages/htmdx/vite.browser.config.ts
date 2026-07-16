@@ -1,5 +1,5 @@
-// Builds dist/browser-react.js: the self-contained IIFE (React + shadcn pack
-// + htmdx React renderer) for plain HTML artifacts, mirroring dist/browser.js.
+// Builds dist/browser.js: the self-contained IIFE (React + built-ins + shadcn
+// + theme) for plain HTML artifacts.
 import { readFileSync } from 'node:fs';
 import { defineConfig } from 'vite';
 import { packageVersionPlugin } from './build/package-version-plugin.js';
@@ -13,10 +13,10 @@ export default defineConfig({
   define: { 'process.env.NODE_ENV': JSON.stringify('production') },
   build: {
     lib: {
-      entry: 'src/react/browser.ts',
-      name: 'HtmdxReact',
+      entry: 'src/browser.ts',
+      name: 'Htmdx',
       formats: ['iife'],
-      fileName: () => 'browser-react.js',
+      fileName: () => 'browser.js',
     },
     outDir: 'dist',
     emptyOutDir: false,

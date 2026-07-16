@@ -50,13 +50,117 @@ export function Htmdx(props: { source: string } & HtmdxReactOptions): ReactEleme
   return compileToReact(props.source, { components: props.components });
 }
 
-export { builtInReactComponents, bridgeStringComponent } from './builtins';
+export type HtmdxDocument = {
+  element: ReactElement;
+  title: string;
+  headings: { id: string; label: string }[];
+  components: string[];
+};
+
+// Full-document compile: article content wrapped in the masthead + section
+// rail shell (same class names the runtime CSS styles). Used by the core
+// register()/compile() so every host renders the complete page chrome.
+export function compileDocument(source: string, options: HtmdxReactOptions = {}): HtmdxDocument {
+  const components = options.components || {};
+  const registry = new Map(Object.keys(components).map((name) => [name.toLowerCase(), name]));
+  const title = titleFromSource(source);
+  const normalized = stripFrontmatterAndComments(source);
+  const blocks = tokenize(normalized, registry);
+  const context: RenderContext = { headings: [], slugCounts: new Map() };
+
+  const children = blocks.map((block, index) => {
+    if (block.type === 'markdown') {
+      return rawHtml('div', renderMarkdown(block.value, context), `md-${index}`);
+    }
+    return renderComponentBlock(block, components, `c-${index}`);
+  });
+
+  const article = createElement(
+    'main',
+    { className: 'htmdx-page', key: 'main' },
+    createElement('article', { className: 'htmdx-article' }, ...children),
+  );
+
+  const masthead = title
+    ? createElement('header', { className: 'htmdx-masthead', key: 'masthead' }, [
+        rawHtml('h1', inline(title), 'title'),
+      ])
+    : null;
+
+  const body =
+    context.headings.length < 2
+      ? article
+      : createElement(
+          'div',
+          { className: 'htmdx-shell', key: 'shell' },
+          renderToc(context.headings),
+          article,
+        );
+
+  return {
+    element: createElement(Fragment, null, masthead, body),
+    title,
+    headings: context.headings,
+    components: blocks.filter((block) => block.type === 'component').map((block) => block.name),
+  };
+}
+
+function renderToc(headings: { id: string; label: string }[]) {
+  const items = headings.map((heading) =>
+    createElement(
+      'li',
+      { className: 'htmdx-toc-item', key: heading.id },
+      createElement('a', {
+        className: 'htmdx-toc-link',
+        href: `#${heading.id}`,
+        'data-htmdx-target': heading.id,
+        dangerouslySetInnerHTML: { __html: inline(heading.label) },
+      }),
+    ),
+  );
+
+  return createElement(
+    'nav',
+    { className: 'htmdx-toc', 'aria-label': 'Sections', key: 'toc' },
+    createElement('ol', { className: 'htmdx-toc-list' }, ...items),
+  );
+}
+
+function titleFromSource(source: string) {
+  const frontmatterTitle = source.match(
+    /^---[\s\S]*?\ntitle:\s*["']?([^"'\n]+)["']?\s*\n[\s\S]*?---/,
+  );
+  if (frontmatterTitle) {
+    return frontmatterTitle[1].trim();
+  }
+
+  const markdownTitle = source.match(/^#\s+(.+)$/m);
+  return markdownTitle ? markdownTitle[1].trim() : '';
+}
+
+export { builtInReactComponents } from './builtins';
 
 export function listComponents(source: string, components: HtmdxReactComponents = {}): string[] {
   const registry = new Map(Object.keys(components).map((name) => [name.toLowerCase(), name]));
   return tokenize(stripFrontmatterAndComments(source), registry)
     .filter((block) => block.type === 'component')
     .map((block) => block.name);
+}
+
+export type HtmdxSourceToken =
+  | { type: 'markdown'; value: string }
+  | { type: 'component'; name: string; body: string };
+
+export function tokenizeSource(
+  source: string,
+  components: HtmdxReactComponents = {},
+): HtmdxSourceToken[] {
+  const registry = new Map(Object.keys(components).map((name) => [name.toLowerCase(), name]));
+  return tokenize(stripFrontmatterAndComments(source), registry).map((block) =>
+    block.type === 'markdown'
+      ? { type: 'markdown' as const, value: block.value }
+      : { type: 'component' as const, name: block.name, body: block.body },
+  );
 }
 
 function renderComponentBlock(
@@ -85,11 +189,14 @@ function bodyToChildren(
     return null;
   }
 
-  const nodes = parseBodyNodes(body);
-  const hasElements = nodes.some((node) => node.nodeType === Node.ELEMENT_NODE);
+  // Element detection runs on the masked syntax so tags inside inline code
+  // or fences (markdown literals) don't get parsed as component markup.
+  const hasElements = /<[A-Za-z][A-Za-z0-9]*(\s[^>]*)?\/?>/.test(markdownSyntaxSource(body));
   if (!hasElements) {
     return rawHtml('div', renderMarkdown(body, { headings: [], slugCounts: new Map() }), keyPrefix);
   }
+
+  const nodes = parseBodyNodes(body);
 
   const children = nodes
     .map((node, index) => nodeToReact(node, components, `${keyPrefix}-${index}`))
@@ -159,6 +266,12 @@ function tokenize(source: string, registry: Map<string, string>): Block[] {
     const [, rawName, attrs, selfClosing] = match;
     const canonical = registry.get(rawName.toLowerCase());
     if (!canonical) {
+      // Capitalized tags are component syntax; an unregistered one is a
+      // typo or a missing registration, not markdown — fail loudly so
+      // agents get feedback instead of silently degraded output.
+      if (/^[A-Z]/.test(rawName)) {
+        throw new Error(`unknown component <${rawName}>`);
+      }
       continue;
     }
 

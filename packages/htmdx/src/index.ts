@@ -1,15 +1,31 @@
-import { markdownSyntaxSource, parseComponentBody } from './components/body-contracts';
-import { builtInComponents, createBuiltInRenderer } from './components/catalog';
+// React-only htmdx runtime. HTMDX source renders through React everywhere:
+// built-ins are React components, the shadcn/ui pack is included, and
+// compile() produces a static HTML snapshot of the same tree.
+import type { ReactElement } from 'react';
+import { flushSync } from 'react-dom';
+import { createRoot, type Root } from 'react-dom/client';
+import { escapeHtml } from './components/rendering';
+import {
+  builtInReactComponents,
+  compileDocument,
+  tokenizeSource,
+  type HtmdxReactComponent,
+  type HtmdxReactComponents,
+} from './react';
+import { shadcnComponents } from './react/shadcn';
 import { VERSION } from './version';
 
 export { VERSION } from './version';
-import {
-  escapeHtml,
-  inline,
-  renderMarkdown,
-  type HtmdxHeading,
-  type RenderContext,
-} from './components/rendering';
+export { injectShadcnTheme, shadcnComponents } from './react/shadcn';
+export {
+  builtInReactComponents,
+  compileDocument,
+  compileToReact,
+  Htmdx,
+  listComponents,
+  type HtmdxReactComponent,
+  type HtmdxReactComponents,
+} from './react';
 
 export type HtmdxToken =
   | { type: 'markdown'; value: string }
@@ -19,27 +35,13 @@ export type HtmdxCompileResult =
   | { ok: true; html: string; components: string[] }
   | { ok: false; error: string };
 
-export type HtmdxComponentRenderContext = {
-  name: string;
-  body: string;
-  markdown: (source: string) => string;
-  inline: (source: string) => string;
-  escapeHtml: (source: string) => string;
-};
-
-export type HtmdxComponentRenderer = (context: HtmdxComponentRenderContext) => string;
-
-export type HtmdxComponentDefinition = HtmdxComponentRenderer | { render: HtmdxComponentRenderer };
-
-export type HtmdxComponentRegistry = Record<string, HtmdxComponentDefinition>;
-
 export type HtmdxThemeDefinition = {
   id?: string;
   css: string;
 };
 
 export type HtmdxCompileOptions = {
-  components?: HtmdxComponentRegistry;
+  components?: HtmdxReactComponents;
 };
 
 export type HtmdxExtensionOptions = {
@@ -50,24 +52,12 @@ export type HtmdxSourceResult =
   | { ok: true; kind: 'embedded' | 'src'; source: string }
   | { ok: false; error: string; source?: string };
 
-export type HtmdxRenderOverrideResult = { components?: string[] } | void;
-
-export type HtmdxRenderOverride = (
-  host: Element,
-  source: string,
-) => HtmdxRenderOverrideResult | Promise<HtmdxRenderOverrideResult>;
-
 export type HtmdxRegisterOptions = {
   tagName?: string;
   sourceSelector?: string;
   theme?: HtmdxThemeDefinition;
   tailwind?: boolean | { src?: string };
   automount?: boolean;
-  // Replaces the string compile step while keeping source resolution,
-  // automount, error rendering, and lifecycle events. Used by the React
-  // renderer entry; not needed for regular string-based usage.
-  render?: HtmdxRenderOverride;
-  cleanup?: (host: Element) => void;
 } & HtmdxCompileOptions;
 
 const STYLE_ID = 'htmdx-runtime-v1-styles';
@@ -76,42 +66,71 @@ export const DEFAULT_TAG_NAME = 'htmdx-code';
 export const DEFAULT_TAILWIND_BROWSER_SRC = 'https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4';
 const DEFAULT_SOURCE_SELECTOR = 'script[type="text/htmdx"], template[type="text/htmdx"]';
 
-type InternalComponentRenderer = (name: string, body: string) => string;
-type InternalComponentRegistry = Map<string, InternalComponentRenderer>;
-const globalComponentDefinitions: HtmdxComponentRegistry = {};
+const globalReactComponents: HtmdxReactComponents = {};
 const registeredTagNames = new Set([DEFAULT_TAG_NAME]);
 const sourceCache = new WeakMap<Element, HtmdxSourceResult & { ok: true }>();
 
-const builtInRenderers: InternalComponentRegistry = new Map(
-  builtInComponents.map((component) => [component.name, createBuiltInRenderer(component)]),
-);
+type HostRoot = { root: Root; renderError: { current: unknown } };
+const reactRoots = new WeakMap<Element, HostRoot>();
+
+function componentsFor(options: HtmdxCompileOptions): HtmdxReactComponents {
+  return {
+    ...builtInReactComponents,
+    ...shadcnComponents,
+    ...globalReactComponents,
+    ...options.components,
+  };
+}
 
 export function compile(source: string, options: HtmdxCompileOptions = {}): HtmdxCompileResult {
   try {
-    const renderers = createComponentRegistry(options);
-    const title = titleFromSource(source);
-    const normalized = stripFrontmatterAndComments(source);
-    const tokens = tokenizeBlocksWithRegistry(normalized, renderers);
-    const context: RenderContext = { headings: [], slugCounts: new Map() };
-    const html = tokens.map((token) => renderToken(token, context, renderers)).join('');
-
+    const doc = compileDocument(source, { components: componentsFor(options) });
     return {
       ok: true,
-      html: renderDocument(title, html, context.headings),
-      components: tokens.filter((token) => token.type === 'component').map((token) => token.name),
+      html: renderStaticHtml(doc.element),
+      components: doc.components,
     };
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : String(error) };
   }
 }
 
+// Static snapshot through the client renderer on a detached container.
+// react-dom/server is deliberately not used: the client path keeps ~57KB
+// gzip out of the browser bundle and shares one render pipeline with
+// renderHost (including onUncaughtError-based error capture).
+function renderStaticHtml(element: ReactElement): string {
+  if (!globalThis.document) {
+    throw new Error('compile requires a DOM (browser or jsdom)');
+  }
+
+  const container = document.createElement('div');
+  let caught: unknown = null;
+  const root = createRoot(container, {
+    onUncaughtError: (error) => {
+      caught = error;
+    },
+  });
+  try {
+    flushSync(() => root.render(element));
+    if (caught) {
+      throw caught;
+    }
+    return container.innerHTML;
+  } finally {
+    root.unmount();
+  }
+}
+
+// Extension API: register React components globally. Host-owned code only;
+// the HTMDX source itself stays declarative data.
 export function registerComponent(
   name: string,
-  definition: HtmdxComponentDefinition,
+  component: HtmdxReactComponent,
   options: HtmdxExtensionOptions = {},
 ) {
   assertComponentName(name);
-  globalComponentDefinitions[name] = definition;
+  globalReactComponents[name] = component;
   if (options.rerender !== false) {
     return rerender();
   }
@@ -119,12 +138,12 @@ export function registerComponent(
 }
 
 export function registerComponents(
-  components: HtmdxComponentRegistry,
+  components: HtmdxReactComponents,
   options: HtmdxExtensionOptions = {},
 ) {
-  for (const [name, definition] of Object.entries(components)) {
+  for (const [name, component] of Object.entries(components)) {
     assertComponentName(name);
-    globalComponentDefinitions[name] = definition;
+    globalReactComponents[name] = component;
   }
   if (options.rerender !== false) {
     return rerender();
@@ -175,7 +194,11 @@ export function register(options: HtmdxRegisterOptions = {}) {
         }
 
         disconnectedCallback() {
-          options.cleanup?.(this);
+          const hostRoot = reactRoots.get(this);
+          if (hostRoot) {
+            reactRoots.delete(this);
+            hostRoot.root.unmount();
+          }
         }
       },
     );
@@ -236,47 +259,53 @@ export async function renderHost(host: Element, options: HtmdxRegisterOptions = 
 
   sourceCache.set(host, sourceResult);
 
-  if (options.render) {
-    try {
-      const result = await options.render(host, sourceResult.source);
-      host.dispatchEvent(
-        new CustomEvent('htmdx:rendered', {
-          detail: {
-            source: sourceResult.kind,
-            components: result?.components || [],
-            version: VERSION,
+  try {
+    const doc = compileDocument(sourceResult.source, { components: componentsFor(options) });
+    let hostRoot = reactRoots.get(host);
+    if (!hostRoot) {
+      // The embedded source element is consumed here; the source is cached
+      // above, so rerenders keep working.
+      host.innerHTML = '';
+      const renderErrorBox: HostRoot['renderError'] = { current: null };
+      hostRoot = {
+        root: createRoot(host, {
+          // React roots swallow render errors instead of throwing; capture
+          // them so the error fallback below still works.
+          onUncaughtError: (error) => {
+            renderErrorBox.current = error;
           },
-          bubbles: true,
         }),
-      );
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      renderError(host, message, sourceResult.source);
-      host.dispatchEvent(
-        new CustomEvent('htmdx:error', {
-          detail: { ok: false, error: message },
-          bubbles: true,
-        }),
-      );
+        renderError: renderErrorBox,
+      };
+      reactRoots.set(host, hostRoot);
     }
-    return;
+    hostRoot.renderError.current = null;
+    flushSync(() => hostRoot.root.render(doc.element));
+    if (hostRoot.renderError.current) {
+      throw hostRoot.renderError.current;
+    }
+    activateSectionRail(host);
+    host.dispatchEvent(
+      new CustomEvent('htmdx:rendered', {
+        detail: { source: sourceResult.kind, components: doc.components, version: VERSION },
+        bubbles: true,
+      }),
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    const hostRoot = reactRoots.get(host);
+    if (hostRoot) {
+      reactRoots.delete(host);
+      hostRoot.root.unmount();
+    }
+    renderError(host, message, sourceResult.source);
+    host.dispatchEvent(
+      new CustomEvent('htmdx:error', {
+        detail: { ok: false, error: message },
+        bubbles: true,
+      }),
+    );
   }
-
-  const rendered = compile(sourceResult.source, options);
-  if (!rendered.ok) {
-    renderError(host, rendered.error, sourceResult.source);
-    host.dispatchEvent(new CustomEvent('htmdx:error', { detail: rendered, bubbles: true }));
-    return;
-  }
-
-  host.innerHTML = rendered.html;
-  activateSectionRail(host);
-  host.dispatchEvent(
-    new CustomEvent('htmdx:rendered', {
-      detail: { source: sourceResult.kind, components: rendered.components, version: VERSION },
-      bubbles: true,
-    }),
-  );
 }
 
 export async function resolveSource(
@@ -388,68 +417,11 @@ function activateSectionRail(root: Element) {
 }
 
 export function tokenizeBlocks(source: string, options: HtmdxCompileOptions = {}): HtmdxToken[] {
-  return tokenizeBlocksWithRegistry(source, createComponentRegistry(options));
+  return tokenizeSource(source, componentsFor(options));
 }
 
-function tokenizeBlocksWithRegistry(
-  source: string,
-  renderers: InternalComponentRegistry,
-): HtmdxToken[] {
-  const tokens: HtmdxToken[] = [];
-  const componentPattern = /<([A-Za-z][A-Za-z0-9]*)\b[^>]*>([\s\S]*?)<\/\1>/g;
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
-
-  while ((match = componentPattern.exec(source))) {
-    const beforeSource = source.slice(lastIndex, match.index);
-    assertNoSelfClosingComponents(beforeSource, renderers);
-    const before = beforeSource.trim();
-    if (before) {
-      tokens.push({ type: 'markdown', value: before });
-    }
-
-    const name = canonicalComponentName(match[1], renderers);
-    if (!renderers.has(name)) {
-      throw new Error(`unknown component <${name}>`);
-    }
-
-    const body = match[2].trim();
-    parseComponentBody(name, 'markdown', body);
-    tokens.push({ type: 'component', name, body });
-    lastIndex = componentPattern.lastIndex;
-  }
-
-  const afterSource = source.slice(lastIndex);
-  assertNoSelfClosingComponents(afterSource, renderers);
-  const after = afterSource.trim();
-  if (after) {
-    tokens.push({ type: 'markdown', value: after });
-  }
-
-  return tokens;
-}
-
-function assertNoSelfClosingComponents(source: string, renderers: InternalComponentRegistry) {
-  const syntax = markdownSyntaxSource(source);
-  const pattern = /<([A-Za-z][A-Za-z0-9]*)\b[^>]*\/\s*>/g;
-  let match: RegExpExecArray | null;
-  while ((match = pattern.exec(syntax))) {
-    const name = canonicalComponentName(match[1], renderers);
-    if (renderers.has(name)) {
-      parseComponentBody(name, 'markdown', '');
-    }
-  }
-}
-
-export function canonicalComponentName(
-  name: string,
-  optionsOrRenderers: HtmdxCompileOptions | InternalComponentRegistry = {},
-) {
-  const renderers =
-    optionsOrRenderers instanceof Map
-      ? optionsOrRenderers
-      : createComponentRegistry(optionsOrRenderers);
-  for (const known of renderers.keys()) {
+export function canonicalComponentName(name: string, options: HtmdxCompileOptions = {}) {
+  for (const known of Object.keys(componentsFor(options))) {
     if (known.toLowerCase() === name.toLowerCase()) {
       return known;
     }
@@ -497,93 +469,10 @@ function renderError(host: Element, error: string, source: string) {
   ].join('');
 }
 
-function stripFrontmatterAndComments(source: string) {
-  return source
-    .replace(/^---[\s\S]*?---\s*/, '')
-    .replace(/<!--[\s\S]*?-->/g, '')
-    .trim();
-}
-
-function titleFromSource(source: string) {
-  const frontmatterTitle = source.match(
-    /^---[\s\S]*?\ntitle:\s*["']?([^"'\n]+)["']?\s*\n[\s\S]*?---/,
-  );
-  if (frontmatterTitle) {
-    return frontmatterTitle[1].trim();
-  }
-
-  const markdownTitle = source.match(/^#\s+(.+)$/m);
-  return markdownTitle ? markdownTitle[1].trim() : '';
-}
-
-function renderDocument(title: string, articleHtml: string, headings: HtmdxHeading[]) {
-  const masthead = title ? `<header class="htmdx-masthead"><h1>${inline(title)}</h1></header>` : '';
-  const main = `<main class="htmdx-page"><article class="htmdx-article">${articleHtml}</article></main>`;
-
-  if (headings.length < 2) {
-    return `${masthead}${main}`;
-  }
-
-  return `${masthead}<div class="htmdx-shell">${renderToc(headings)}${main}</div>`;
-}
-
-function renderToc(headings: HtmdxHeading[]) {
-  const items = headings
-    .map(
-      (heading) =>
-        `<li class="htmdx-toc-item"><a class="htmdx-toc-link" href="#${heading.id}" data-htmdx-target="${heading.id}">${inline(heading.label)}</a></li>`,
-    )
-    .join('');
-
-  return `<nav class="htmdx-toc" aria-label="Sections"><ol class="htmdx-toc-list">${items}</ol></nav>`;
-}
-
-function renderToken(
-  token: HtmdxToken,
-  context: RenderContext,
-  renderers: InternalComponentRegistry,
-) {
-  if (token.type === 'markdown') {
-    return renderMarkdown(token.value, context);
-  }
-
-  const renderer = renderers.get(token.name);
-  if (!renderer) {
-    throw new Error(`unknown component <${token.name}>`);
-  }
-
-  return renderer(token.name, token.body);
-}
-
-function createComponentRegistry(options: HtmdxCompileOptions): InternalComponentRegistry {
-  const renderers = new Map(builtInRenderers);
-  for (const [name, definition] of Object.entries(globalComponentDefinitions)) {
-    renderers.set(name, normalizeComponentDefinition(definition));
-  }
-  for (const [name, definition] of Object.entries(options.components || {})) {
-    renderers.set(name, normalizeComponentDefinition(definition));
-  }
-  return renderers;
-}
-
 function assertComponentName(name: string) {
   if (!/^[A-Za-z][A-Za-z0-9]*$/.test(name)) {
     throw new Error(`invalid component name "${name}"`);
   }
-}
-
-function normalizeComponentDefinition(
-  definition: HtmdxComponentDefinition,
-): InternalComponentRenderer {
-  const render = typeof definition === 'function' ? definition : definition.render;
-  return (name, body) =>
-    render({
-      name,
-      body,
-      markdown: renderMarkdown,
-      inline,
-      escapeHtml,
-    });
 }
 
 function injectThemeStyle(theme: HtmdxThemeDefinition | undefined) {

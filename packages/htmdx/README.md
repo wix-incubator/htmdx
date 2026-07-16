@@ -11,7 +11,7 @@ Start with one HTML file:
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <script src="https://unpkg.com/@wix/htmdx@<exact-version>/dist/browser.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@<exact-version>/dist/browser.js" defer></script>
   </head>
   <body>
     <!-- prettier-ignore -->
@@ -39,7 +39,7 @@ Source block notes:
 
 CDN caveats:
 
-- Generated artifacts can load the browser bundle from [unpkg](https://unpkg.com/) after the package is published to npm.
+- Generated artifacts can load the browser bundle from [jsDelivr](https://www.jsdelivr.com/) after the package is published to npm.
 - Pin an explicit package version in generated artifacts. Do not use floating aliases like `@latest`, because saved HTML artifacts must keep rendering the same runtime over time.
 
 ## Exact-version component manifest
@@ -47,7 +47,7 @@ CDN caveats:
 Every release includes its machine-readable component contract at:
 
 ```text
-https://unpkg.com/@wix/htmdx@<exact-version>/dist/components.json
+https://cdn.jsdelivr.net/npm/@wix/htmdx@<exact-version>/dist/components.json
 ```
 
 Use the same exact version as the artifact's runtime URL. The manifest lists
@@ -82,7 +82,7 @@ Extension API. Trusted host code can contribute React components and theme
 CSS from an inline or external script:
 
 ```html
-<script src="https://unpkg.com/@wix/htmdx@<exact-version>/dist/browser.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@<exact-version>/dist/browser.js" defer></script>
 <script>
   window.addEventListener('htmdx:ready', () => {
     const { createElement } = window.Htmdx.React;
@@ -131,7 +131,7 @@ props are rejected by design.
 The standard runtime script gives an artifact the full catalog:
 
 ```html
-<script src="https://unpkg.com/@wix/htmdx@<exact-version>/dist/browser.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@<exact-version>/dist/browser.js" defer></script>
 <!-- prettier-ignore -->
 <script type="text/htmdx">
 # Q3 Report

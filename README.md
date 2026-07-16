@@ -11,7 +11,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <script src="https://unpkg.com/@wix/htmdx@2.0.0/dist/browser.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@2.0.0/dist/browser.js" defer></script>
   </head>
   <body>
     <!-- prettier-ignore -->
@@ -66,7 +66,7 @@ The runtime auto-mounts each bare source block by wrapping it in a generated `<h
 Host code — not the artifact — registers extra React components and theme CSS through `window.Htmdx`. The bundle exposes its React copy so extension scripts need no build step:
 
 ```html
-<script src="https://unpkg.com/@wix/htmdx@2.0.0/dist/browser.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@2.0.0/dist/browser.js" defer></script>
 <script>
   window.addEventListener('htmdx:ready', () => {
     const { createElement } = window.Htmdx.React;

@@ -136,7 +136,7 @@ function kebab(value: string) {
   return value.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
 }
 
-function uniqueSlug(value: string, context: RenderContext) {
+export function uniqueSlug(value: string, context: RenderContext) {
   const base = slugify(value);
   const count = context.slugCounts.get(base) || 0;
   context.slugCounts.set(base, count + 1);

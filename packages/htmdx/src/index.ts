@@ -72,6 +72,7 @@ const sourceCache = new WeakMap<Element, HtmdxSourceResult & { ok: true }>();
 
 type HostRoot = { root: Root; renderError: { current: unknown } };
 const reactRoots = new WeakMap<Element, HostRoot>();
+const stickyObservers = new WeakMap<Element, IntersectionObserver>();
 
 function componentsFor(options: HtmdxCompileOptions): HtmdxReactComponents {
   return {
@@ -285,6 +286,7 @@ export async function renderHost(host: Element, options: HtmdxRegisterOptions = 
       throw hostRoot.renderError.current;
     }
     activateSectionRail(host);
+    activateStickyHeader(host);
     host.dispatchEvent(
       new CustomEvent('htmdx:rendered', {
         detail: { source: sourceResult.kind, components: doc.components, version: VERSION },
@@ -348,7 +350,7 @@ function activateSectionRail(root: Element) {
     root.querySelectorAll<HTMLAnchorElement>('.htmdx-toc-link[data-htmdx-target]'),
   );
   const heads = links
-    .map((link) => root.querySelector<HTMLElement>(`#${cssEscape(link.dataset.htmdxTarget || '')}`))
+    .map((link) => root.querySelector<HTMLElement>(idSelector(link.dataset.htmdxTarget || '')))
     .filter((heading): heading is HTMLElement => Boolean(heading));
   if (heads.length < 2) {
     return;
@@ -399,7 +401,7 @@ function activateSectionRail(root: Element) {
   for (const link of links) {
     link.addEventListener('click', (event) => {
       const id = link.dataset.htmdxTarget || '';
-      const target = root.querySelector<HTMLElement>(`#${cssEscape(id)}`);
+      const target = root.querySelector<HTMLElement>(idSelector(id));
       if (target) {
         event.preventDefault();
         pending = id;
@@ -419,6 +421,37 @@ function activateSectionRail(root: Element) {
   });
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
+}
+
+// Reveal the condensed sticky header once the hero has scrolled out of view.
+// An IntersectionObserver on the hero is cheaper and jank-free versus a scroll
+// handler; falls back to always-hidden where IntersectionObserver is absent.
+function activateStickyHeader(root: Element) {
+  if (!globalThis.window || !globalThis.document) {
+    return;
+  }
+
+  const header = root.querySelector<HTMLElement>('.htmdx-sticky-header');
+  const hero = root.querySelector<HTMLElement>('.htmdx-hero');
+  if (!header || !hero) {
+    return;
+  }
+
+  if (typeof IntersectionObserver !== 'function') {
+    return;
+  }
+
+  stickyObservers.get(root)?.disconnect();
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        header.classList.toggle('is-visible', !entry.isIntersecting);
+      }
+    },
+    { rootMargin: '-1px 0px 0px 0px' },
+  );
+  observer.observe(hero);
+  stickyObservers.set(root, observer);
 }
 
 export function tokenizeBlocks(source: string, options: HtmdxCompileOptions = {}): HtmdxToken[] {
@@ -515,8 +548,10 @@ function injectTailwindBrowser(tailwind: HtmdxRegisterOptions['tailwind'] = true
   document.head.append(script);
 }
 
-function cssEscape(value: string) {
-  return value.replace(/[^a-zA-Z0-9_-]/g, '\\$&');
+// Attribute selector instead of #id: slugs can start with a digit
+// (`## 1. Overview` -> id "1-overview"), which is invalid in an id selector.
+function idSelector(id: string) {
+  return `[id="${id.replace(/["\\]/g, '\\$&')}"]`;
 }
 
 const RUNTIME_CSS = `
@@ -558,20 +593,97 @@ const RUNTIME_CSS = `
   html { scroll-behavior: smooth; }
   @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 
-  .htmdx-masthead {
+  .htmdx-sticky-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    height: 0;
+    overflow: visible;
+    pointer-events: none;
+  }
+  .htmdx-sticky-header-inner {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 12px max(28px, calc((100% - 64rem) / 2 + 28px));
+    background: var(--htmdx-bg);
+    border-bottom: 1px solid var(--htmdx-line);
+    font-size: 0.85rem;
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(-100%);
+    transition: transform 0.22s ease, opacity 0.22s ease, visibility 0.22s;
+  }
+  .htmdx-sticky-header.is-visible .htmdx-sticky-header-inner {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .htmdx-sticky-title { font-weight: 700; color: var(--htmdx-ink); }
+  .htmdx-sticky-divider { color: var(--htmdx-line-strong); }
+  .htmdx-sticky-project { color: var(--htmdx-soft); }
+  @media (prefers-reduced-motion: reduce) {
+    .htmdx-sticky-header-inner { transition: none; }
+  }
+
+  .htmdx-hero {
     max-width: 64rem;
     margin: 0 auto;
     padding: 44px 28px 0;
   }
-  .htmdx-masthead h1 {
-    margin: 0;
-    padding-bottom: 18px;
-    font-size: 1.55rem;
-    font-weight: 800;
-    letter-spacing: 0;
-    color: var(--htmdx-ink);
-    line-height: 1.25;
+  .htmdx-hero-inner {
+    padding-bottom: 26px;
     border-bottom: 2px solid var(--htmdx-ink);
+  }
+  .htmdx-hero-eyebrow {
+    margin: 0 0 10px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--htmdx-accent);
+  }
+  .htmdx-hero-title {
+    margin: 0;
+    font-size: 2.2rem;
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    color: var(--htmdx-ink);
+  }
+  .htmdx-hero-desc {
+    margin: 14px 0 0;
+    max-width: 46rem;
+    font-size: 1.02rem;
+    line-height: 1.6;
+    color: var(--htmdx-soft);
+  }
+  .htmdx-hero-labels {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 24px;
+  }
+  .htmdx-hero-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--htmdx-soft);
+    padding-right: 18px;
+    margin-right: 18px;
+    border-right: 1px solid var(--htmdx-line);
+  }
+  .htmdx-hero-label:last-child {
+    padding-right: 0;
+    margin-right: 0;
+    border-right: none;
+  }
+  .htmdx-hero-label b {
+    margin-left: 6px;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--htmdx-ink);
   }
 
   .htmdx-shell {
@@ -646,8 +758,9 @@ const RUNTIME_CSS = `
 
   .htmdx-component-header { display: none; }
   .htmdx-article { max-width: 46rem; margin: 0 auto; counter-reset: sec; }
-  .htmdx-article > h1 { display: none; }
-  .htmdx-article > h2 {
+  .htmdx-doc-section { margin: 0 0 28px; }
+  .htmdx-doc-section:last-child { margin-bottom: 0; }
+  .htmdx-doc-section > h2 {
     counter-increment: sec;
     display: flex;
     align-items: baseline;
@@ -657,21 +770,27 @@ const RUNTIME_CSS = `
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--htmdx-ink);
-    margin: 42px 0 16px;
+    margin: 0 0 14px;
     padding-bottom: 9px;
     border-bottom: 1px solid var(--htmdx-line-strong);
-    scroll-margin-top: 24px;
+    scroll-margin-top: 72px;
   }
-  .htmdx-article > h2::before {
+  .htmdx-doc-section > h2::before {
     content: counter(sec, decimal-leading-zero);
     color: var(--htmdx-accent);
     font-variant-numeric: tabular-nums;
     letter-spacing: 0;
     font-weight: 800;
   }
-  .htmdx-article > h2:first-of-type { margin-top: 0; }
-  .htmdx-article > h3 { font-size: 0.98rem; font-weight: 700; color: var(--htmdx-ink); margin: 22px 0 8px; }
-  .htmdx-article > p { margin: 0 0 13px; }
+  .htmdx-doc-section-card {
+    background: var(--htmdx-bg);
+    border: 1px solid var(--htmdx-line);
+    border-radius: 10px;
+    padding: 20px 24px;
+  }
+  .htmdx-article h3 { font-size: 0.98rem; font-weight: 700; color: var(--htmdx-ink); margin: 22px 0 8px; }
+  .htmdx-article p { margin: 0 0 13px; }
+  .htmdx-doc-section-card > div > :last-child { margin-bottom: 0; }
   .htmdx-article a { color: var(--htmdx-accent); text-underline-offset: 2px; }
   .htmdx-article strong { font-weight: 700; color: var(--htmdx-ink); }
   section.htmdx-component { margin: 14px 0; }
@@ -847,12 +966,14 @@ const RUNTIME_CSS = `
       max-width: 46rem;
     }
     .htmdx-toc { display: none; }
-    .htmdx-masthead { max-width: 46rem; }
+    .htmdx-hero { max-width: 46rem; }
   }
 
   @media (max-width: 720px) {
     htmdx-code { font-size: 14px; }
     .htmdx-article { max-width: 100%; }
+    .htmdx-hero-title { font-size: 1.7rem; }
+    .htmdx-doc-section-card { padding: 16px 18px; }
     .htmdx-metric-item { flex-basis: 50%; border-bottom: 1px solid var(--htmdx-line); }
     .htmdx-risk-table .htmdx-feature-item { grid-template-columns: 1fr; }
     .htmdx-compare .htmdx-feature-grid { grid-template-columns: 1fr; }

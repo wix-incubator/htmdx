@@ -14,7 +14,7 @@ import {
   type ReactNode,
 } from 'react';
 import { markdownSyntaxSource } from '../components/body-contracts';
-import { inline, renderMarkdown, type RenderContext } from '../components/rendering';
+import { inline, renderMarkdown, uniqueSlug, type RenderContext } from '../components/rendering';
 
 // oxlint-disable-next-line no-explicit-any -- component prop shapes are caller-defined
 export type HtmdxReactComponent = ComponentType<any>;
@@ -55,54 +55,215 @@ export type HtmdxDocument = {
   title: string;
   headings: { id: string; label: string }[];
   components: string[];
+  meta: Record<string, string>;
 };
 
-// Full-document compile: article content wrapped in the masthead + section
-// rail shell (same class names the runtime CSS styles). Used by the core
-// register()/compile() so every host renders the complete page chrome.
+// Full-document compile: article content wrapped in the hero + sticky header
+// + section rail shell (same class names the runtime CSS styles). Used by the
+// core register()/compile() so every host renders the complete page chrome.
 export function compileDocument(source: string, options: HtmdxReactOptions = {}): HtmdxDocument {
   const components = options.components || {};
   const registry = new Map(Object.keys(components).map((name) => [name.toLowerCase(), name]));
-  const title = titleFromSource(source);
+  const meta = parseFrontmatter(source);
+  const title = titleFromSource(source, meta);
   const normalized = stripFrontmatterAndComments(source);
   const blocks = tokenize(normalized, registry);
   const context: RenderContext = { headings: [], slugCounts: new Map() };
 
-  const children = blocks.map((block, index) => {
-    if (block.type === 'markdown') {
-      return rawHtml('div', renderMarkdown(block.value, context), `md-${index}`);
-    }
-    return renderComponentBlock(block, components, `c-${index}`);
-  });
+  const lead = title ? extractHeroContent(blocks) : '';
+  const sections = groupSections(blocks, components, context);
 
-  const article = createElement(
+  const sectionElements = sections
+    .filter((section) => section.heading || section.children.length > 0)
+    .map((section, index) =>
+      createElement(
+        'section',
+        { className: 'htmdx-doc-section', key: section.heading?.id || `head-${index}` },
+        section.heading
+          ? createElement('h2', {
+              id: section.heading.id,
+              dangerouslySetInnerHTML: { __html: inline(section.heading.label) },
+            })
+          : null,
+        createElement('div', { className: 'htmdx-doc-section-card' }, ...section.children),
+      ),
+    );
+
+  const main = createElement(
     'main',
     { className: 'htmdx-page', key: 'main' },
-    createElement('article', { className: 'htmdx-article' }, ...children),
+    createElement('article', { className: 'htmdx-article' }, ...sectionElements),
   );
-
-  const masthead = title
-    ? createElement('header', { className: 'htmdx-masthead', key: 'masthead' }, [
-        rawHtml('h1', inline(title), 'title'),
-      ])
-    : null;
 
   const body =
     context.headings.length < 2
-      ? article
+      ? main
       : createElement(
           'div',
           { className: 'htmdx-shell', key: 'shell' },
           renderToc(context.headings),
-          article,
+          main,
         );
 
   return {
-    element: createElement(Fragment, null, masthead, body),
+    element: createElement(
+      'div',
+      { className: 'htmdx-app' },
+      title ? renderStickyHeader(title, meta) : null,
+      title ? renderHero(title, lead, meta) : null,
+      body,
+    ),
     title,
     headings: context.headings,
     components: blocks.filter((block) => block.type === 'component').map((block) => block.name),
+    meta,
   };
+}
+
+type Section = {
+  heading: { id: string; label: string } | null;
+  children: ReactNode[];
+};
+
+// Sections are split on `## ` heading lines. Headings are located on the
+// masked syntax (code fences and inline code blanked out, positions
+// preserved) so a `## ` inside a fence never splits, then sliced from the
+// original value so labels keep their literal text.
+function groupSections(
+  blocks: Block[],
+  components: HtmdxReactComponents,
+  context: RenderContext,
+): Section[] {
+  const sections: Section[] = [{ heading: null, children: [] }];
+  let current = sections[0];
+
+  const pushChunk = (chunk: string, key: string) => {
+    const trimmed = chunk.trim();
+    if (trimmed) {
+      current.children.push(rawHtml('div', renderMarkdown(trimmed, context), key));
+    }
+  };
+
+  for (const [index, block] of blocks.entries()) {
+    if (block.type === 'component') {
+      current.children.push(renderComponentBlock(block, components, `c-${index}`));
+      continue;
+    }
+
+    const syntax = markdownSyntaxSource(block.value);
+    const headingLines = Array.from(syntax.matchAll(/^## +.+$/gm));
+    let cursor = 0;
+    for (const [headingIndex, match] of headingLines.entries()) {
+      pushChunk(block.value.slice(cursor, match.index), `md-${index}-${headingIndex}`);
+      const label = block.value.slice(match.index + 3, match.index + match[0].length).trim();
+      const id = uniqueSlug(label, context);
+      context.headings.push({ id, label });
+      current = { heading: { id, label }, children: [] };
+      sections.push(current);
+      cursor = match.index + match[0].length;
+    }
+    pushChunk(block.value.slice(cursor), `md-${index}-tail`);
+  }
+
+  return sections;
+}
+
+// The hero owns the document title and lead paragraph, so both are removed
+// from the article content: the leading `# ...` block is dropped and the
+// first plain paragraph before any `## ` heading becomes the hero lead.
+function extractHeroContent(blocks: Block[]): string {
+  const first = blocks[0];
+  if (!first || first.type !== 'markdown') {
+    return '';
+  }
+
+  let value = first.value;
+  if (value.startsWith('# ')) {
+    const titleBlock = value.split(/\n{2,}/, 1)[0];
+    value = value.slice(titleBlock.length).trim();
+  }
+
+  let lead = '';
+  const headingLine = markdownSyntaxSource(value).match(/^## +.+$/m);
+  const head = headingLine ? value.slice(0, headingLine.index) : value;
+  const firstChunk = head.split(/\n{2,}/, 1)[0].trim();
+  if (firstChunk && !/^(#|- |```)/.test(firstChunk)) {
+    lead = firstChunk.replace(/\n/g, ' ');
+    value = value.slice(value.indexOf(firstChunk) + firstChunk.length).trim();
+  }
+
+  if (value) {
+    blocks[0] = { type: 'markdown', value };
+  } else {
+    blocks.shift();
+  }
+  return lead;
+}
+
+function renderStickyHeader(title: string, meta: Record<string, string>) {
+  return createElement(
+    'div',
+    { className: 'htmdx-sticky-header', 'aria-hidden': 'true', key: 'sticky-header' },
+    createElement(
+      'div',
+      { className: 'htmdx-sticky-header-inner' },
+      createElement('span', {
+        className: 'htmdx-sticky-title',
+        key: 'title',
+        dangerouslySetInnerHTML: { __html: inline(title) },
+      }),
+      createElement('span', { className: 'htmdx-sticky-divider', key: 'divider' }, '|'),
+      createElement('span', {
+        className: 'htmdx-sticky-project',
+        key: 'project',
+        dangerouslySetInnerHTML: { __html: inline(meta.project || '{Project Name}') },
+      }),
+    ),
+  );
+}
+
+function renderHeroLabel(name: string, value: string) {
+  return createElement(
+    'span',
+    { className: 'htmdx-hero-label', key: name },
+    `${name} `,
+    createElement('b', { dangerouslySetInnerHTML: { __html: inline(value) } }),
+  );
+}
+
+function renderHero(title: string, lead: string, meta: Record<string, string>) {
+  return createElement(
+    'header',
+    { className: 'htmdx-hero', key: 'hero' },
+    createElement(
+      'div',
+      { className: 'htmdx-hero-inner' },
+      createElement('p', {
+        className: 'htmdx-hero-eyebrow',
+        key: 'eyebrow',
+        dangerouslySetInnerHTML: { __html: inline(meta.project || '{Project Name}') },
+      }),
+      createElement('h1', {
+        className: 'htmdx-hero-title',
+        key: 'title',
+        dangerouslySetInnerHTML: { __html: inline(title) },
+      }),
+      lead
+        ? createElement('p', {
+            className: 'htmdx-hero-desc',
+            key: 'desc',
+            dangerouslySetInnerHTML: { __html: inline(lead) },
+          })
+        : null,
+      createElement(
+        'div',
+        { className: 'htmdx-hero-labels', key: 'labels' },
+        renderHeroLabel('Owner', meta.owner || '{name}'),
+        renderHeroLabel('Phase', meta.phase || '{Flow / Skill}'),
+        renderHeroLabel('Updated', meta.updated || '{Date}'),
+      ),
+    ),
+  );
 }
 
 function renderToc(headings: { id: string; label: string }[]) {
@@ -126,12 +287,25 @@ function renderToc(headings: { id: string; label: string }[]) {
   );
 }
 
-function titleFromSource(source: string) {
-  const frontmatterTitle = source.match(
-    /^---[\s\S]*?\ntitle:\s*["']?([^"'\n]+)["']?\s*\n[\s\S]*?---/,
-  );
-  if (frontmatterTitle) {
-    return frontmatterTitle[1].trim();
+function parseFrontmatter(source: string): Record<string, string> {
+  const match = source.match(/^\s*---\r?\n([\s\S]*?)\r?\n---/);
+  if (!match) {
+    return {};
+  }
+
+  const meta: Record<string, string> = {};
+  for (const line of match[1].split(/\r?\n/)) {
+    const field = line.match(/^([A-Za-z][\w-]*):\s*(.*)$/);
+    if (field) {
+      meta[field[1].toLowerCase()] = field[2].trim().replace(/^["']|["']$/g, '');
+    }
+  }
+  return meta;
+}
+
+function titleFromSource(source: string, meta: Record<string, string>) {
+  if (meta.title) {
+    return meta.title;
   }
 
   const markdownTitle = source.match(/^#\s+(.+)$/m);

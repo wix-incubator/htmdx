@@ -54,15 +54,15 @@ The reproducible benchmark measures complete artifact files with `gpt-tokenizer`
 
 Adding an accordion item takes 91 tokens in HTMDX versus 428 in compiled HTML. Plain Markdown remains valid HTMDX, so components add cost only where used. See the [methodology and limitations](./packages/htmdx/bench/RESULTS.md), or run `yarn bench`.
 
-## Familiar standards, constrained source
+## Familiar syntax, no build step
 
-HTMDX looks like MDX but carries data, not code:
+HTMDX uses familiar MDX-style syntax, but the browser runtime renders it in place without requiring build-time compilation or a generated output file:
 
 - Markdown prose, headings, lists, tables, and links.
 - HTML-like nested component tags such as `<Card><CardHeader>...</CardHeader></Card>`.
-- Standard Tailwind classes and typed props. `class` becomes `className`, kebab-case becomes camelCase, and data-like values parse as booleans, numbers, or JSON.
+- Standard Tailwind classes and typed props. `class` becomes `className`, kebab-case becomes camelCase, and values parse as booleans, numbers, or JSON when applicable.
 
-Imports, MDX `{expressions}`, and function-valued props are rejected; nothing in the source can execute. Registered React components provide interactivity. Unknown capitalized tags fail compilation and show the error with the raw source.
+The source remains declarative: imports, MDX `{expressions}`, and function-valued props are rejected. Registered React components provide interactivity. Unknown capitalized tags show an error with the raw source.
 
 ## Components
 

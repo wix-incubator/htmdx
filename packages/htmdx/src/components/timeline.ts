@@ -1,5 +1,5 @@
 import type { LabelValue } from './body-contracts';
-import { componentShell, renderFeatureCardsContent } from './rendering';
+import { componentShell, escapeHtml, inline } from './rendering';
 import type { HtmdxComponent } from './types';
 
 export const timeline: HtmdxComponent = {
@@ -12,11 +12,14 @@ export const timeline: HtmdxComponent = {
 };
 
 function renderTimeline(name: string, body: LabelValue[]) {
-  return componentShell(
-    name,
-    renderFeatureCardsContent({
-      items: body.map(({ label, value }) => `${label}: ${value}`),
-      lines: body.map((_, index) => index + 1),
-    }),
-  );
+  // Bold the label (before the colon), value stays regular, single line.
+  const items = body
+    .map(
+      ({ label, value }) =>
+        `<div class="htmdx-feature-item"><span class="htmdx-feature-text"><strong>${escapeHtml(
+          label,
+        )}:</strong> ${inline(value)}</span></div>`,
+    )
+    .join('');
+  return componentShell(name, `<div class="htmdx-feature-grid">${items}</div>`);
 }

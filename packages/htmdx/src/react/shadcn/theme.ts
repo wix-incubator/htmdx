@@ -106,7 +106,7 @@ htmdx-code {
   display: block;
   background: var(--background);
   color: var(--foreground);
-  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--md-ref-typeface-plain, ui-sans-serif, system-ui, sans-serif);
   -webkit-font-smoothing: antialiased;
 }
 htmdx-code h1 {

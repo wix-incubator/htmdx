@@ -553,7 +553,7 @@ function injectFonts() {
   fonts.id = FONTS_LINK_ID;
   fonts.rel = 'stylesheet';
   fonts.href =
-    'https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&family=Roboto:wght@400;500;700&display=swap';
+    'https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&display=swap';
   document.head.append(fonts);
 }
 
@@ -619,7 +619,7 @@ const RUNTIME_CSS = `
     --md-sys-color-shadow: #000000;
 
     --md-ref-typeface-brand: "Figtree", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
-    --md-ref-typeface-plain: "Roboto", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+    --md-ref-typeface-plain: "Figtree", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
 
     --md-sys-shape-corner-none: 0;
     --md-sys-shape-corner-small: 8px;
@@ -906,6 +906,13 @@ const RUNTIME_CSS = `
   .htmdx-doc-section-card > h3 {
     margin-top: 24px;
   }
+  /* Markdown subsection titles in the section flow (e.g. "### Foo" between
+     components) get extra top spacing. Scoped to bare markdown wrappers via
+     :not([data-slot]) so component-internal titles (shadcn Card, etc.) keep
+     their own spacing. */
+  .htmdx-doc-section-card > div:not([data-slot]) > h3 {
+    margin-top: 20px;
+  }
   .htmdx-doc-section-card > p,
   .htmdx-doc-section-card > ul,
   .htmdx-doc-section-card > div > p,
@@ -922,6 +929,19 @@ const RUNTIME_CSS = `
     box-shadow: var(--md-sys-elevation-level1);
     padding: 18px 22px;
     color: var(--md-sys-color-on-surface);
+  }
+  /* The white Card surface ships shadcn's py-6 (24px) top/bottom — tighten to
+     20px. Unlayered runtime CSS outranks Tailwind's layered py-6 utility. */
+  .htmdx-doc-section-card [data-slot="card"] {
+    padding-top: 20px;
+    padding-bottom: 20px;
+  }
+  /* shadcn Card renders a markdown body into a bare (non-slot) div with no
+     horizontal padding of its own — inset it 20px L/R. Composed bodies using
+     CardHeader/CardContent carry data-slot and keep their built-in px-6. */
+  .htmdx-doc-section-card [data-slot="card"] > div:not([data-slot]) {
+    padding-left: 20px;
+    padding-right: 20px;
   }
   .htmdx-executive-summary .htmdx-component-body {
     background: var(--md-sys-color-primary-container);
@@ -962,6 +982,9 @@ const RUNTIME_CSS = `
     border-radius: var(--md-sys-shape-corner-full);
   }
   .htmdx-feature-title { display: block; font-weight: 700; color: var(--md-sys-color-on-surface); }
+  .htmdx-finding .htmdx-feature-title,
+  .htmdx-risk-table .htmdx-feature-title,
+  .htmdx-compare .htmdx-feature-title { font-family: var(--md-ref-typeface-brand); }
   .htmdx-feature-text { display: block; color: var(--md-sys-color-on-surface-variant); }
 
   .htmdx-compare .htmdx-feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -1061,7 +1084,7 @@ const RUNTIME_CSS = `
     display: grid;
     grid-template-columns: max-content 1fr;
     gap: 16px;
-    align-items: start;
+    align-items: center;
     padding: 12px 0;
     border-bottom: 1px solid var(--htmdx-line);
   }
@@ -1075,7 +1098,7 @@ const RUNTIME_CSS = `
     padding: 6px 12px;
     border-radius: var(--md-sys-shape-corner-small);
     text-align: center;
-    align-self: start;
+    align-self: center;
   }
   .htmdx-risk-table .htmdx-feature-item[data-tier="must-have"] .htmdx-feature-title { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); }
   .htmdx-risk-table .htmdx-feature-item[data-tier="differentiator"] .htmdx-feature-title { background: var(--md-sys-color-tertiary-container); color: var(--md-sys-color-on-tertiary-container); }

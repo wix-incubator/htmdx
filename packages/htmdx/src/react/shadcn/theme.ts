@@ -138,6 +138,12 @@ htmdx-code ol {
   margin: 0 0 0.75rem;
   padding-left: 1.25rem;
 }
+htmdx-code ul {
+  list-style-type: disc;
+}
+htmdx-code ol {
+  list-style-type: decimal;
+}
 htmdx-code a {
   color: var(--primary);
   text-underline-offset: 2px;

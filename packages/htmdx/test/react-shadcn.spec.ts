@@ -2,8 +2,8 @@ import { describe, expect, test } from 'vitest';
 import { act, createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { compileToReact, Htmdx } from '../src/react-poc';
-import { shadcnComponents } from '../src/react-poc/shadcn';
+import { compileToReact, Htmdx } from '../src/react';
+import { shadcnComponents } from '../src/react/shadcn';
 
 (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -22,7 +22,7 @@ function unmount(host: HTMLElement, root: Root) {
   host.remove();
 }
 
-describe('react-poc with shadcn/ui', () => {
+describe('react renderer with shadcn/ui', () => {
   test('renders a shadcn Card composition from HTMDX source', () => {
     const html = renderToStaticMarkup(
       compileToReact(

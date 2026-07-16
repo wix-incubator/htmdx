@@ -1,13 +1,10 @@
-// PoC: React renderer for HTMDX — "MDX minus JavaScript".
+// React renderer for HTMDX — "MDX minus JavaScript".
 //
 // Renders an HTMDX source string to a React element tree. Component tags are
 // resolved from an MDX-style `components` map; nested composition is parsed
-// with DOMParser (data only — no expressions, no eval, no function props).
-//
-// Known PoC limitations:
-// - component tags inside fenced code blocks are not ignored
-// - DOMParser (text/html) lowercases tag names and relocates table fragments
-// - attribute names are normalized kebab-case -> camelCase (class -> className)
+// as data — no expressions, no eval, no function props. Component bodies are
+// parsed as XML first (preserves tag/attribute case), falling back to HTML
+// parsing when the body is not well-formed.
 
 import {
   createElement,
@@ -16,6 +13,7 @@ import {
   type ReactElement,
   type ReactNode,
 } from 'react';
+import { markdownSyntaxSource } from '../components/body-contracts';
 import { inline, renderMarkdown, type RenderContext } from '../components/rendering';
 
 // oxlint-disable-next-line no-explicit-any -- component prop shapes are caller-defined
@@ -52,6 +50,13 @@ export function Htmdx(props: { source: string } & HtmdxReactOptions): ReactEleme
   return compileToReact(props.source, { components: props.components });
 }
 
+export function listComponents(source: string, components: HtmdxReactComponents = {}): string[] {
+  const registry = new Map(Object.keys(components).map((name) => [name.toLowerCase(), name]));
+  return tokenize(stripFrontmatterAndComments(source), registry)
+    .filter((block) => block.type === 'component')
+    .map((block) => block.name);
+}
+
 function renderComponentBlock(
   block: Block & { type: 'component' },
   components: HtmdxReactComponents,
@@ -71,8 +76,7 @@ function bodyToChildren(
     return null;
   }
 
-  const parsed = new DOMParser().parseFromString(body, 'text/html');
-  const nodes = Array.from(parsed.body.childNodes);
+  const nodes = parseBodyNodes(body);
   const hasElements = nodes.some((node) => node.nodeType === Node.ELEMENT_NODE);
   if (!hasElements) {
     return rawHtml('div', renderMarkdown(body, { headings: [], slugCounts: new Map() }), keyPrefix);
@@ -114,13 +118,31 @@ function nodeToReact(node: Node, components: HtmdxReactComponents, key: string):
   return createElement(target, props, ...children);
 }
 
+// Bodies are parsed as XML first: it preserves tag and attribute case (so
+// camelCase props like defaultValue survive) and never relocates fragments the
+// way the HTML parser does with table rows. Malformed bodies (unescaped `&`,
+// unclosed tags) fall back to forgiving HTML parsing.
+function parseBodyNodes(body: string): Node[] {
+  const xml = new DOMParser().parseFromString(`<htmdx-body>${body}</htmdx-body>`, 'text/xml');
+  if (!xml.querySelector('parsererror')) {
+    return Array.from(xml.documentElement.childNodes);
+  }
+
+  const html = new DOMParser().parseFromString(body, 'text/html');
+  return Array.from(html.body.childNodes);
+}
+
 function tokenize(source: string, registry: Map<string, string>): Block[] {
   const blocks: Block[] = [];
+  // Tag scanning runs on the masked syntax (code fences and inline code
+  // blanked out, positions preserved) so component tags inside code samples
+  // are left to markdown; slices are taken from the original source.
+  const syntax = markdownSyntaxSource(source);
   const openTag = /<([A-Za-z][A-Za-z0-9]*)((?:\s[^>]*?)?)(\/?)>/g;
   let cursor = 0;
   let match: RegExpExecArray | null;
 
-  while ((match = openTag.exec(source))) {
+  while ((match = openTag.exec(syntax))) {
     const [, rawName, attrs, selfClosing] = match;
     const canonical = registry.get(rawName.toLowerCase());
     if (!canonical) {
@@ -135,7 +157,7 @@ function tokenize(source: string, registry: Map<string, string>): Block[] {
       continue;
     }
 
-    const close = findMatchingClose(source, rawName, openTag.lastIndex);
+    const close = findMatchingClose(syntax, rawName, openTag.lastIndex);
     if (!close) {
       throw new Error(`unclosed component <${canonical}>`);
     }

@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { act, createElement, useState, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { compileToReact, Htmdx, type HtmdxReactComponents } from '../src/react-poc';
+import { compileToReact, Htmdx, type HtmdxReactComponents } from '../src/react';
 
 (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -24,9 +24,12 @@ const Counter = (props: { start?: number }) => {
   );
 };
 
-const components: HtmdxReactComponents = { Card, CardTitle, Badge, Counter };
+const CaseProbe = (props: { defaultValue?: string }) =>
+  createElement('output', null, `got:${props.defaultValue}`);
 
-describe('react-poc renderer', () => {
+const components: HtmdxReactComponents = { Card, CardTitle, Badge, Counter, CaseProbe };
+
+describe('react renderer', () => {
   test('interleaves markdown blocks with mapped components', () => {
     const html = renderToStaticMarkup(
       compileToReact(
@@ -126,6 +129,44 @@ More text after.`,
     expect(() => compileToReact('<Card>never closed', { components })).toThrow(
       'unclosed component <Card>',
     );
+  });
+
+  test('ignores component tags inside fenced code blocks', () => {
+    const html = renderToStaticMarkup(
+      compileToReact(
+        `Some markdown.
+
+\`\`\`html
+<Card>this is a code sample, not a component</Card>
+\`\`\`
+
+<Badge>real</Badge>`,
+        { components },
+      ),
+    );
+
+    expect(html).toContain('this is a code sample');
+    expect(html).not.toContain('class="card');
+    expect(html).toContain('badge-default');
+  });
+
+  test('preserves camelCase attributes in well-formed nested bodies (XML parse)', () => {
+    const html = renderToStaticMarkup(
+      compileToReact('<Card><CaseProbe defaultValue="alpha" /></Card>', {
+        components: { ...components, CaseProbe },
+      }),
+    );
+
+    expect(html).toContain('got:alpha');
+  });
+
+  test('falls back to HTML parsing for malformed bodies', () => {
+    const html = renderToStaticMarkup(
+      compileToReact('<Card>Tom & Jerry <Badge>still works</Badge></Card>', { components }),
+    );
+
+    expect(html).toContain('Tom &amp; Jerry');
+    expect(html).toContain('still works');
   });
 
   test('leaves unregistered tags to markdown', () => {

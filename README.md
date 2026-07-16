@@ -57,6 +57,39 @@ Use the same exact version as the artifact's runtime URL. The manifest is a buil
 
 Each entry declares one enforced body format: `markdown`, `label-value-list`, `label-number-list`, `gfm-table`, or `markdown-list-cards`. Bodies must be non-empty, Markdown-shaped one-level JSX. Imports, exports, MDX expressions, and nested JSX are forbidden. A body that violates the global or declared format contract fails compilation of the whole HTMDX artifact; browser hosts show the error fallback and raw artifact source instead of partially rendered output.
 
+## Frontmatter
+
+An optional YAML-style frontmatter block at the top of the HTMDX source sets
+document metadata. All fields are single-line strings; unknown fields are
+ignored.
+
+```mdx
+---
+title: Product Strategy
+project: SEO Settings
+owner: Jane Doe
+phase: Discovery
+updated: 2026-07-16
+theme: blue
+logo: creator-kit
+logo-alt: Creator Kit
+---
+```
+
+| Field | Effect |
+| --- | --- |
+| `title` | Document title; overrides the first `# heading` in the hero and sticky header. |
+| `project` | Project name shown in the hero eyebrow and sticky header. |
+| `owner` | Owner label pill in the hero. |
+| `phase` | Phase label pill in the hero. |
+| `updated` | Updated label pill in the hero. |
+| `theme` | Built-in color theme (see Color themes below). |
+| `logo` | Logo pinned to the bottom-left of the section nav. Either a built-in logo name (`creator-kit`) or an image URL. Because artifacts are portable single files, use an absolute URL or a `data:` URI, not a relative path. |
+| `logo-alt` | Alt text for the logo image. Omit for a decorative logo. |
+
+The Creator Kit logo ships built into the runtime for now (`logo: creator-kit`);
+this placement will be revisited (see `docs/adr/0003-frontmatter-driven-nav-logo.md`).
+
 ## Color themes
 
 Artifacts render in the default **purple** theme. To render in another built-in

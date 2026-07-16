@@ -156,6 +156,36 @@ Context.`);
     expect(html).toContain('data-htmdx-target="beta"');
   });
 
+  test('frontmatter logo renders a nav logo image', () => {
+    const rendered = compile(
+      '---\nlogo: ./brand.svg\nlogo-alt: Brand\n---\n\n# T\n\n## Alpha\n\nA.\n\n## Beta\n\nB.',
+    );
+    const html = rendered.ok ? rendered.html : '';
+    expect(html).toContain('<img class="htmdx-nav-logo" src="./brand.svg" alt="Brand">');
+  });
+
+  test('named logo frontmatter resolves to the bundled data URI', () => {
+    const rendered = compile(
+      '---\nlogo: creator-kit\n---\n\n# T\n\n## Alpha\n\nA.\n\n## Beta\n\nB.',
+    );
+    const html = rendered.ok ? rendered.html : '';
+    expect(html).toContain('<img class="htmdx-nav-logo" src="data:image/svg+xml;base64,');
+  });
+
+  test('no logo frontmatter renders no nav logo', () => {
+    const rendered = compile('# T\n\n## Alpha\n\nA.\n\n## Beta\n\nB.');
+    expect(rendered.ok && rendered.html).not.toContain('htmdx-nav-logo');
+  });
+
+  test('escapes logo frontmatter values', () => {
+    const rendered = compile(
+      '---\nlogo: x.svg" onerror="alert(1)\n---\n\n# T\n\n## Alpha\n\nA.\n\n## Beta\n\nB.',
+    );
+    const html = rendered.ok ? rendered.html : '';
+    expect(html).not.toContain('onerror="alert(1)"');
+    expect(html).toContain('src="x.svg&quot; onerror=&quot;alert(1)"');
+  });
+
   test('keeps component names case-insensitive', () => {
     expect(canonicalComponentName('executivesummary')).toBe('ExecutiveSummary');
   });

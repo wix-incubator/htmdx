@@ -140,15 +140,22 @@ describe('component body contracts', () => {
     }
   });
 
-  test.each(['<Card></Card>', '<Card />'])(
-    'rejects an empty component body through compilation: %s',
+  test.each(['<MetricStrip></MetricStrip>', '<MetricStrip />'])(
+    'rejects an empty structured component body through compilation: %s',
     (source) => {
       const rendered = compile(source);
 
       expect(rendered).toMatchObject({ ok: false });
-      expect(!rendered.ok && rendered.error).toContain('Invalid body for <Card>: body is empty');
+      expect(!rendered.ok && rendered.error).toContain(
+        'Invalid body for <MetricStrip>: body is empty',
+      );
     },
   );
+
+  test('allows empty composable component bodies', () => {
+    const rendered = compile('<Card />');
+    expect(rendered).toMatchObject({ ok: true, components: ['Card'] });
+  });
 
   test('fails the whole compilation with component, rule, expected shape, and body line', () => {
     const rendered = compile('<ChartBar>\n- Users: 1,000\n</ChartBar>');

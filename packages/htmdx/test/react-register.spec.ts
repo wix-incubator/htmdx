@@ -1,11 +1,10 @@
 import { describe, expect, test } from 'vitest';
-import { registerReact } from '../src/react/register';
-import { shadcnComponents } from '../src/react/shadcn';
+import { register } from '../src';
 
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 function mountArtifact(tagName: string, source: string) {
-  registerReact({ tagName, components: shadcnComponents, tailwind: false });
+  register({ tagName, tailwind: false });
   const host = document.createElement(tagName);
   const script = document.createElement('script');
   script.type = 'text/htmdx';
@@ -15,7 +14,7 @@ function mountArtifact(tagName: string, source: string) {
   return host;
 }
 
-describe('registerReact', () => {
+describe('register (React runtime)', () => {
   test('renders shadcn components from an embedded script source', async () => {
     const host = mountArtifact(
       'htmdx-react-a',
@@ -35,16 +34,30 @@ describe('registerReact', () => {
     host.remove();
   });
 
+  test('renders built-ins without any extra registration', async () => {
+    const host = mountArtifact(
+      'htmdx-react-e',
+      `<ExecutiveSummary>
+Built-ins ship in the default runtime.
+</ExecutiveSummary>`,
+    );
+    await flush();
+
+    expect(host.querySelector('.htmdx-executive-summary')).not.toBeNull();
+    expect(host.textContent).toContain('Built-ins ship in the default runtime.');
+    host.remove();
+  });
+
   test('dispatches htmdx:rendered with the component list', async () => {
     const events: CustomEvent[] = [];
     document.addEventListener('htmdx:rendered', (event) => events.push(event as CustomEvent), {
       once: true,
     });
-    const host = mountArtifact('htmdx-react-b', '<Badge>one</Badge>\n\n<Card>two</Card>');
+    const host = mountArtifact('htmdx-react-b', '<Badge>one</Badge>\n\n<Callout>two</Callout>');
     await flush();
 
     expect(events).toHaveLength(1);
-    expect(events[0].detail.components).toEqual(['Badge', 'Card']);
+    expect(events[0].detail.components).toEqual(['Badge', 'Callout']);
     host.remove();
   });
 

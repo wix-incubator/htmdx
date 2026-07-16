@@ -244,15 +244,6 @@ describe('react renderer with shadcn/ui', () => {
     expect(html).toContain('aria-current="page"');
   });
 
-  test('Toggle resolves variant classes through CVA', () => {
-    const html = renderToStaticMarkup(
-      compileToReact('<Toggle variant="outline">Bold</Toggle>', { components: shadcnComponents }),
-    );
-    expect(html).toContain('data-slot="toggle"');
-    expect(html).toContain('border-input');
-    expect(html).toContain('Bold');
-  });
-
   test('Dialog opens on trigger click and portals content outside the host', () => {
     const { host, root } = mount(`<Dialog>
   <DialogTrigger>
@@ -306,25 +297,6 @@ describe('react renderer with shadcn/ui', () => {
       trigger?.click();
     });
     expect(trigger?.getAttribute('data-state')).toBe('closed');
-    unmount(host, root);
-  });
-
-  test('ToggleGroup selects an item on click', () => {
-    const { host, root } = mount(`<ToggleGroup type="single" variant="outline">
-  <ToggleGroupItem value="left">Left</ToggleGroupItem>
-  <ToggleGroupItem value="center">Center</ToggleGroupItem>
-  <ToggleGroupItem value="right">Right</ToggleGroupItem>
-</ToggleGroup>`);
-
-    const items = Array.from(host.querySelectorAll<HTMLElement>('[data-slot="toggle-group-item"]'));
-    expect(items).toHaveLength(3);
-    const center = items.find((item) => item.textContent?.includes('Center'));
-    expect(center?.getAttribute('data-state')).toBe('off');
-
-    act(() => {
-      center?.click();
-    });
-    expect(center?.getAttribute('data-state')).toBe('on');
     unmount(host, root);
   });
 

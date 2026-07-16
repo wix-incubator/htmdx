@@ -55,8 +55,6 @@ import {
   TableRow,
 } from './table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs';
-import { Toggle } from './toggle';
-import { ToggleGroup, ToggleGroupItem } from './toggle-group';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip';
 
 function inlineBody<T extends object>(component: T) {
@@ -126,9 +124,6 @@ export const shadcnComponents = {
   TabsContent,
   TabsList,
   TabsTrigger,
-  Toggle,
-  ToggleGroup,
-  ToggleGroupItem,
   Tooltip,
   TooltipContent,
   TooltipProvider,

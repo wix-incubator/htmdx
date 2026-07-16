@@ -64,8 +64,6 @@ export const Popover: Story = story('Popover');
 export const Progress: Story = story('Progress');
 export const Separator: Story = story('Separator');
 export const Table: Story = story('Table');
-export const Toggle: Story = story('Toggle');
-export const ToggleGroup: Story = story('ToggleGroup');
 export const Tooltip: Story = story('Tooltip');
 
 function story(name: string): Story {

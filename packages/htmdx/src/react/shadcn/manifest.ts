@@ -206,31 +206,6 @@ export const shadcnManifestComponents: readonly HtmdxReactManifestComponent[] = 
   { name: 'TableCell', purpose: 'Data cell (td) inside a TableRow.' },
   { name: 'TableCaption', purpose: 'Caption line rendered under the Table.' },
   {
-    name: 'Toggle',
-    purpose: 'Two-state pressable button; state lives inside the component.',
-    props: [
-      { name: 'variant', values: ['default', 'outline'] },
-      { name: 'size', values: ['default', 'sm', 'lg'] },
-    ],
-    example: '<Toggle variant="outline">Bold</Toggle>',
-  },
-  {
-    name: 'ToggleGroup',
-    purpose: 'Group of Toggle buttons with shared variant/size; single or multiple selection.',
-    props: [
-      { name: 'type', values: ['single', 'multiple'], required: true },
-      { name: 'variant', values: ['default', 'outline'] },
-      { name: 'size', values: ['default', 'sm', 'lg'] },
-    ],
-    example:
-      '<ToggleGroup type="single" variant="outline">\n  <ToggleGroupItem value="left">Left</ToggleGroupItem>\n  <ToggleGroupItem value="center">Center</ToggleGroupItem>\n  <ToggleGroupItem value="right">Right</ToggleGroupItem>\n</ToggleGroup>',
-  },
-  {
-    name: 'ToggleGroupItem',
-    purpose: 'One selectable button inside a ToggleGroup.',
-    props: [{ name: 'value', required: true }],
-  },
-  {
     name: 'Tooltip',
     purpose:
       'Hover tooltip; wraps its own provider so it works standalone. Shows on hover of TooltipTrigger.',

@@ -179,6 +179,26 @@ function replayEdits(before: string, after: string, pairs: EditPair[], label: st
   }
 }
 
+// What a self-contained JSX project must ship on top of the component module:
+// shadcn/ui sources are copied into a repo, not imported from npm. Measured
+// from this repo's own copies of the components the decision-brief uses.
+const STANDALONE_JSX_DEPS = [
+  'card.tsx',
+  'badge.tsx',
+  'button.tsx',
+  'tabs.tsx',
+  'accordion.tsx',
+  'utils.ts',
+];
+
+function standaloneJsxDepsTokens(): number {
+  return STANDALONE_JSX_DEPS.reduce(
+    (total, file) =>
+      total + measure(readFileSync(join(process.cwd(), 'src/react/shadcn', file), 'utf8')).tokens,
+    0,
+  );
+}
+
 function renderMarkdown(scenarios: ScenarioResult[]): string {
   const lines: string[] = [
     '# HTMDX Token-Efficiency Benchmark',
@@ -257,6 +277,12 @@ function renderMarkdown(scenarios: ScenarioResult[]): string {
     '  components) — the charitable assumption that the platform provides it, as',
     '  Claude artifacts do. htmdx carries its own shell: its artifact figure',
     '  includes the full single-file HTML wrapper; the runtime is one CDN script.',
+    '- Without a hosting platform, JSX stops being one file: shadcn/ui components',
+    '  are copied into the project, not imported from npm. The five components the',
+    `  decision-brief uses (card, badge, button, tabs, accordion, plus utils)`,
+    `  measure ${standaloneJsxDepsTokens()} tokens in this repo's copies alone, before any`,
+    '  vite/Tailwind/entry scaffolding — putting a self-contained JSX artifact in',
+    '  compiled-HTML territory, and it still needs an install and build to view.',
     '- Compiled HTML is a static snapshot: collapsed accordion panels and inactive',
     '  tab panels are not present in the output, which understates its artifact',
     '  size and edit cost relative to a fully hydrated equivalent.',

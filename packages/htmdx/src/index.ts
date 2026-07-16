@@ -4,7 +4,8 @@
 import type { ReactElement } from 'react';
 import { flushSync } from 'react-dom';
 import { createRoot, type Root } from 'react-dom/client';
-import { escapeHtml } from './components/rendering';
+import { shadcnComponents } from './components/shadcn';
+import { escapeHtml } from './react/rendering';
 import {
   builtInReactComponents,
   compileDocument,
@@ -12,13 +13,12 @@ import {
   type HtmdxReactComponent,
   type HtmdxReactComponents,
 } from './react';
-import { shadcnComponents } from './react/shadcn';
 import { THEME_CSS } from './themes';
 import { VERSION } from './version';
 
 export { THEME_IDS, type HtmdxThemeId } from './themes';
 export { VERSION } from './version';
-export { injectShadcnTheme, shadcnComponents } from './react/shadcn';
+export { injectShadcnTheme, shadcnComponents } from './components/shadcn';
 export {
   builtInReactComponents,
   compileDocument,

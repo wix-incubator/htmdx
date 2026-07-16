@@ -47,7 +47,7 @@
       "default": "./dist/react.js"
     },
     "./react/shadcn": {
-      "types": "./dist/src/react/shadcn/index.d.ts",
+      "types": "./dist/src/components/shadcn/index.d.ts",
       "default": "./dist/react-shadcn.js"
     }
   },

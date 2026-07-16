@@ -2,13 +2,16 @@ import { existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, test } from 'vitest';
-import { builtInComponents } from '../src/components/catalog';
+import { builtInComponents } from '../src/components/builtins/catalog';
 
 function componentFilename(name: string) {
   return name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
 }
 
-const componentsDirectory = resolve(dirname(fileURLToPath(import.meta.url)), '../src/components');
+const componentsDirectory = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  '../src/components/builtins',
+);
 
 describe('built-in component stories', () => {
   test.each(builtInComponents)('$name has a co-located story', ({ name }) => {

@@ -1,6 +1,6 @@
 import { createRoot } from 'react-dom/client';
+import { shadcnComponents } from '../../components/shadcn';
 import { Htmdx } from '../index';
-import { shadcnComponents } from '../shadcn';
 
 const source = `## Q3 Report
 

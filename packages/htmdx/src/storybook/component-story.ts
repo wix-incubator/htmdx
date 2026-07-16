@@ -1,6 +1,6 @@
 import type { Meta } from '@storybook/web-components-vite';
 import { register } from '../index';
-import type { HtmdxComponent } from '../components/types';
+import type { HtmdxComponent } from '../components/builtins/types';
 
 export type ComponentStoryArgs = {
   body: string;

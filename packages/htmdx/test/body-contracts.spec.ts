@@ -6,9 +6,9 @@ import {
   parseLabelNumberList,
   parseLabelValueList,
   parseMarkdownListCards,
-} from '../src/components/body-contracts';
-import { builtInComponents } from '../src/components/catalog';
-import { validateRiskTable } from '../src/components/risk-table';
+} from '../src/components/builtins/body-contracts';
+import { validateRiskTable } from '../src/components/builtins/cards';
+import { builtInComponents } from '../src/components/builtins/catalog';
 
 describe('component body contracts', () => {
   test('parses label-value rows at the first colon', () => {

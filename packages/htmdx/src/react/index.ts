@@ -13,10 +13,10 @@ import {
   type ReactElement,
   type ReactNode,
 } from 'react';
-import { markdownSyntaxSource } from '../components/body-contracts';
-import { uniqueSlug, type RenderContext } from '../components/rendering';
+import { markdownSyntaxSource } from '../components/builtins/body-contracts';
 import { BUILT_IN_LOGOS } from '../logos';
 import { renderInline, renderMarkdown } from './markdown';
+import { uniqueSlug, type RenderContext } from './rendering';
 import { THEME_IDS } from '../themes';
 
 // oxlint-disable-next-line no-explicit-any -- component prop shapes are caller-defined
@@ -326,7 +326,7 @@ function titleFromSource(source: string, meta: Record<string, string>) {
   return markdownTitle ? markdownTitle[1].trim() : '';
 }
 
-export { builtInReactComponents } from './builtins';
+export { builtInReactComponents } from '../components/builtins/catalog';
 
 export function listComponents(source: string, components: HtmdxReactComponents = {}): string[] {
   const registry = new Map(Object.keys(components).map((name) => [name.toLowerCase(), name]));

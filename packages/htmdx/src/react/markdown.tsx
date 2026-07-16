@@ -2,7 +2,7 @@
 // React elements (no HTML strings, no dangerouslySetInnerHTML): text is escaped
 // by React, links are scheme-checked, and headings register into the TOC.
 import { createElement, type ReactNode } from 'react';
-import { safeHref, slugify, uniqueSlug, type RenderContext } from '../components/rendering';
+import { safeHref, slugify, uniqueSlug, type RenderContext } from './rendering';
 
 const INLINE = /\*\*([^*]+)\*\*|`([^`]+)`|\[([^\]]+)\]\(([^)]+)\)/g;
 

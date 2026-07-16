@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import packageJson from '../package.json';
 import { createComponentManifest } from '../src/component-manifest';
-import { builtInComponents } from '../src/components/catalog';
+import { builtInComponents } from '../src/components/builtins/catalog';
 import { VERSION } from '../src';
 
 describe('component manifest', () => {
@@ -20,6 +20,7 @@ describe('component manifest', () => {
     for (const component of manifest.components) {
       expect(component.name).toBeTruthy();
       expect(component.purpose).toBeTruthy();
+      expect('component' in component).toBe(false);
       expect('renderer' in component).toBe(false);
     }
   });

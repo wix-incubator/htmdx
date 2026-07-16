@@ -196,7 +196,8 @@ const STANDALONE_JSX_DEPS = [
 function standaloneJsxDepsTokens(): number {
   return STANDALONE_JSX_DEPS.reduce(
     (total, file) =>
-      total + measure(readFileSync(join(process.cwd(), 'src/react/shadcn', file), 'utf8')).tokens,
+      total +
+      measure(readFileSync(join(process.cwd(), 'src/components/shadcn', file), 'utf8')).tokens,
     0,
   );
 }

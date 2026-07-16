@@ -1,12 +1,20 @@
 import { describe, expect, test } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { builtInComponents } from '../src/components/builtins/catalog';
+import { createReactComponentManifest } from '../src/components/manifest';
+import { shadcnComponents } from '../src/components/shadcn';
 import { builtInReactComponents, compileToReact } from '../src/react';
-import { createReactComponentManifest } from '../src/react/component-manifest';
-import { shadcnComponents } from '../src/react/shadcn';
 
 const merged = { ...builtInReactComponents, ...shadcnComponents };
 
 describe('built-ins in the React path', () => {
+  test('each catalog entry owns the React implementation registered under its name', () => {
+    for (const entry of builtInComponents) {
+      expect(entry).toHaveProperty('component');
+      expect(builtInReactComponents[entry.name]).toBe(entry.component);
+    }
+  });
+
   test('renders the ExecutiveSummary shell and MetricStrip as native JSX', () => {
     const html = renderToStaticMarkup(
       compileToReact(

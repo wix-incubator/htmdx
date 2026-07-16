@@ -4,7 +4,7 @@ export {
   createReactComponentManifest as createComponentManifest,
   type HtmdxReactComponentManifest as HtmdxComponentManifest,
   type HtmdxReactManifestEntry as HtmdxManifestComponent,
-} from './react/component-manifest';
-import { createReactComponentManifest } from './react/component-manifest';
+} from './components/manifest';
+import { createReactComponentManifest } from './components/manifest';
 
 export default createReactComponentManifest();

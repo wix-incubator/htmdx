@@ -81,11 +81,145 @@ Summary.
 
 Context.`);
 
-    expect(rendered.ok && rendered.html).toContain('<header class="htmdx-masthead">');
+    expect(rendered.ok && rendered.html).toContain('<header class="htmdx-hero">');
     expect(rendered.ok && rendered.html).toContain('<div class="htmdx-shell">');
     expect(rendered.ok && rendered.html).toContain('class="htmdx-toc-link"');
     expect(rendered.ok && rendered.html).toContain('href="#executive-summary"');
     expect(rendered.ok && rendered.html).toContain('<h2 id="situation">Situation</h2>');
+    expect(rendered.ok && rendered.html).toMatch(
+      /<h2 id="situation">Situation<\/h2><div class="htmdx-doc-section-card">/,
+    );
+  });
+
+  test('renders frontmatter fields in the hero labels', () => {
+    const rendered = compile(`---
+title: "Rollout Memo"
+project: Atlas
+owner: Dana
+phase: Discovery
+updated: 2026-07-01
+---
+
+## First
+
+One.
+
+## Second
+
+Two.`);
+
+    expect(rendered.ok && rendered.html).toContain('<p class="htmdx-hero-eyebrow">Atlas</p>');
+    expect(rendered.ok && rendered.html).toContain('Owner <b>Dana</b>');
+    expect(rendered.ok && rendered.html).toContain('Phase <b>Discovery</b>');
+    expect(rendered.ok && rendered.html).toContain('Updated <b>2026-07-01</b>');
+  });
+
+  test('falls back to hero placeholders when frontmatter fields are missing', () => {
+    const rendered = compile(`# Bare Title
+
+## First
+
+One.`);
+
+    expect(rendered.ok && rendered.html).toContain('{Project Name}');
+    expect(rendered.ok && rendered.html).toContain('Owner <b>{name}</b>');
+    expect(rendered.ok && rendered.html).toContain('Phase <b>{Flow / Skill}</b>');
+    expect(rendered.ok && rendered.html).toContain('Updated <b>{Date}</b>');
+  });
+
+  test('moves the lead paragraph into the hero description', () => {
+    const rendered = compile(`# Lead Memo
+
+This memo sets the **stage**.
+
+## First
+
+Body.`);
+
+    expect(rendered.ok && rendered.html).toContain(
+      '<p class="htmdx-hero-desc">This memo sets the <strong>stage</strong>.</p>',
+    );
+    const html = rendered.ok ? rendered.html : '';
+    expect(html.split('This memo sets the').length).toBe(2);
+  });
+
+  test('renders component blocks inside their section card', () => {
+    const rendered = compile(`# Component Memo
+
+## Decision
+
+<ExecutiveSummary>
+Ship it.
+</ExecutiveSummary>`);
+
+    const container = document.createElement('div');
+    container.innerHTML = rendered.ok ? rendered.html : '';
+    expect(
+      container.querySelector('.htmdx-doc-section-card .htmdx-executive-summary'),
+    ).not.toBeNull();
+  });
+
+  test('renders no hero or sticky header without a title', () => {
+    const rendered = compile('Just a paragraph without any heading.');
+
+    expect(rendered.ok && rendered.html).not.toContain('htmdx-hero');
+    expect(rendered.ok && rendered.html).not.toContain('htmdx-sticky-header');
+    expect(rendered.ok && rendered.html).toContain('Just a paragraph without any heading.');
+  });
+
+  test('renders the sticky header with the title and aria-hidden', () => {
+    const rendered = compile(`---
+title: "Sticky Memo"
+project: Atlas
+---
+
+## First
+
+One.`);
+
+    const html = rendered.ok ? rendered.html : '';
+    expect(html).toContain('<div class="htmdx-sticky-header" aria-hidden="true">');
+    expect(html).toContain('<span class="htmdx-sticky-title">Sticky Memo</span>');
+    expect(html).toContain('<span class="htmdx-sticky-project">Atlas</span>');
+  });
+
+  test('parses CRLF frontmatter', () => {
+    const rendered = compile(
+      '---\r\ntitle: "Windows Memo"\r\nproject: Atlas\r\n---\r\n\r\n## First\r\n\r\nOne.',
+    );
+
+    const html = rendered.ok ? rendered.html : '';
+    expect(html).toContain('Windows Memo');
+    expect(html).toContain('<p class="htmdx-hero-eyebrow">Atlas</p>');
+  });
+
+  test('navigates headings whose slugs start with a digit', async () => {
+    const original = HTMLElement.prototype.scrollIntoView;
+    HTMLElement.prototype.scrollIntoView = vi.fn();
+    const host = document.createElement('div');
+    host.innerHTML = `<script type="text/htmdx"># Numbered
+
+## 1. Overview
+
+One.
+
+## 2. Detail
+
+Two.</script>`;
+    document.body.append(host);
+
+    await renderHost(host);
+
+    expect(host.querySelector('.htmdx-error')).toBeNull();
+    const link = host.querySelector<HTMLAnchorElement>(
+      '.htmdx-toc-link[data-htmdx-target="1-overview"]',
+    );
+    link?.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+    expect(
+      host.querySelector<HTMLAnchorElement>('.htmdx-toc-item.is-active a')?.dataset.htmdxTarget,
+    ).toBe('1-overview');
+    HTMLElement.prototype.scrollIntoView = original;
+    host.remove();
   });
 
   test('keeps component names case-insensitive', () => {

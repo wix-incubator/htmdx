@@ -149,6 +149,37 @@ injectShadcnTheme();
 
 `compile(source)` from `@wix/htmdx` returns a static HTML snapshot of the same tree — useful for previews and validation. It needs a DOM (browser or jsdom).
 
+## Token efficiency
+
+Writing an artifact as htmdx costs a fraction of the tokens that the same
+artifact costs in any HTML form: 2.9-4.5x fewer than its own compiled HTML,
+2-3x fewer than hand-written HTML with Tailwind. A reproducible benchmark
+measures two report artifacts, each as the complete single file an agent
+would emit, tokenized with `gpt-tokenizer` (`o200k_base`):
+
+| Format | Decision brief | Executive report | Size vs htmdx |
+| --- | ---: | ---: | --- |
+| htmdx | 950 | 853 | — |
+| compiled HTML (`compile()` output) | 4286 | 2428 | 2.9-4.5x larger |
+| hand-written HTML + Tailwind | 1881 | 2568 | 2.0-3.0x larger |
+| React/JSX (assumes a platform hosts the runtime) | 1263 | 1790 | 1.3-2.1x larger |
+| plain markdown (no components) | 474 | 788 | 0.5-0.9x of htmdx |
+
+Edits are cheaper in the same range: adding an accordion item takes 91
+tokens in htmdx vs 434 in compiled HTML.
+
+Markdown is htmdx's floor, not a competitor. Plain markdown is valid htmdx
+source, so a document pays only for the component blocks it uses. Those
+blocks sometimes beat markdown itself: the executive report is smaller as
+htmdx source (734 tokens) than as plain markdown (788), because a
+`MetricStrip` list is denser than a markdown table. JSX has no such
+gradient: every paragraph pays JSX syntax, and the artifact renders nothing
+without its build pipeline.
+
+Run `yarn bench` to regenerate. Methodology, per-task edit costs, tokenizer
+cross-checks, and limitations:
+[`packages/htmdx/bench/RESULTS.md`](./packages/htmdx/bench/RESULTS.md).
+
 ## Package
 
 - npm: `@wix/htmdx` · CDN entry: `dist/browser.js` (~90KB gzip) · module entries: `.`, `./react`, `./react/shadcn`

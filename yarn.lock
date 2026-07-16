@@ -2554,6 +2554,8 @@ __metadata:
     "@types/react-dom": "npm:^19.2.3"
     class-variance-authority: "npm:^0.7.1"
     clsx: "npm:^2.1.1"
+    diff: "npm:^9.0.0"
+    gpt-tokenizer: "npm:^3.4.0"
     jsdom: "npm:^27.2.0"
     lit: "npm:^3.3.2"
     lucide-react: "npm:^1.23.0"
@@ -2842,6 +2844,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"diff@npm:^9.0.0":
+  version: 9.0.0
+  resolution: "diff@npm:9.0.0"
+  checksum: 10c0/a971cc88f66071a33bd3942db2f51b57d484e9856265ae45cf44fb28ab2fde91f132d9c26d8be0fb6082d2be94d29e1295c1adb251b7461935d6a2dd304cd161
+  languageName: node
+  linkType: hard
+
 "dom-accessibility-api@npm:^0.6.3":
   version: 0.6.3
   resolution: "dom-accessibility-api@npm:0.6.3"
@@ -3108,6 +3117,13 @@ __metadata:
   dependencies:
     is-glob: "npm:^4.0.1"
   checksum: 10c0/cab87638e2112bee3f839ef5f6e0765057163d39c66be8ec1602f3823da4692297ad4e972de876ea17c44d652978638d2fd583c6713d0eb6591706825020c9ee
+  languageName: node
+  linkType: hard
+
+"gpt-tokenizer@npm:^3.4.0":
+  version: 3.4.0
+  resolution: "gpt-tokenizer@npm:3.4.0"
+  checksum: 10c0/40e30e73840ab52ee902fe1f481c0dfff45ca6eb27feb4c97fcaa248fdd9f4e61679fa8873383b1360a6d13cb4c421b6ab0c56d77db59adcabccf34fcd639146
   languageName: node
   linkType: hard
 

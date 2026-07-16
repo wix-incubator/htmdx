@@ -1,155 +1,115 @@
 # htmdx
 
-`@wix/htmdx` renders editable MDX-like source inside a plain HTML file. It is built for artifacts that should be easy for people to view and easy for agents to edit.
+`@wix/htmdx` renders editable, MDX-like source inside a plain HTML file. It is built for artifacts that people view as finished pages and agents edit as text — a report, brief, or dashboard that stays a single self-contained file.
 
-Start with one HTML file:
+**Live examples:** [examples index](https://wix-incubator.github.io/htmdx/) · [decision brief](https://wix-incubator.github.io/htmdx/decision-brief.html) · [component tour](https://wix-incubator.github.io/htmdx/component-tour.html) · [Storybook](https://wix-incubator.github.io/htmdx/storybook/). Every example page is itself an htmdx artifact — view source to see exactly what an agent edits.
+
+## One file is the whole artifact
 
 ```html
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <script src="https://unpkg.com/@wix/htmdx@<exact-version>/dist/browser.js" defer></script>
+    <script src="https://unpkg.com/@wix/htmdx@2.0.0/dist/browser.js" defer></script>
   </head>
   <body>
+    <!-- prettier-ignore -->
     <script type="text/htmdx" data-htmdx-edit-instruction="Edit only this script content. HTMDX format.">
-# Artifact title
+# Q3 Report
 
 <ExecutiveSummary>
 The HTML is viewable as-is. Agents edit only this source block.
 </ExecutiveSummary>
+
+<Card>
+  <CardHeader><CardTitle>Revenue</CardTitle></CardHeader>
+  <CardContent>Grew **12%**. <Badge variant="secondary">audited</Badge></CardContent>
+</Card>
     </script>
   </body>
 </html>
 ```
 
-The runtime auto-mounts each bare source block: it wraps the script in a generated `<htmdx-code>` host in place and renders there. Write `<htmdx-code>` yourself only when you need explicit output placement or `src`; disable scanning with `register({ automount: false })`.
+The runtime script injects React, the component catalog, the shadcn/ui pack, a theme, and Tailwind's browser compiler, then renders each source block in place. The source itself stays declarative text.
 
-Source block notes:
+Pin an exact package version in artifacts. Saved files must keep rendering the same runtime over time, so never use floating aliases like `@latest`.
 
-- `<script type="text/htmdx">` is the canonical source holder. Browsers store its content as raw text, so component tag casing, code fences containing HTML, and angle brackets in prose survive byte-for-byte, and HTML formatters leave the content alone.
-- `<template type="text/htmdx">` is also supported, but its content is HTML-parsed and re-serialized, which can rewrite the source (lowercased component tags, restructured code fences).
-- A literal `</script>` inside the source ends the block early; keep such examples in an external `src` file instead.
+## The language: MDX minus JavaScript
 
-CDN caveats:
+HTMDX looks like MDX but carries data, not code:
 
-- Generated artifacts can load the browser bundle from [unpkg](https://unpkg.com/) after the package is published to npm.
-- Pin an explicit package version in generated artifacts. Do not use floating aliases like `@latest`, because saved HTML artifacts must keep rendering the same runtime over time.
+- Markdown prose, headings (which build the page's section rail), lists, tables, links.
+- Component tags with nested composition: `<Card><CardHeader>...</CardHeader></Card>`.
+- Attributes as typed props: `class` becomes `className`, kebab-case becomes camelCase, and values parse as booleans, numbers, or JSON when they look like data.
 
-External source files are supported too, in both forms:
+Three things are rejected on purpose: imports, MDX `{expressions}`, and function-valued props. Nothing in the source can execute. Interactivity — tabs switching, accordions expanding — comes from state inside the registered components, never from the artifact. Unknown capitalized tags fail compilation, so an agent that typos a component name gets an error and the raw source instead of silently degraded output.
 
-```html
-<script type="text/htmdx" src="./artifact.mdx"></script>
-<htmdx-code src="./artifact.mdx"></htmdx-code>
-```
+## Components
 
-## Package
+The runtime ships 33 components. `dist/components.json` (served next to the runtime at the same exact version) is the machine-readable contract: every component with its purpose, props, allowed values, and a canonical example.
 
-- npm package: `@wix/htmdx`
-- CDN entry: `dist/browser.js`
-- module entry: `dist/index.js`
-- custom element: `<htmdx-code>`
-- global browser API: `window.Htmdx`
-- Tailwind browser support: enabled by default through `@tailwindcss/browser@4`
+**Report built-ins.** `ExecutiveSummary`, `Callout`, `SourceQuote`, and `Evidence` take markdown bodies and compose — other components work inside them. The structured ones enforce a body format and fail the whole artifact when it does not match: `MetricStrip`, `Stat`, `DecisionTable`, `Timeline` (label–value lists), `ChartBar`, `ChartArea`, `ChartLine`, `ChartPie` (label–number lists), `DataTable` (GFM table), `Compare`, `Finding`, `RiskTable` (markdown list cards).
 
-## Exact-version component manifest
+**shadcn/ui pack.** `Card` (with `CardHeader`, `CardTitle`, `CardDescription`, `CardContent`, `CardFooter`, `CardAction`), `Badge`, `Button`, `Tabs`, and `Accordion` — vendored shadcn components on real Radix state, with a bundled Tailwind v4 theme. Where both catalogs name a `Card`, the shadcn component wins.
 
-Every release includes a machine-readable built-in component contract at:
+## Source blocks
 
-```text
-https://unpkg.com/@wix/htmdx@<exact-version>/dist/components.json
-```
+- `<script type="text/htmdx">` is the canonical holder. Browsers keep its content as raw text, so tag casing, code fences, and angle brackets survive byte-for-byte and formatters leave it alone (add `<!-- prettier-ignore -->` above it).
+- `<template type="text/htmdx">` also works, but browsers HTML-parse its content, which lowercases component tags and can restructure code fences. Prefer `script`.
+- A literal `</script>` inside the source ends the block early; keep such examples in an external file: `<script type="text/htmdx" src="./artifact.mdx"></script>`.
 
-Use the same exact version as the artifact's runtime URL. The manifest is a built-ins-only allowlist; it does not describe components registered by host code.
+The runtime auto-mounts each bare source block by wrapping it in a generated `<htmdx-code>` host. Write `<htmdx-code>` yourself only for explicit placement or `src`; disable scanning with `register({ automount: false })`.
 
-Each entry declares one enforced body format: `markdown`, `label-value-list`, `label-number-list`, `gfm-table`, or `markdown-list-cards`. Bodies must be non-empty, Markdown-shaped one-level JSX. Imports, exports, MDX expressions, and nested JSX are forbidden. A body that violates the global or declared format contract fails compilation of the whole HTMDX artifact; browser hosts show the error fallback and raw artifact source instead of partially rendered output.
+## Extending the catalog
 
-## HTMDX Components
-
-The first version supports the Creator Kit artifact components:
-
-- `ExecutiveSummary`, `Card`, `Callout`, `SourceQuote`
-- `MetricStrip`, `Stat`
-- `ChartBar`, `ChartArea`, `ChartLine`, `ChartPie`
-- `DataTable`, `Compare`, `Finding`, `Evidence`
-- `RiskTable`, `DecisionTable`, `Timeline`
-
-Nested JSX is intentionally rejected in v1.
-
-## Extension API Prototype
-
-Consumer components and design themes are registered by trusted host code, not
-inside the HTMDX source block. Load the runtime, then load an inline or external
-script that contributes named components/themes through `window.Htmdx`:
+Host code — not the artifact — registers extra React components and theme CSS through `window.Htmdx`. The bundle exposes its React copy so extension scripts need no build step:
 
 ```html
-<script src="https://unpkg.com/@wix/htmdx@<exact-version>/dist/browser.js" defer></script>
+<script src="https://unpkg.com/@wix/htmdx@2.0.0/dist/browser.js" defer></script>
 <script>
   window.addEventListener('htmdx:ready', () => {
-    window.Htmdx.registerComponent(
-      'ProductCard',
-      ({ body, markdown }) => `<aside class="product-card">${markdown(body)}</aside>`,
+    const { createElement } = window.Htmdx.React;
+
+    window.Htmdx.registerComponent('ProductCard', (props) =>
+      createElement('aside', { className: 'product-card' }, props.children),
     );
 
     window.Htmdx.registerTheme({
       id: 'product',
-      css: `
-        htmdx-code { --htmdx-accent: #0057ff; }
-        .product-card { border: 1px solid var(--htmdx-line); padding: 16px; }
-      `,
+      css: `.product-card { border: 1px solid var(--border); padding: 16px; }`,
     });
   });
 </script>
 ```
 
-External scripts work too:
+Artifacts then use `<ProductCard>` declaratively. Tailwind utility classes in registered components compile on the fly; hosts that want their own CSS pipeline can pass `register({ tailwind: false })` or point at a mirror with `register({ tailwind: { src: './tailwind-browser.js' } })`.
 
-```html
-<script src="https://unpkg.com/@wix/htmdx@<exact-version>/dist/browser.js" defer></script>
-<script src="./product-components.js" defer></script>
+This division is the security model: components are host-owned and trusted; the artifact supplies only data to them.
+
+## Using htmdx from a React app
+
+React hosts skip the browser bundle and use the module entries (react and react-dom are optional peer dependencies):
+
+```tsx
+import { Htmdx, builtInReactComponents } from '@wix/htmdx/react';
+import { shadcnComponents, injectShadcnTheme } from '@wix/htmdx/react/shadcn';
+
+injectShadcnTheme();
+<Htmdx
+  source={artifactSource}
+  components={{ ...builtInReactComponents, ...shadcnComponents, MyChart }}
+/>;
 ```
 
-```js
-window.Htmdx.registerComponents({
-  ProductCard: ({ body, markdown }) => `<aside class="product-card">${markdown(body)}</aside>`,
-});
-```
+`compile(source)` from `@wix/htmdx` returns a static HTML snapshot of the same tree — useful for previews and validation. It needs a DOM (browser or jsdom).
 
-Then the artifact source can use the registered component declaratively:
+## Package
 
-```mdx
-<ProductCard>
-**Launch plan**: Invite beta users first.
-</ProductCard>
-```
-
-Unknown components still fail validation unless they are explicitly registered.
-The default Creator Kit flow uses the built-in C Memo components/theme.
-
-Tailwind utilities work in registered component HTML by default:
-
-```js
-window.Htmdx.registerComponent(
-  'ProductCard',
-  ({ body, markdown }) =>
-    `<aside class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">${markdown(body)}</aside>`,
-);
-```
-
-The runtime injects Tailwind's browser compiler before rendering hosts:
-
-```html
-<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4" defer></script>
-```
-
-Hosts can disable it or point at a local mirror:
-
-```js
-window.Htmdx.register({ tailwind: false });
-window.Htmdx.register({ tailwind: { src: './tailwind-browser.js' } });
-```
-
-Use the browser compiler for portable artifacts and prototypes. Production hosts that need a compiled CSS pipeline can disable it and provide their own CSS with `registerTheme`.
+- npm: `@wix/htmdx` · CDN entry: `dist/browser.js` (~90KB gzip) · module entries: `.`, `./react`, `./react/shadcn`
+- custom element: `<htmdx-code>` · browser API: `window.Htmdx`
+- component contract: `dist/components.json`
+- architecture decisions: [`adr/`](./adr/)
 
 ## Development
 

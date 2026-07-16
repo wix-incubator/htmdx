@@ -8,7 +8,7 @@ import { applyEdit, deriveEditPairs, editCost, type EditPair, type EditTask } fr
 import * as decisionBrief from './scenarios/decision-brief/edits';
 import * as executiveDecisionReport from './scenarios/executive-decision-report/edits';
 import { wrapCompiled, wrapHtmdx } from './shell';
-import { ENCODING, measure, type Measure } from './tokenize';
+import { ALT_ENCODING, altTokens, ENCODING, measure, type Measure } from './tokenize';
 
 const require = createRequire(join(process.cwd(), 'bench/run.ts'));
 const tokenizerVersion: string = require('gpt-tokenizer/package.json').version;
@@ -42,6 +42,7 @@ type EditResult = { id: string; description: string; cost: Measure | null };
 type FormatResult = {
   format: FormatId;
   artifact: Measure;
+  artifactAltTokens: number;
   payload: Measure | null;
   edits: EditResult[];
   editTotal: Measure | null;
@@ -149,6 +150,7 @@ function buildScenario(scenario: (typeof SCENARIOS)[number]): ScenarioResult {
       return {
         format,
         artifact: measure(artifactTexts[format]),
+        artifactAltTokens: altTokens(artifactTexts[format]),
         payload: payload === undefined ? null : measure(payload),
         edits: edits[format],
         editTotal: sumCosts(edits[format]),
@@ -260,6 +262,32 @@ function renderMarkdown(scenarios: ScenarioResult[]): string {
     lines.push('');
   }
 
+  lines.push('## Tokenizer sensitivity', '');
+  lines.push(
+    'Markup tokenizes differently across vocabularies, so the artifact ratios',
+    `are computed under both \`${ENCODING}\` and \`${ALT_ENCODING}\`:`,
+    '',
+    `| Format | ${scenarios
+      .map((scenario) => `${scenario.id} ${ENCODING} | ${scenario.id} ${ALT_ENCODING}`)
+      .join(' | ')} |`,
+    `| --- | ${scenarios.map(() => '---: | ---:').join(' | ')} |`,
+  );
+  for (const format of FORMATS) {
+    const cells = scenarios.flatMap((scenario) => {
+      const htmdx = scenario.formats.find((row) => row.format === 'htmdx');
+      const row = scenario.formats.find((entry) => entry.format === format);
+      if (!htmdx || !row) {
+        throw new Error(`${scenario.id}: missing ${format} row`);
+      }
+      return [
+        `x${(row.artifact.tokens / htmdx.artifact.tokens).toFixed(2)}`,
+        `x${(row.artifactAltTokens / htmdx.artifactAltTokens).toFixed(2)}`,
+      ];
+    });
+    lines.push(`| ${FORMAT_LABELS[format]} | ${cells.join(' | ')} |`);
+  }
+  lines.push('');
+
   lines.push(
     '## Methodology and limitations',
     '',
@@ -287,8 +315,15 @@ function renderMarkdown(scenarios: ScenarioResult[]): string {
     '  tab panels are not present in the output, which understates its artifact',
     '  size and edit cost relative to a fully hydrated equivalent.',
     '- `o200k_base` approximates model tokenizers; absolute counts differ across',
-    '  models, ratios are the signal. Character counts are reported alongside.',
+    '  models, ratios are the signal. Character counts are reported alongside and',
+    '  the tokenizer-sensitivity table cross-checks ratios under `cl100k_base`.',
     '- "n/a" marks an edit that is not expressible in that format.',
+    '- This benchmark measures size and mechanical edit cost only. Established',
+    '  format benchmarks pair size with a usability dimension: TOON measures',
+    '  per-model retrieval accuracy alongside token counts, and aider measures',
+    '  how often models emit well-formed edits per edit format. Whether models',
+    '  author and edit htmdx more reliably than HTML/JSX is not measured here;',
+    '  it is the natural follow-up and would require live model calls.',
     '',
   );
 

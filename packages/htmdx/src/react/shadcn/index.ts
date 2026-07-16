@@ -1,6 +1,7 @@
 import type { HtmdxReactComponents } from '../index';
 
 export { injectShadcnTheme, SHADCN_THEME_STYLE_ID, shadcnThemeCss } from './theme';
+export { shadcnManifestComponents } from './manifest';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './accordion';
 import { Badge } from './badge';
 import { Button } from './button';

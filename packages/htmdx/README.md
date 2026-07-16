@@ -171,18 +171,30 @@ One script tag turns a plain HTML artifact into a React + shadcn/ui page:
 ```
 
 `dist/browser-react.js` bundles React, the shadcn/ui pack (Card, Badge,
-Button, Tabs, Accordion), and its theme (~90KB gzip). The string-only
+Button, Tabs, Accordion), the bridged string built-ins (ExecutiveSummary,
+MetricStrip, charts, ...  — same body contracts and markup as the string
+runtime), and the shadcn theme (~90KB gzip). The string-only
 `dist/browser.js` is unchanged and stays the default.
+
+The React runtime publishes its own exact-version manifest listing every
+available component (built-ins and shadcn, with props and examples):
+
+```text
+https://unpkg.com/@wix/htmdx@<exact-version>/dist/react-components.json
+```
 
 React host apps use the module entries instead (react/react-dom are optional
 peer dependencies):
 
 ```tsx
-import { Htmdx } from '@wix/htmdx/react';
+import { Htmdx, builtInReactComponents } from '@wix/htmdx/react';
 import { shadcnComponents, injectShadcnTheme } from '@wix/htmdx/react/shadcn';
 
 injectShadcnTheme();
-<Htmdx source={artifactSource} components={{ ...shadcnComponents, MyChart }} />;
+<Htmdx
+  source={artifactSource}
+  components={{ ...builtInReactComponents, ...shadcnComponents, MyChart }}
+/>;
 ```
 
 Attribute conventions: `class` -> `className`, kebab-case -> camelCase, and

@@ -2,10 +2,14 @@
 // shadcn/ui component pack, its theme, and the Tailwind browser runtime into
 // a plain HTML artifact. The string-only runtime remains dist/browser.js.
 import { VERSION } from '../version';
-import { compileToReact, Htmdx, listComponents } from './index';
+import { builtInReactComponents, compileToReact, Htmdx, listComponents } from './index';
 import { registerReact } from './register';
 import { shadcnComponents } from './shadcn';
 import { injectShadcnTheme } from './shadcn/theme';
+
+// String built-ins (bridged) plus the shadcn pack. On name collisions
+// (Card) the shadcn component wins; the manifest documents the merged set.
+const components = { ...builtInReactComponents, ...shadcnComponents };
 
 const api = {
   VERSION,
@@ -13,6 +17,8 @@ const api = {
   Htmdx,
   listComponents,
   registerReact,
+  components,
+  builtInReactComponents,
   shadcnComponents,
   injectShadcnTheme,
 };
@@ -26,7 +32,7 @@ declare global {
 if (globalThis.window) {
   window.HtmdxReact = api;
   injectShadcnTheme();
-  registerReact({ components: shadcnComponents });
+  registerReact({ components });
   window.dispatchEvent(new CustomEvent('htmdx:react-ready', { detail: { version: VERSION } }));
 }
 

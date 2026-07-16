@@ -1,6 +1,5 @@
 import { markdownSyntaxSource, parseComponentBody } from './components/body-contracts';
-import { builtInComponents } from './components/catalog';
-import type { HtmdxComponent } from './components/types';
+import { builtInComponents, createBuiltInRenderer } from './components/catalog';
 import { VERSION } from './version';
 
 export { VERSION } from './version';
@@ -86,33 +85,6 @@ const sourceCache = new WeakMap<Element, HtmdxSourceResult & { ok: true }>();
 const builtInRenderers: InternalComponentRegistry = new Map(
   builtInComponents.map((component) => [component.name, createBuiltInRenderer(component)]),
 );
-
-function createBuiltInRenderer(component: HtmdxComponent): InternalComponentRenderer {
-  return (name, rawBody) => {
-    switch (component.body) {
-      case 'markdown': {
-        const body = parseComponentBody(name, component.body, rawBody, component.validate);
-        return component.renderer(name, body);
-      }
-      case 'label-value-list': {
-        const body = parseComponentBody(name, component.body, rawBody, component.validate);
-        return component.renderer(name, body);
-      }
-      case 'label-number-list': {
-        const body = parseComponentBody(name, component.body, rawBody, component.validate);
-        return component.renderer(name, body);
-      }
-      case 'gfm-table': {
-        const body = parseComponentBody(name, component.body, rawBody, component.validate);
-        return component.renderer(name, body);
-      }
-      case 'markdown-list-cards': {
-        const body = parseComponentBody(name, component.body, rawBody, component.validate);
-        return component.renderer(name, body);
-      }
-    }
-  };
-}
 
 export function compile(source: string, options: HtmdxCompileOptions = {}): HtmdxCompileResult {
   try {

@@ -20,6 +20,7 @@
     "dist/**/*.js",
     "dist/**/*.d.ts",
     "dist/components.json",
+    "dist/react-components.json",
     "!dist/src/**/*.stories.d.ts",
     "!dist/src/storybook/**",
     "!dist/src/react/demo/**",

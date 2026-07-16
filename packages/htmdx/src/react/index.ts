@@ -50,6 +50,8 @@ export function Htmdx(props: { source: string } & HtmdxReactOptions): ReactEleme
   return compileToReact(props.source, { components: props.components });
 }
 
+export { builtInReactComponents, bridgeStringComponent } from './builtins';
+
 export function listComponents(source: string, components: HtmdxReactComponents = {}): string[] {
   const registry = new Map(Object.keys(components).map((name) => [name.toLowerCase(), name]));
   return tokenize(stripFrontmatterAndComments(source), registry)
@@ -64,6 +66,13 @@ function renderComponentBlock(
 ): ReactNode {
   const component = components[block.name];
   const props = { ...attrsToProps(block.attrs), key };
+
+  // Raw-body components (bridged string built-ins) consume the body
+  // themselves — validation and rendering stay in the string pipeline.
+  if ((component as { htmdxRawBody?: boolean }).htmdxRawBody) {
+    return createElement(component, { ...props, body: block.body });
+  }
+
   return createElement(component, props, bodyToChildren(block.body, components, key));
 }
 
@@ -109,6 +118,10 @@ function nodeToReact(node: Node, components: HtmdxReactComponents, key: string):
   const props: Record<string, unknown> = { key };
   for (const attr of element.getAttributeNames()) {
     props[normalizePropName(attr)] = parseAttrValue(element.getAttribute(attr) || '');
+  }
+
+  if ((target as { htmdxRawBody?: boolean }).htmdxRawBody) {
+    return createElement(target, { ...props, body: element.innerHTML.trim() });
   }
 
   const children = Array.from(element.childNodes)

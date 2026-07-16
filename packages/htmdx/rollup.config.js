@@ -32,7 +32,7 @@ const moduleConfig = {
   plugins: [packageVersionPlugin(packageVersion), typescript(), terser()],
 };
 
-function emitComponentManifest() {
+function emitComponentManifest(targetFile) {
   return {
     name: 'emit-component-manifest',
     async writeBundle(outputOptions) {
@@ -41,7 +41,7 @@ function emitComponentManifest() {
       const { default: manifest } = await import(moduleUrl);
 
       await writeFile(
-        resolve(packageDirectory, 'dist/components.json'),
+        resolve(packageDirectory, targetFile),
         `${JSON.stringify(manifest, null, 2)}\n`,
       );
       await unlink(outputFile);
@@ -70,6 +70,23 @@ export default defineConfig([
       file: './dist/.components-manifest.js',
       sourcemap: true,
     },
-    plugins: [packageVersionPlugin(packageVersion), typescript(), emitComponentManifest()],
+    plugins: [
+      packageVersionPlugin(packageVersion),
+      typescript(),
+      emitComponentManifest('dist/components.json'),
+    ],
+  },
+  {
+    input: './src/react/component-manifest.ts',
+    output: {
+      format: 'esm',
+      file: './dist/.react-components-manifest.js',
+      sourcemap: true,
+    },
+    plugins: [
+      packageVersionPlugin(packageVersion),
+      typescript(),
+      emitComponentManifest('dist/react-components.json'),
+    ],
   },
 ]);

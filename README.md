@@ -1,8 +1,13 @@
 # htmdx
 
-`@wix/htmdx` creates rich HTML artifacts that humans review and agents edit. Each artifact is one portable HTML file containing readable Markdown, component tags, and Tailwind classes — no JSX project or build step.
+`@wix/htmdx` creates rich HTML artifacts that humans review and agents edit.
 
-Unlike traditional MDX, HTMDX does not split editable source from generated output. Its source is safe by design and uses 2–3× fewer tokens than hand-written HTML with Tailwind.
+- **One portable file:** Source and browser-facing artifact stay together.
+- **No build step:** The browser renders HTMDX in place, with no generated output to keep in sync.
+- **Human- and agent-readable:** Edit Markdown, component tags, and Tailwind classes instead of generated markup.
+- **Token-efficient:** Benchmarks show 2–3× fewer tokens than hand-written HTML with Tailwind.
+- **Rich by default:** Use interactive components, themes, charts, and structured report elements.
+- **Safe by design:** Source cannot contain imports, JavaScript expressions, or function-valued props.
 
 **Examples:** [index](https://wix-incubator.github.io/htmdx/) · [decision brief](https://wix-incubator.github.io/htmdx/decision-brief.html) · [component tour](https://wix-incubator.github.io/htmdx/component-tour.html) · [Storybook](https://wix-incubator.github.io/htmdx/storybook/). View any example's source to see what an agent edits.
 

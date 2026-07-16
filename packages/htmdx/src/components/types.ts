@@ -22,7 +22,6 @@ export type HtmdxComponentForFormat<F extends HtmdxBodyFormat> = {
   body: F;
   purpose: string;
   example: string;
-  renderer: (name: string, body: ParsedBodyByFormat[F]) => string;
   validate?: (body: ParsedBodyByFormat[F]) => void;
 };
 

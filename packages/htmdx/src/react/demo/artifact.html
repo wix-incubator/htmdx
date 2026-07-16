@@ -13,16 +13,16 @@
 
 Narrative rendered from **markdown**, followed by real shadcn/ui components
 driven from the same HTMDX source string. One script tag injected React,
-the shadcn pack, the bridged string built-ins, the theme, and Tailwind.
+the shadcn pack, the JSX built-ins, the theme, and Tailwind.
 
 <ExecutiveSummary>
-Bridged string built-ins and shadcn components render side by side from
-**one HTMDX source**.
+Built-ins and shadcn components render side by side from **one HTMDX source** —
+every built-in is now native shadcn/Tailwind JSX.
 </ExecutiveSummary>
 
 <MetricStrip>
 - Runtime: **browser.js**
-- Components: **33**
+- Components: **85**
 - Eval: **none**
 </MetricStrip>
 
@@ -60,6 +60,25 @@ Bridged string built-ins and shadcn components render side by side from
     <AccordionContent>Approve the hiring plan for the data team.</AccordionContent>
   </AccordionItem>
 </Accordion>
+
+<ChartBar>
+- Free: 48
+- Pro: 12
+- Enterprise: 6
+</ChartBar>
+
+<RiskTable>
+- **Must-have:** Publish exact-version metadata.
+- **Differentiator:** Native shadcn built-ins.
+- **Not now:** Describe host components.
+</RiskTable>
+
+<DataTable>
+| Plan | Users |
+| --- | ---: |
+| Free | 48 |
+| Pro | 12 |
+</DataTable>
 
 Narrative after the components, still plain markdown.
     </script>

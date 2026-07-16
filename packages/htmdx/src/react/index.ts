@@ -14,8 +14,9 @@ import {
   type ReactNode,
 } from 'react';
 import { markdownSyntaxSource } from '../components/body-contracts';
-import { inline, renderMarkdown, uniqueSlug, type RenderContext } from '../components/rendering';
+import { uniqueSlug, type RenderContext } from '../components/rendering';
 import { BUILT_IN_LOGOS } from '../logos';
+import { renderInline, renderMarkdown } from './markdown';
 import { THEME_IDS } from '../themes';
 
 // oxlint-disable-next-line no-explicit-any -- component prop shapes are caller-defined
@@ -40,7 +41,7 @@ export function compileToReact(source: string, options: HtmdxReactOptions = {}):
 
   const children = blocks.map((block, index) => {
     if (block.type === 'markdown') {
-      return rawHtml('div', renderMarkdown(block.value, context), `md-${index}`);
+      return createElement('div', { key: `md-${index}` }, renderMarkdown(block.value, context));
     }
     return renderComponentBlock(block, components, `c-${index}`);
   });
@@ -82,10 +83,7 @@ export function compileDocument(source: string, options: HtmdxReactOptions = {})
         'section',
         { className: 'htmdx-doc-section', key: section.heading?.id || `head-${index}` },
         section.heading
-          ? createElement('h2', {
-              id: section.heading.id,
-              dangerouslySetInnerHTML: { __html: inline(section.heading.label) },
-            })
+          ? createElement('h2', { id: section.heading.id }, renderInline(section.heading.label))
           : null,
         createElement('div', { className: 'htmdx-doc-section-card' }, ...section.children),
       ),
@@ -145,7 +143,7 @@ function groupSections(
   const pushChunk = (chunk: string, key: string) => {
     const trimmed = chunk.trim();
     if (trimmed) {
-      current.children.push(rawHtml('div', renderMarkdown(trimmed, context), key));
+      current.children.push(createElement('div', { key }, renderMarkdown(trimmed, context)));
     }
   };
 
@@ -212,17 +210,13 @@ function renderStickyHeader(title: string, meta: Record<string, string>) {
     createElement(
       'div',
       { className: 'htmdx-sticky-header-inner' },
-      createElement('span', {
-        className: 'htmdx-sticky-title',
-        key: 'title',
-        dangerouslySetInnerHTML: { __html: inline(title) },
-      }),
+      createElement('span', { className: 'htmdx-sticky-title', key: 'title' }, renderInline(title)),
       createElement('span', { className: 'htmdx-sticky-divider', key: 'divider' }, '|'),
-      createElement('span', {
-        className: 'htmdx-sticky-project',
-        key: 'project',
-        dangerouslySetInnerHTML: { __html: inline(meta.project || '{Project Name}') },
-      }),
+      createElement(
+        'span',
+        { className: 'htmdx-sticky-project', key: 'project' },
+        renderInline(meta.project || '{Project Name}'),
+      ),
     ),
   );
 }
@@ -232,7 +226,7 @@ function renderHeroLabel(name: string, value: string) {
     'span',
     { className: 'htmdx-hero-label', key: name },
     `${name} `,
-    createElement('b', { dangerouslySetInnerHTML: { __html: inline(value) } }),
+    createElement('b', null, renderInline(value)),
   );
 }
 
@@ -243,22 +237,14 @@ function renderHero(title: string, lead: string, meta: Record<string, string>) {
     createElement(
       'div',
       { className: 'htmdx-hero-inner' },
-      createElement('p', {
-        className: 'htmdx-hero-eyebrow',
-        key: 'eyebrow',
-        dangerouslySetInnerHTML: { __html: inline(meta.project || '{Project Name}') },
-      }),
-      createElement('h1', {
-        className: 'htmdx-hero-title',
-        key: 'title',
-        dangerouslySetInnerHTML: { __html: inline(title) },
-      }),
+      createElement(
+        'p',
+        { className: 'htmdx-hero-eyebrow', key: 'eyebrow' },
+        renderInline(meta.project || '{Project Name}'),
+      ),
+      createElement('h1', { className: 'htmdx-hero-title', key: 'title' }, renderInline(title)),
       lead
-        ? createElement('p', {
-            className: 'htmdx-hero-desc',
-            key: 'desc',
-            dangerouslySetInnerHTML: { __html: inline(lead) },
-          })
+        ? createElement('p', { className: 'htmdx-hero-desc', key: 'desc' }, renderInline(lead))
         : null,
       createElement(
         'div',
@@ -276,12 +262,15 @@ function renderToc(headings: { id: string; label: string }[], meta: Record<strin
     createElement(
       'li',
       { className: 'htmdx-toc-item', key: heading.id },
-      createElement('a', {
-        className: 'htmdx-toc-link',
-        href: `#${heading.id}`,
-        'data-htmdx-target': heading.id,
-        dangerouslySetInnerHTML: { __html: inline(heading.label) },
-      }),
+      createElement(
+        'a',
+        {
+          className: 'htmdx-toc-link',
+          href: `#${heading.id}`,
+          'data-htmdx-target': heading.id,
+        },
+        renderInline(heading.label),
+      ),
     ),
   );
 
@@ -370,8 +359,8 @@ function renderComponentBlock(
   const component = components[block.name];
   const props = { ...attrsToProps(block.attrs), key };
 
-  // Raw-body components (bridged string built-ins) consume the body
-  // themselves — validation and rendering stay in the string pipeline.
+  // Raw-body built-ins (structured JSX components) parse and validate their
+  // own HTMDX body through the body contracts instead of taking children.
   if ((component as { htmdxRawBody?: boolean }).htmdxRawBody) {
     return createElement(component, { ...props, body: block.body });
   }
@@ -392,7 +381,11 @@ function bodyToChildren(
   // or fences (markdown literals) don't get parsed as component markup.
   const hasElements = /<[A-Za-z][A-Za-z0-9]*(\s[^>]*)?\/?>/.test(markdownSyntaxSource(body));
   if (!hasElements) {
-    return rawHtml('div', renderMarkdown(body, { headings: [], slugCounts: new Map() }), keyPrefix);
+    return createElement(
+      'div',
+      { key: keyPrefix },
+      renderMarkdown(body, { headings: [], slugCounts: new Map() }),
+    );
   }
 
   const nodes = parseBodyNodes(body);
@@ -409,7 +402,7 @@ function nodeToReact(node: Node, components: HtmdxReactComponents, key: string):
     if (!text.trim()) {
       return null;
     }
-    return rawHtml('span', inline(text.trim()), key);
+    return createElement('span', { key }, renderInline(text.trim()));
   }
 
   if (node.nodeType !== Node.ELEMENT_NODE) {
@@ -565,10 +558,6 @@ function parseAttrValue(value: string): unknown {
     }
   }
   return value;
-}
-
-function rawHtml(tag: string, html: string, key: string) {
-  return createElement(tag, { key, dangerouslySetInnerHTML: { __html: html } });
 }
 
 function stripFrontmatterAndComments(source: string) {

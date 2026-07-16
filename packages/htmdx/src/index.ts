@@ -636,12 +636,6 @@ const RUNTIME_CSS = `
     --md-sys-state-hover-opacity: 0.08;
     --md-sys-state-focus-opacity: 0.12;
 
-    --md-chart-series-0: var(--md-sys-color-primary);
-    --md-chart-series-1: var(--md-sys-color-tertiary);
-    --md-chart-series-2: var(--md-sys-color-secondary);
-    --md-chart-series-3: var(--md-sys-color-error);
-    --md-chart-series-4: var(--md-sys-color-on-surface-variant);
-
     --htmdx-bg: var(--md-sys-color-surface);
     --htmdx-ink: var(--md-sys-color-on-surface);
     --htmdx-body: var(--md-sys-color-on-surface-variant);
@@ -946,108 +940,6 @@ const RUNTIME_CSS = `
   .htmdx-callout .htmdx-component-body p { margin: 0 0 8px; color: var(--md-sys-color-on-secondary-container); }
   .htmdx-callout .htmdx-component-body p:last-child { margin-bottom: 0; }
 
-  .htmdx-finding .htmdx-feature-grid,
-  .htmdx-risk-table .htmdx-feature-grid { display: block; }
-  .htmdx-finding .htmdx-feature-item { position: relative; padding: 10px 0 10px 22px; border-bottom: 1px solid var(--md-sys-color-outline-variant); }
-  .htmdx-finding .htmdx-feature-item:last-child,
-  .htmdx-risk-table .htmdx-feature-item:last-child { border-bottom: none; }
-  .htmdx-finding .htmdx-feature-item::before {
-    content: "";
-    position: absolute;
-    left: 2px;
-    top: 18px;
-    width: 7px;
-    height: 7px;
-    background: var(--md-sys-color-primary);
-    border-radius: var(--md-sys-shape-corner-full);
-  }
-  .htmdx-feature-title { display: block; font-weight: 700; color: var(--md-sys-color-on-surface); }
-  .htmdx-feature-text { display: block; color: var(--md-sys-color-on-surface-variant); }
-
-  .htmdx-compare .htmdx-feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .htmdx-compare .htmdx-feature-item {
-    border: 1px solid var(--md-sys-color-outline-variant);
-    border-radius: var(--md-sys-shape-corner-large);
-    padding: 16px 20px;
-    background: var(--md-sys-color-surface-container-lowest);
-  }
-  .htmdx-compare .htmdx-feature-title { margin-bottom: 4px; }
-  .htmdx-compare .htmdx-feature-text { font-size: 0.9375rem; }
-
-  .htmdx-timeline .htmdx-feature-grid { display: block; margin-left: 4px; }
-  .htmdx-timeline .htmdx-feature-item { position: relative; padding: 6px 0 22px 28px; }
-  .htmdx-timeline .htmdx-feature-item:last-child { padding-bottom: 4px; }
-  /* Node marker, drawn above the connector so the rail threads through it. */
-  .htmdx-timeline .htmdx-feature-item::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 13px;
-    width: 10px;
-    height: 10px;
-    box-sizing: border-box;
-    background: var(--md-sys-color-surface-container-lowest);
-    border: 2px solid var(--md-sys-color-primary);
-    border-radius: var(--md-sys-shape-corner-full);
-    z-index: 1;
-  }
-  /* Connector to the next node; last item has none, so the rail brackets the
-     nodes instead of dangling past them. */
-  .htmdx-timeline .htmdx-feature-item::after {
-    content: "";
-    position: absolute;
-    left: 4px;
-    top: 18px;
-    bottom: -18px;
-    width: 2px;
-    background: var(--md-sys-color-primary);
-  }
-  .htmdx-timeline .htmdx-feature-item:last-child::after { display: none; }
-  .htmdx-timeline .htmdx-feature-title { color: var(--md-sys-color-on-surface); }
-  .htmdx-timeline .htmdx-feature-text { color: var(--md-sys-color-on-surface-variant); }
-
-  .htmdx-metric-strip .htmdx-component-body,
-  .htmdx-stat .htmdx-component-body {
-    border: 1px solid var(--md-sys-color-outline-variant);
-    border-radius: var(--md-sys-shape-corner-large);
-    background: var(--md-sys-color-surface-container-lowest);
-    overflow: hidden;
-  }
-  .htmdx-metric-grid { display: flex; flex-wrap: wrap; }
-  .htmdx-metric-item {
-    flex: 1 1 16%;
-    padding: 18px 20px;
-    border-right: 1px solid var(--md-sys-color-outline-variant);
-  }
-  .htmdx-metric-item:last-child { border-right: none; }
-  .htmdx-metric-label {
-    display: block;
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    color: var(--md-sys-color-on-surface-variant);
-    margin-bottom: 8px;
-  }
-  .htmdx-metric-value {
-    display: block;
-    font-family: var(--md-ref-typeface-brand);
-    font-size: 1.75rem;
-    line-height: 2.25rem;
-    font-weight: 500;
-    letter-spacing: normal;
-    color: var(--md-sys-color-on-surface);
-  }
-  .htmdx-metric-item:last-child .htmdx-metric-value { color: var(--md-sys-color-primary); }
-
-  .htmdx-evidence .htmdx-component-body {
-    border: 1px solid var(--md-sys-color-outline-variant);
-    border-radius: var(--md-sys-shape-corner-large);
-    background: var(--md-sys-color-surface-container-lowest);
-    padding: 16px 20px;
-    color: var(--md-sys-color-on-surface-variant);
-  }
-  .htmdx-evidence .htmdx-feature-item + .htmdx-feature-item { margin-top: 12px; }
-
   .htmdx-source-quote .htmdx-component-body p {
     font-size: 0.9375rem;
     color: var(--md-sys-color-on-surface-variant);
@@ -1056,31 +948,6 @@ const RUNTIME_CSS = `
     margin: 6px 0;
     line-height: 1.55;
   }
-
-  .htmdx-risk-table .htmdx-feature-item {
-    display: grid;
-    grid-template-columns: max-content 1fr;
-    gap: 16px;
-    align-items: start;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--htmdx-line);
-  }
-  .htmdx-risk-table .htmdx-feature-title {
-    display: block;
-    white-space: nowrap;
-    font-size: 0.6875rem;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    padding: 6px 12px;
-    border-radius: var(--md-sys-shape-corner-small);
-    text-align: center;
-    align-self: start;
-  }
-  .htmdx-risk-table .htmdx-feature-item[data-tier="must-have"] .htmdx-feature-title { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); }
-  .htmdx-risk-table .htmdx-feature-item[data-tier="differentiator"] .htmdx-feature-title { background: var(--md-sys-color-tertiary-container); color: var(--md-sys-color-on-tertiary-container); }
-  .htmdx-risk-table .htmdx-feature-item[data-tier="not-now"] .htmdx-feature-title { background: var(--md-sys-color-surface-variant); color: var(--md-sys-color-on-surface-variant); border: 1px solid var(--md-sys-color-outline-variant); }
-  .htmdx-risk-table .htmdx-feature-item[data-tier="wont-do"] .htmdx-feature-title { background: var(--md-sys-color-error-container); color: var(--md-sys-color-on-error-container); }
 
   .htmdx-doc-section-card table:not([data-slot]) { width: 100%; border-collapse: collapse; font-size: 0.9375rem; margin: 6px 0; }
   .htmdx-doc-section-card table:not([data-slot]) thead th {
@@ -1119,41 +986,8 @@ const RUNTIME_CSS = `
   .htmdx-doc-section-card table:not([data-slot]) tbody tr:hover th {
     background: color-mix(in srgb, var(--md-sys-color-primary) calc(var(--md-sys-state-hover-opacity) * 100%), transparent);
   }
-  /* DataTable: grey-bordered rounded frame around the table itself.
-     border-collapse: separate + overflow:hidden lets the 12px radius clip the
-     header fill and the corner cells. */
-  .htmdx-data-table table,
-  .htmdx-decision-table table {
-    border-collapse: separate;
-    border-spacing: 0;
-    border: 1px solid var(--md-sys-color-outline-variant);
-    border-radius: 12px;
-    overflow: hidden;
-    margin: 0;
-  }
-  /* Match the header divider to the table frame color, not the darker outline. */
-  .htmdx-data-table thead th { border-bottom-color: var(--md-sys-color-outline-variant); }
-
-  .htmdx-chart svg { width: 100%; height: auto; max-height: 240px; }
-  .htmdx-chart-bar { fill: var(--md-chart-series-0); }
-  .htmdx-chart-bar[data-series="1"] { fill: var(--md-chart-series-1); }
-  .htmdx-chart-bar[data-series="2"] { fill: var(--md-chart-series-2); }
-  .htmdx-chart-bar[data-series="3"] { fill: var(--md-chart-series-3); }
-  .htmdx-chart-bar[data-series="4"] { fill: var(--md-chart-series-4); }
-  .htmdx-chart-axis { stroke: var(--md-sys-color-outline-variant); }
-  .htmdx-chart-label { fill: var(--md-sys-color-on-surface-variant); font-size: 11px; font-family: var(--md-ref-typeface-plain); }
-
-  /* Bare components sit inside a card, like Evidence and MetricStrip */
-  .htmdx-finding .htmdx-component-body,
-  .htmdx-source-quote .htmdx-component-body,
-  .htmdx-risk-table .htmdx-component-body,
-  .htmdx-timeline .htmdx-component-body,
-  .htmdx-data-table .htmdx-component-body,
-  .htmdx-decision-table .htmdx-component-body,
-  .htmdx-chart-bar .htmdx-component-body,
-  .htmdx-chart-line .htmdx-component-body,
-  .htmdx-chart-area .htmdx-component-body,
-  .htmdx-chart-pie .htmdx-component-body {
+  /* SourceQuote (a markdown-bodied shell) sits inside a card. */
+  .htmdx-source-quote .htmdx-component-body {
     background: var(--md-sys-color-surface-container-lowest);
     border: 1px solid var(--md-sys-color-outline-variant);
     border-radius: var(--md-sys-shape-corner-large);
@@ -1172,7 +1006,5 @@ const RUNTIME_CSS = `
   @media (max-width: 720px) {
     .htmdx-hero-title { font-size: 2.5rem; }
     .htmdx-doc-section-card { padding: 16px; }
-    .htmdx-compare .htmdx-feature-grid { grid-template-columns: 1fr; }
-    .htmdx-metric-item { flex-basis: 50%; border-bottom: 1px solid var(--md-sys-color-outline-variant); }
   }
 `;

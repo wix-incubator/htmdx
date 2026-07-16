@@ -1,6 +1,6 @@
 {
   "name": "@wix/htmdx",
-  "version": "2.2.1",
+  "version": "3.0.0",
   "description": "Render editable HTMDX source inside plain HTML artifacts.",
   "keywords": [
     "agents",

@@ -12,6 +12,37 @@ import { cva } from 'class-variance-authority';
 // purple = shopper / guardrail accent
 export type Tone = 'blue' | 'green' | 'amber' | 'red' | 'gray' | 'purple';
 
+export const TONE_BORDER: Record<Tone, string> = {
+  blue: 'border-blue-300 dark:border-blue-800',
+  green: 'border-emerald-300 dark:border-emerald-800',
+  amber: 'border-amber-300 dark:border-amber-800',
+  red: 'border-red-300 dark:border-red-800',
+  gray: 'border-border',
+  purple: 'border-violet-300 dark:border-violet-800',
+};
+
+export const TONE_FOREGROUND: Record<Tone, string> = {
+  blue: 'text-blue-700 dark:text-blue-300',
+  green: 'text-emerald-700 dark:text-emerald-300',
+  amber: 'text-amber-700 dark:text-amber-300',
+  red: 'text-red-700 dark:text-red-300',
+  gray: 'text-muted-foreground',
+  purple: 'text-violet-700 dark:text-violet-300',
+};
+
+export const TONE_SOFT: Record<Tone, string> = {
+  blue: 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300',
+  green: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300',
+  amber: 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300',
+  red: 'bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300',
+  gray: 'bg-muted text-muted-foreground',
+  purple: 'bg-violet-50 text-violet-700 dark:bg-violet-950 dark:text-violet-300',
+};
+
+function outlineTone(tone: Tone): string {
+  return `${TONE_BORDER[tone]} ${TONE_FOREGROUND[tone]}`;
+}
+
 // A pill/label. `outline` = colored text + border on transparent; `soft` =
 // tinted background + colored text (used for filled status pills and chips).
 export const toneChip = cva(
@@ -29,58 +60,18 @@ export const toneChip = cva(
       emphasis: { outline: 'bg-transparent', soft: 'border-transparent' },
     },
     compoundVariants: [
-      {
-        tone: 'blue',
-        emphasis: 'outline',
-        class: 'border-blue-300 text-blue-700 dark:border-blue-800 dark:text-blue-300',
-      },
-      {
-        tone: 'green',
-        emphasis: 'outline',
-        class: 'border-emerald-300 text-emerald-700 dark:border-emerald-800 dark:text-emerald-300',
-      },
-      {
-        tone: 'amber',
-        emphasis: 'outline',
-        class: 'border-amber-300 text-amber-700 dark:border-amber-800 dark:text-amber-300',
-      },
-      {
-        tone: 'red',
-        emphasis: 'outline',
-        class: 'border-red-300 text-red-700 dark:border-red-800 dark:text-red-300',
-      },
-      { tone: 'gray', emphasis: 'outline', class: 'border-border text-muted-foreground' },
-      {
-        tone: 'purple',
-        emphasis: 'outline',
-        class: 'border-violet-300 text-violet-700 dark:border-violet-800 dark:text-violet-300',
-      },
-      {
-        tone: 'blue',
-        emphasis: 'soft',
-        class: 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300',
-      },
-      {
-        tone: 'green',
-        emphasis: 'soft',
-        class: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300',
-      },
-      {
-        tone: 'amber',
-        emphasis: 'soft',
-        class: 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300',
-      },
-      {
-        tone: 'red',
-        emphasis: 'soft',
-        class: 'bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300',
-      },
-      { tone: 'gray', emphasis: 'soft', class: 'bg-muted text-muted-foreground' },
-      {
-        tone: 'purple',
-        emphasis: 'soft',
-        class: 'bg-violet-50 text-violet-700 dark:bg-violet-950 dark:text-violet-300',
-      },
+      { tone: 'blue', emphasis: 'outline', class: outlineTone('blue') },
+      { tone: 'green', emphasis: 'outline', class: outlineTone('green') },
+      { tone: 'amber', emphasis: 'outline', class: outlineTone('amber') },
+      { tone: 'red', emphasis: 'outline', class: outlineTone('red') },
+      { tone: 'gray', emphasis: 'outline', class: outlineTone('gray') },
+      { tone: 'purple', emphasis: 'outline', class: outlineTone('purple') },
+      { tone: 'blue', emphasis: 'soft', class: TONE_SOFT.blue },
+      { tone: 'green', emphasis: 'soft', class: TONE_SOFT.green },
+      { tone: 'amber', emphasis: 'soft', class: TONE_SOFT.amber },
+      { tone: 'red', emphasis: 'soft', class: TONE_SOFT.red },
+      { tone: 'gray', emphasis: 'soft', class: TONE_SOFT.gray },
+      { tone: 'purple', emphasis: 'soft', class: TONE_SOFT.purple },
     ],
     defaultVariants: { tone: 'gray', emphasis: 'outline' },
   },
@@ -139,8 +130,8 @@ export const feelingChip = cva(
   {
     variants: {
       kind: {
-        negative: 'bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300',
-        positive: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300',
+        negative: TONE_SOFT.red,
+        positive: TONE_SOFT.green,
       },
     },
   },

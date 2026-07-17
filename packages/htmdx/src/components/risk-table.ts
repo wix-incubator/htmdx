@@ -1,14 +1,14 @@
 import { BodyContractError, type MarkdownListCards } from './body-contracts';
 import type { HtmdxComponent } from './types';
 
-export const riskTable: HtmdxComponent = {
+export const riskTable = {
   name: 'RiskTable',
   body: 'markdown-list-cards',
   purpose: 'Classify priorities using the canonical product-planning tiers.',
   example:
     '<RiskTable>\n- **Must-have:** Publish exact-version metadata.\n- **Not now:** Describe host components.\n</RiskTable>',
   validate: validateRiskTable,
-};
+} as const satisfies HtmdxComponent;
 
 const RISK_TIERS = ['Must-have', 'Differentiator', 'Not now', "Won't do"] as const;
 

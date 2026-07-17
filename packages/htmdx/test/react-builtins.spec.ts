@@ -28,6 +28,23 @@ Ship **one HTML file** with editable HTMDX source.
     expect(html).toContain('HTMDX');
   });
 
+  test('preserves apostrophes in quoted intents', () => {
+    const html = renderToStaticMarkup(
+      compileToReact(
+        `<IntentList>
+- **#int-001 · Blocker · Self-Creator · Main intent:** "I want to collect a shopper's file, so I don't have to chase it over email." — frustrated, resigned → in control, relieved
+</IntentList>`,
+        { components: merged },
+      ),
+    );
+    const container = document.createElement('div');
+    container.innerHTML = html;
+
+    expect(container.textContent).toContain(
+      "I want to collect a shopper's file, so I don't have to chase it over email.",
+    );
+  });
+
   test('built-in body contracts still validate in the React path', () => {
     expect(() =>
       renderToStaticMarkup(

@@ -23,7 +23,7 @@ import { stat } from './stat';
 import { timeline } from './timeline';
 import type { HtmdxComponent } from './types';
 
-export const builtInComponents: readonly HtmdxComponent[] = [
+export const builtInComponents = [
   executiveSummary,
   callout,
   sourceQuote,
@@ -46,7 +46,7 @@ export const builtInComponents: readonly HtmdxComponent[] = [
   riskTable,
   decisionTable,
   timeline,
-];
+] as const satisfies readonly HtmdxComponent[];
 
 const names = new Set<string>();
 for (const component of builtInComponents) {

@@ -1,6 +1,7 @@
 import { cva } from 'class-variance-authority';
 import { parseComponentBody } from '../../components/body-contracts';
 import { Block, Inline, rawBody, stripWrappingBold, type RawBodyProps } from './shell';
+import { TONE_DOT } from './tones';
 
 // A leading trend glyph on a metric label is read as directional intent:
 // up = improvement (green), down = reduction/good-when-lower (red), guard =
@@ -17,9 +18,9 @@ type Direction = keyof typeof DIRECTIONS;
 const trendGlyph = cva('mr-1.5 inline-block text-base font-bold leading-none', {
   variants: {
     dir: {
-      up: 'text-emerald-600 dark:text-emerald-400',
-      down: 'text-red-600 dark:text-red-400',
-      guard: 'text-amber-600 dark:text-amber-400',
+      up: TONE_DOT.green,
+      down: TONE_DOT.red,
+      guard: TONE_DOT.amber,
     } satisfies Record<Direction, string>,
   },
 });

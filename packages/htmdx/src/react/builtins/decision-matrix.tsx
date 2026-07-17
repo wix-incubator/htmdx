@@ -1,7 +1,7 @@
 import { parseComponentBody } from '../../components/body-contracts';
 import { cn } from '../shadcn/utils';
 import { Block, Inline, rawBody, type RawBodyProps } from './shell';
-import { toneChip, TONE_DOT, type Tone } from './tones';
+import { toneChip, TONE_DOT, TONE_SURFACE, type Tone } from './tones';
 
 // Options-as-columns decision matrix. The gfm-table header lists the options
 // (first cell is the criteria corner); mark the chosen option by putting a ✓
@@ -55,7 +55,7 @@ export const DecisionMatrix = rawBody(({ body = '' }: RawBodyProps) => {
                     key={index}
                     className={cn(
                       'p-3 text-left align-bottom font-semibold text-foreground',
-                      chosen && 'bg-blue-50 dark:bg-blue-950/40',
+                      chosen && TONE_SURFACE.blue,
                     )}
                   >
                     <div>
@@ -89,7 +89,7 @@ export const DecisionMatrix = rawBody(({ body = '' }: RawBodyProps) => {
                       key={cellIndex}
                       className={cn(
                         'p-3 align-top text-muted-foreground',
-                        cellIndex === chosenCol && 'bg-blue-50/60 dark:bg-blue-950/30',
+                        cellIndex === chosenCol && TONE_SURFACE.blue,
                       )}
                     >
                       <Cell raw={cell} />

@@ -1,7 +1,7 @@
 import { parseComponentBody } from '../../components/body-contracts';
 import { cn } from '../shadcn/utils';
 import { Block, Inline, rawBody, splitFeature, type RawBodyProps } from './shell';
-import { feelingChip, toneChip, TONE_BAR, type Tone } from './tones';
+import { feelingChip, toneChip, TONE_BAR, TONE_SOFT, type Tone } from './tones';
 
 // Priority tiers drive grouping order, the group badge tone, and each card's
 // left accent bar.
@@ -43,9 +43,11 @@ function parseIntent(item: string): Intent {
   const priorityKey = (PRIORITY_ORDER.find((key) => key === priorityRaw.toLowerCase()) ??
     'nice to have') as PriorityKey;
 
-  const quoteMatch = text.match(/[“"']([^“”"']+)[”"']/);
-  const quote = quoteMatch?.[1] ?? '';
-  let rest = (quoteMatch ? text.slice(quoteMatch.index! + quoteMatch[0].length) : text)
+  const quoteMatch = text.match(
+    /^\s*(?:“([\s\S]*?)”|"([\s\S]*?)"|‘([\s\S]*?)’|'([\s\S]*?)')\s*(?=[—–-]|$)/,
+  );
+  const quote = quoteMatch?.slice(1).find((capture) => capture !== undefined) ?? '';
+  let rest = (quoteMatch ? text.slice(quoteMatch[0].length) : text)
     .replace(/^\s*[—–-]\s*/, '')
     .trim();
 
@@ -113,7 +115,12 @@ function IntentCard({ intent }: { intent: Intent }) {
         </div>
       ) : null}
       {intent.note ? (
-        <div className="mt-3 flex items-start gap-2 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-700 dark:bg-amber-950 dark:text-amber-300">
+        <div
+          className={cn(
+            'mt-3 flex items-start gap-2 rounded-md px-3 py-2 text-sm',
+            TONE_SOFT.amber,
+          )}
+        >
           <span aria-hidden>⚠</span>
           <span>
             <Inline text={intent.note} />

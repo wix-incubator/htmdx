@@ -1,6 +1,7 @@
 import { parseComponentBody } from '../../components/body-contracts';
+import { cn } from '../shadcn/utils';
 import { Block, Inline, rawBody, splitFeature, type RawBodyProps } from './shell';
-import { toneChip, type Tone } from './tones';
+import { toneChip, TONE_BORDER, TONE_SOFT, type Tone } from './tones';
 
 // Open questions & assumptions: an amber-framed panel whose rows each carry a
 // labeled badge. Item: **Assumption:** text · **Risk:** text · **Open:** text.
@@ -19,8 +20,14 @@ export const OpenQuestions = rawBody(({ body = '' }: RawBodyProps) => {
   const parsed = parseComponentBody('OpenQuestions', 'markdown-list-cards', body);
   return (
     <Block name="OpenQuestions">
-      <div className="overflow-hidden rounded-lg border border-amber-300 dark:border-amber-800">
-        <div className="border-b border-amber-300 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-300">
+      <div className={cn('overflow-hidden rounded-lg border', TONE_BORDER.amber)}>
+        <div
+          className={cn(
+            'border-b px-4 py-2 text-sm font-semibold',
+            TONE_BORDER.amber,
+            TONE_SOFT.amber,
+          )}
+        >
           ⚠ Open Questions &amp; Assumptions
         </div>
         <div className="divide-y">

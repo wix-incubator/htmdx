@@ -1,4 +1,4 @@
-import { createElement, type ReactNode } from 'react';
+import { createElement, forwardRef, memo, type ReactNode } from 'react';
 import { describe, expect, test } from 'vitest';
 import { compile, registerComponent, registerComponents, type HtmdxComponent } from '../src';
 
@@ -25,6 +25,38 @@ describe('definition-driven component contracts', () => {
       ok: false,
       error: expect.stringContaining('requires a purpose'),
     });
+  });
+
+  test('rejects non-executable component values while accepting React component wrappers', () => {
+    const invalidValues = [{}, []];
+    for (const Component of invalidValues) {
+      const invalid = definition({
+        name: 'InvalidComponentFixture',
+        body: 'none',
+        Component: Component as HtmdxComponent['Component'],
+      });
+      expect(compile('', { definitions: [invalid] })).toMatchObject({
+        ok: false,
+        error: expect.stringContaining('requires a React Component'),
+      });
+    }
+
+    const MemoFixture = definition({
+      name: 'MemoFixture',
+      body: 'none',
+      Component: memo(() => createElement('output', null, 'memo')),
+    });
+    const ForwardRefFixture = definition({
+      name: 'ForwardRefFixture',
+      body: 'none',
+      Component: forwardRef<HTMLOutputElement>(() => createElement('output', null, 'forward-ref')),
+    });
+
+    const rendered = compile('<MemoFixture /><ForwardRefFixture />', {
+      definitions: [MemoFixture, ForwardRefFixture],
+    });
+    expect(rendered.ok && rendered.html).toContain('<output>memo</output>');
+    expect(rendered.ok && rendered.html).toContain('<output>forward-ref</output>');
   });
 
   test('executes markdown, HTMDX, and bodyless body modes', () => {
@@ -77,6 +109,29 @@ describe('definition-driven component contracts', () => {
       '<section>plain <strong>inline</strong> content</section>',
     );
     expect(block.ok && block.html).toContain('<li>first</li>');
+  });
+
+  test('preserves meaningful spaces around nested HTMDX children', () => {
+    const Composition = definition({
+      name: 'SpacedComposition',
+      body: 'htmdx',
+      Component: ({ children }: { children?: ReactNode }) =>
+        createElement('section', null, children),
+    });
+    const Child = definition({
+      name: 'SpacedChild',
+      body: 'htmdx',
+      Component: ({ children }: { children?: ReactNode }) => createElement('mark', null, children),
+    });
+
+    const rendered = compile(
+      '<SpacedComposition>Hello <SpacedChild>world</SpacedChild> <SpacedChild>again</SpacedChild> friend</SpacedComposition>',
+      { definitions: [Composition, Child] },
+    );
+
+    expect(rendered.ok && rendered.html).toContain(
+      '<section><span>Hello </span><mark>world</mark> <mark>again</mark><span> friend</span></section>',
+    );
   });
 
   test('enforces definition body modes', () => {
@@ -176,6 +231,7 @@ describe('definition-driven component contracts', () => {
     ['number below minimum', '<ValidatedProbe label="Good" count="0" />', 'at least 1'],
     ['number above maximum', '<ValidatedProbe label="Good" count="11" />', 'at most 10'],
     ['invalid boolean', '<ValidatedProbe label="Good" enabled="yes" />', 'true or false'],
+    ['explicit empty boolean', '<ValidatedProbe label="Good" enabled="" />', 'true or false'],
     ['invalid JSON', '<ValidatedProbe label="Good" config="not-json" />', 'valid JSON'],
   ])('rejects %s', (_case, source, message) => {
     const PropProbe = definition({
@@ -195,6 +251,31 @@ describe('definition-driven component contracts', () => {
       ok: false,
       error: expect.stringContaining(message),
     });
+  });
+
+  test('rejects explicit empty boolean values in nested definition tags', () => {
+    const Container = definition({
+      name: 'BooleanContainer',
+      body: 'htmdx',
+      Component: ({ children }: { children?: ReactNode }) => createElement('div', null, children),
+    });
+    const Probe = definition({
+      name: 'NestedBooleanProbe',
+      body: 'none',
+      props: [{ name: 'enabled', type: 'boolean' }],
+      Component: () => null,
+    });
+
+    expect(
+      compile('<BooleanContainer><NestedBooleanProbe enabled="" /></BooleanContainer>', {
+        definitions: [Container, Probe],
+      }),
+    ).toMatchObject({ ok: false, error: expect.stringContaining('must be true or false') });
+    expect(
+      compile('<BooleanContainer><NestedBooleanProbe enabled /></BooleanContainer>', {
+        definitions: [Container, Probe],
+      }),
+    ).toMatchObject({ ok: true });
   });
 
   test('supports definition-based per-render and global registration alongside legacy APIs', () => {
@@ -232,6 +313,39 @@ describe('definition-driven component contracts', () => {
     ).toMatchObject({ ok: true });
   });
 
+  test('preserves legacy component override semantics during expansion', () => {
+    const perRender = compile('<ExecutiveSummary>legacy override</ExecutiveSummary>', {
+      components: {
+        ExecutiveSummary: ({ children }: { children?: ReactNode }) =>
+          createElement('output', null, 'per-render:', children),
+      },
+    });
+    expect(perRender.ok && perRender.html).toContain(
+      '<output>per-render:<div><p>legacy override</p></div></output>',
+    );
+
+    registerComponent('LegacyReregistrationFixture', () => createElement('output', null, 'first'), {
+      rerender: false,
+    });
+    registerComponent(
+      'LegacyReregistrationFixture',
+      () => createElement('output', null, 'second'),
+      { rerender: false },
+    );
+    const global = compile('<LegacyReregistrationFixture />');
+    expect(global.ok && global.html).toContain('<output>second</output>');
+
+    registerComponent(
+      'DefinitionGlobalOne',
+      () => createElement('output', null, 'legacy-over-definition'),
+      { rerender: false },
+    );
+    const definitionOverride = compile('<DefinitionGlobalOne />');
+    expect(definitionOverride.ok && definitionOverride.html).toContain(
+      '<output>legacy-over-definition</output>',
+    );
+  });
+
   test('rejects definition name collisions case-insensitively', () => {
     const BundledCollision = definition({
       name: 'executivesummary',
@@ -252,16 +366,5 @@ describe('definition-driven component contracts', () => {
     expect(() => registerComponent(BundledCollision, { rerender: false })).toThrow(
       'collides with <ExecutiveSummary>',
     );
-    expect(() => registerComponent('EXECUTIVESUMMARY', () => null, { rerender: false })).toThrow(
-      'collides with <ExecutiveSummary>',
-    );
-    expect(
-      compile('<EXECUTIVESUMMARY />', {
-        components: { EXECUTIVESUMMARY: () => null },
-      }),
-    ).toMatchObject({
-      ok: false,
-      error: expect.stringContaining('collides with <ExecutiveSummary>'),
-    });
   });
 });

@@ -102,18 +102,17 @@ const reactRoots = new WeakMap<Element, HostRoot>();
 const stickyObservers = new WeakMap<Element, IntersectionObserver>();
 
 function runtimeOptionsFor(options: HtmdxCompileOptions) {
-  assertAvailableComponentNames(Object.keys(options.components || {}), [
-    ...bundledComponentNames,
-    ...Object.keys(globalReactComponents),
-    ...globalDefinitions.map(({ name }) => name),
-  ]);
   const components = {
     ...builtInReactComponents,
     ...shadcnComponents,
     ...globalReactComponents,
     ...options.components,
   };
-  const definitions = [...globalDefinitions, ...(options.definitions || [])];
+  const componentNames = new Set(Object.keys(components).map((name) => name.toLowerCase()));
+  const definitions = [
+    ...globalDefinitions.filter((definition) => !componentNames.has(definition.name.toLowerCase())),
+    ...(options.definitions || []),
+  ];
   createDefinitionRegistry(definitions, Object.keys(components));
   return { components, definitions };
 }
@@ -191,7 +190,6 @@ export function registerComponent(
   }
 
   assertComponentName(nameOrDefinition);
-  assertAvailableComponentNames([nameOrDefinition], registeredComponentNames());
   globalReactComponents[nameOrDefinition] = componentOrOptions as HtmdxReactComponent;
   return legacyOptions.rerender === false ? Promise.resolve() : rerender();
 }
@@ -215,10 +213,6 @@ export function registerComponents(
     for (const [name] of entries) {
       assertComponentName(name);
     }
-    assertAvailableComponentNames(
-      entries.map(([name]) => name),
-      registeredComponentNames(),
-    );
     for (const [name, component] of entries) {
       globalReactComponents[name] = component;
     }

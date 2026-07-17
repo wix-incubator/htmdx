@@ -503,10 +503,12 @@ function bodyToChildren(
     );
   }
 
-  const nodes = parseBodyNodes(body);
+  const { nodes, sourceAttributes } = parseBodyNodes(body);
 
   const children = nodes
-    .map((node, index) => nodeToReact(node, catalog, `${keyPrefix}-${index}`, contractDriven))
+    .map((node, index) =>
+      nodeToReact(node, catalog, `${keyPrefix}-${index}`, contractDriven, sourceAttributes),
+    )
     .filter((child) => child !== null);
   return children.length === 1 ? children[0] : children;
 }
@@ -520,13 +522,14 @@ function nodeToReact(
   catalog: RuntimeCatalog,
   key: string,
   contractDriven = false,
+  sourceAttributes: WeakMap<Element, SourceAttribute[]> = new WeakMap(),
 ): ReactNode | null {
   if (node.nodeType === Node.TEXT_NODE) {
     const text = node.textContent || '';
-    if (!text.trim()) {
+    if (!text) {
       return null;
     }
-    return createElement('span', { key }, renderInline(text.trim()));
+    return text.trim() ? createElement('span', { key }, renderInline(text)) : text;
   }
 
   if (node.nodeType !== Node.ELEMENT_NODE) {
@@ -541,12 +544,14 @@ function nodeToReact(
   }
   const definition = canonical ? catalog.definitions.get(lower) : undefined;
   if (definition) {
-    const attributes = element.getAttributeNames().map((name) => ({
-      name,
-      value: element.getAttribute(name) ?? '',
-      bare: element.getAttribute(name) === '',
-      fromDom: true,
-    }));
+    const attributes =
+      sourceAttributes.get(element) ||
+      element.getAttributeNames().map((name) => ({
+        name,
+        value: element.getAttribute(name) ?? '',
+        bare: false,
+        fromDom: true,
+      }));
     return renderDefinition(
       definition,
       definitionPropsFromAttributes(definition, attributes),
@@ -570,7 +575,9 @@ function nodeToReact(
   }
 
   const children = Array.from(element.childNodes)
-    .map((child, index) => nodeToReact(child, catalog, `${key}-${index}`, contractDriven))
+    .map((child, index) =>
+      nodeToReact(child, catalog, `${key}-${index}`, contractDriven, sourceAttributes),
+    )
     .filter((child) => child !== null);
 
   return createElement(target, props, ...children);
@@ -580,14 +587,54 @@ function nodeToReact(
 // camelCase props like defaultValue survive) and never relocates fragments the
 // way the HTML parser does with table rows. Malformed bodies (unescaped `&`,
 // unclosed tags) fall back to forgiving HTML parsing.
-function parseBodyNodes(body: string): Node[] {
+function parseBodyNodes(body: string): {
+  nodes: Node[];
+  sourceAttributes: WeakMap<Element, SourceAttribute[]>;
+} {
   const xml = new DOMParser().parseFromString(`<htmdx-body>${body}</htmdx-body>`, 'text/xml');
-  if (!xml.querySelector('parsererror')) {
-    return Array.from(xml.documentElement.childNodes);
+  const nodes = !xml.querySelector('parsererror')
+    ? Array.from(xml.documentElement.childNodes)
+    : Array.from(new DOMParser().parseFromString(body, 'text/html').body.childNodes);
+
+  return { nodes, sourceAttributes: mapSourceAttributes(body, nodes) };
+}
+
+// DOMParser exposes both `enabled` and `enabled=""` as an empty attribute.
+// Pair parsed elements with source attributes so schema parsing can distinguish them.
+function mapSourceAttributes(body: string, nodes: Node[]): WeakMap<Element, SourceAttribute[]> {
+  const sourceElements: { name: string; attributes: SourceAttribute[] }[] = [];
+  const openTag = /<([A-Za-z][A-Za-z0-9]*)(\s+(?:[^"'<>]|"[^"]*"|'[^']*')*)?\s*\/?>/g;
+  let match: RegExpExecArray | null;
+  while ((match = openTag.exec(body))) {
+    sourceElements.push({
+      name: match[1].toLowerCase(),
+      attributes: parseAttributes(match[2] || ''),
+    });
   }
 
-  const html = new DOMParser().parseFromString(body, 'text/html');
-  return Array.from(html.body.childNodes);
+  const domElements: Element[] = [];
+  const collectElements = (children: Node[]) => {
+    for (const child of children) {
+      if (child.nodeType !== Node.ELEMENT_NODE) {
+        continue;
+      }
+      const element = child as Element;
+      domElements.push(element);
+      collectElements(Array.from(element.childNodes));
+    }
+  };
+  collectElements(nodes);
+
+  const attributesByElement = new WeakMap<Element, SourceAttribute[]>();
+  let sourceIndex = 0;
+  for (const element of domElements) {
+    const source = sourceElements[sourceIndex];
+    if (source?.name === element.tagName.toLowerCase()) {
+      attributesByElement.set(element, source.attributes);
+      sourceIndex += 1;
+    }
+  }
+  return attributesByElement;
 }
 
 function tokenize(source: string, registry: Map<string, string>): Block[] {
@@ -799,11 +846,10 @@ function assertDeclarativeBody(componentName: string, body: string, allowTags = 
 
 function attrsToProps(attrs: string): Record<string, unknown> {
   const props: Record<string, unknown> = {};
-  const pattern = /([A-Za-z][A-Za-z0-9-]*)(?:=(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g;
-  let match: RegExpExecArray | null;
-  while ((match = pattern.exec(attrs))) {
-    const value = match[2] ?? match[3] ?? match[4];
-    props[normalizePropName(match[1])] = value === undefined ? true : parseAttrValue(value);
+  for (const attribute of parseAttributes(attrs)) {
+    props[normalizePropName(attribute.name)] = attribute.bare
+      ? true
+      : parseAttrValue(attribute.value ?? '');
   }
   return props;
 }

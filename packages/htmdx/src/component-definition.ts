@@ -1,4 +1,4 @@
-import type { ComponentType } from 'react';
+import type { ComponentType, ExoticComponent } from 'react';
 
 export type HtmdxPropType = 'string' | 'number' | 'boolean' | 'json';
 
@@ -41,7 +41,7 @@ export type HtmdxComponent = {
   props?: readonly HtmdxProp[];
   // Component prop shapes are definition-owned and checked when authored.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Component: ComponentType<any>;
+  Component: ComponentType<any> | ExoticComponent<any>;
 };
 
 export type HtmdxComponentDefinitions = readonly HtmdxComponent[];
@@ -85,10 +85,7 @@ export function validateDefinition(definition: HtmdxComponent): void {
   if (!['markdown', 'htmdx', 'none'].includes(definition.body)) {
     throw new Error(`component <${definition.name}> has invalid body mode "${definition.body}"`);
   }
-  if (
-    typeof definition.Component !== 'function' &&
-    (typeof definition.Component !== 'object' || definition.Component === null)
-  ) {
+  if (!isExecutableReactComponent(definition.Component)) {
     throw new Error(`component <${definition.name}> requires a React Component`);
   }
 
@@ -220,6 +217,22 @@ function valuesEqual(left: unknown, right: unknown): boolean {
     return false;
   }
   return JSON.stringify(left) === JSON.stringify(right);
+}
+
+function isExecutableReactComponent(value: unknown): boolean {
+  if (typeof value === 'function') {
+    return true;
+  }
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return false;
+  }
+
+  const reactType = (value as { $$typeof?: unknown }).$$typeof;
+  return [
+    Symbol.for('react.forward_ref'),
+    Symbol.for('react.lazy'),
+    Symbol.for('react.memo'),
+  ].includes(reactType as symbol);
 }
 
 function isComponentName(name: unknown): name is string {

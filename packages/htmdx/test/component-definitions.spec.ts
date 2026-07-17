@@ -141,6 +141,33 @@ After **nested** content.
     );
   });
 
+  test('renders formatted ordinary HTML containing a nested definition', () => {
+    const Composition = definition({
+      name: 'FormattedHtmlComposition',
+      body: 'htmdx',
+      Component: ({ children }: { children?: ReactNode }) =>
+        createElement('section', null, children),
+    });
+    const Child = definition({
+      name: 'FormattedHtmlChild',
+      body: 'none',
+      Component: () => createElement('mark', null, 'nested'),
+    });
+
+    const rendered = compile(
+      `<FormattedHtmlComposition><p>
+Hello
+<FormattedHtmlChild />
+friend
+</p></FormattedHtmlComposition>`,
+      { definitions: [Composition, Child] },
+    );
+
+    expect(rendered.ok && rendered.html).toContain(
+      '<section><p><span>\nHello\n</span><mark>nested</mark><span>\nfriend\n</span></p></section>',
+    );
+  });
+
   test('preserves meaningful spaces around nested HTMDX children', () => {
     const Composition = definition({
       name: 'SpacedComposition',

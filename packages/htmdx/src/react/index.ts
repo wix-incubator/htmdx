@@ -523,13 +523,14 @@ function nodeToReact(
   key: string,
   contractDriven = false,
   sourceAttributes: WeakMap<Element, SourceAttribute[]> = new WeakMap(),
+  renderBlockMarkdownText = contractDriven,
 ): ReactNode | null {
   if (node.nodeType === Node.TEXT_NODE) {
     const text = node.textContent || '';
     if (!text) {
       return null;
     }
-    if (contractDriven && text.trim() && isBlockMarkdown(text)) {
+    if (renderBlockMarkdownText && text.trim() && isBlockMarkdown(text)) {
       return createElement(Fragment, { key }, ...renderMarkdown(text));
     }
     return text.trim() ? createElement('span', { key }, renderInline(text)) : text;
@@ -579,7 +580,7 @@ function nodeToReact(
 
   const children = Array.from(element.childNodes)
     .map((child, index) =>
-      nodeToReact(child, catalog, `${key}-${index}`, contractDriven, sourceAttributes),
+      nodeToReact(child, catalog, `${key}-${index}`, contractDriven, sourceAttributes, false),
     )
     .filter((child) => child !== null);
 

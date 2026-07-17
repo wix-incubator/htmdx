@@ -2,6 +2,11 @@
 // built-ins are React components, the shadcn/ui pack is included, and
 // compile() produces a static HTML snapshot of the same tree.
 import type { ReactElement } from 'react';
+import {
+  createDefinitionRegistry,
+  type HtmdxComponent,
+  type HtmdxComponentDefinitions,
+} from './component-definition';
 import { flushSync } from 'react-dom';
 import { createRoot, type Root } from 'react-dom/client';
 import { escapeHtml } from './components/rendering';
@@ -28,6 +33,17 @@ export {
   type HtmdxReactComponent,
   type HtmdxReactComponents,
 } from './react';
+export type {
+  HtmdxBooleanProp,
+  HtmdxComponent,
+  HtmdxComponentDefinitions,
+  HtmdxJsonProp,
+  HtmdxJsonValue,
+  HtmdxNumberProp,
+  HtmdxProp,
+  HtmdxPropType,
+  HtmdxStringProp,
+} from './component-definition';
 
 export type HtmdxToken =
   | { type: 'markdown'; value: string }
@@ -44,6 +60,7 @@ export type HtmdxThemeDefinition = {
 
 export type HtmdxCompileOptions = {
   components?: HtmdxReactComponents;
+  definitions?: HtmdxComponentDefinitions;
 };
 
 export type HtmdxExtensionOptions = {
@@ -69,7 +86,14 @@ export const DEFAULT_TAG_NAME = 'htmdx-code';
 export const DEFAULT_TAILWIND_BROWSER_SRC = 'https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4';
 const DEFAULT_SOURCE_SELECTOR = 'script[type="text/htmdx"], template[type="text/htmdx"]';
 
+const bundledComponentNames = [
+  ...Object.keys(builtInReactComponents),
+  ...Object.keys(shadcnComponents),
+];
+assertUniqueComponentNames(bundledComponentNames);
+
 const globalReactComponents: HtmdxReactComponents = {};
+const globalDefinitions: HtmdxComponent[] = [];
 const registeredTagNames = new Set([DEFAULT_TAG_NAME]);
 const sourceCache = new WeakMap<Element, HtmdxSourceResult & { ok: true }>();
 
@@ -77,18 +101,36 @@ type HostRoot = { root: Root; renderError: { current: unknown } };
 const reactRoots = new WeakMap<Element, HostRoot>();
 const stickyObservers = new WeakMap<Element, IntersectionObserver>();
 
-function componentsFor(options: HtmdxCompileOptions): HtmdxReactComponents {
-  return {
+function runtimeOptionsFor(options: HtmdxCompileOptions) {
+  assertAvailableComponentNames(Object.keys(options.components || {}), [
+    ...bundledComponentNames,
+    ...Object.keys(globalReactComponents),
+    ...globalDefinitions.map(({ name }) => name),
+  ]);
+  const components = {
     ...builtInReactComponents,
     ...shadcnComponents,
     ...globalReactComponents,
     ...options.components,
   };
+  const definitions = [...globalDefinitions, ...(options.definitions || [])];
+  createDefinitionRegistry(definitions, Object.keys(components));
+  return { components, definitions };
+}
+
+function componentsFor(options: HtmdxCompileOptions): HtmdxReactComponents {
+  const runtime = runtimeOptionsFor(options);
+  return {
+    ...runtime.components,
+    ...Object.fromEntries(
+      runtime.definitions.map((definition) => [definition.name, definition.Component]),
+    ),
+  };
 }
 
 export function compile(source: string, options: HtmdxCompileOptions = {}): HtmdxCompileResult {
   try {
-    const doc = compileDocument(source, { components: componentsFor(options) });
+    const doc = compileDocument(source, runtimeOptionsFor(options));
     return {
       ok: true,
       html: renderStaticHtml(doc.element),
@@ -126,33 +168,67 @@ function renderStaticHtml(element: ReactElement): string {
   }
 }
 
-// Extension API: register React components globally. Host-owned code only;
-// the HTMDX source itself stays declarative data.
+// Extension API: complete definitions are the additive contract-driven path.
+// The name + React component signatures remain available during expansion.
+export function registerComponent(
+  definition: HtmdxComponent,
+  options?: HtmdxExtensionOptions,
+): Promise<unknown>;
 export function registerComponent(
   name: string,
   component: HtmdxReactComponent,
-  options: HtmdxExtensionOptions = {},
+  options?: HtmdxExtensionOptions,
+): Promise<unknown>;
+export function registerComponent(
+  nameOrDefinition: string | HtmdxComponent,
+  componentOrOptions: HtmdxReactComponent | HtmdxExtensionOptions = {},
+  legacyOptions: HtmdxExtensionOptions = {},
 ) {
-  assertComponentName(name);
-  globalReactComponents[name] = component;
-  if (options.rerender !== false) {
-    return rerender();
+  if (typeof nameOrDefinition === 'object') {
+    registerDefinitions([nameOrDefinition]);
+    const options = componentOrOptions as HtmdxExtensionOptions;
+    return options.rerender === false ? Promise.resolve() : rerender();
   }
-  return Promise.resolve();
+
+  assertComponentName(nameOrDefinition);
+  assertAvailableComponentNames([nameOrDefinition], registeredComponentNames());
+  globalReactComponents[nameOrDefinition] = componentOrOptions as HtmdxReactComponent;
+  return legacyOptions.rerender === false ? Promise.resolve() : rerender();
 }
 
 export function registerComponents(
+  definitions: HtmdxComponentDefinitions,
+  options?: HtmdxExtensionOptions,
+): Promise<unknown>;
+export function registerComponents(
   components: HtmdxReactComponents,
+  options?: HtmdxExtensionOptions,
+): Promise<unknown>;
+export function registerComponents(
+  componentsOrDefinitions: HtmdxReactComponents | HtmdxComponentDefinitions,
   options: HtmdxExtensionOptions = {},
 ) {
-  for (const [name, component] of Object.entries(components)) {
-    assertComponentName(name);
-    globalReactComponents[name] = component;
+  if (Array.isArray(componentsOrDefinitions)) {
+    registerDefinitions(componentsOrDefinitions);
+  } else {
+    const entries = Object.entries(componentsOrDefinitions);
+    for (const [name] of entries) {
+      assertComponentName(name);
+    }
+    assertAvailableComponentNames(
+      entries.map(([name]) => name),
+      registeredComponentNames(),
+    );
+    for (const [name, component] of entries) {
+      globalReactComponents[name] = component;
+    }
   }
-  if (options.rerender !== false) {
-    return rerender();
-  }
-  return Promise.resolve();
+  return options.rerender === false ? Promise.resolve() : rerender();
+}
+
+function registerDefinitions(definitions: HtmdxComponentDefinitions) {
+  createDefinitionRegistry(definitions, registeredComponentNames());
+  globalDefinitions.push(...definitions);
 }
 
 export function registerTheme(theme: HtmdxThemeDefinition, options: HtmdxExtensionOptions = {}) {
@@ -265,7 +341,7 @@ export async function renderHost(host: Element, options: HtmdxRegisterOptions = 
   sourceCache.set(host, sourceResult);
 
   try {
-    const doc = compileDocument(sourceResult.source, { components: componentsFor(options) });
+    const doc = compileDocument(sourceResult.source, runtimeOptionsFor(options));
     let hostRoot = reactRoots.get(host);
     if (!hostRoot) {
       // The embedded source element is consumed here; the source is cached
@@ -463,12 +539,14 @@ export function tokenizeBlocks(source: string, options: HtmdxCompileOptions = {}
 }
 
 export function canonicalComponentName(name: string, options: HtmdxCompileOptions = {}) {
-  for (const known of Object.keys(componentsFor(options))) {
-    if (known.toLowerCase() === name.toLowerCase()) {
-      return known;
-    }
-  }
-  return name;
+  const names = [
+    ...bundledComponentNames,
+    ...Object.keys(globalReactComponents),
+    ...(options.components ? Object.keys(options.components) : []),
+    ...globalDefinitions.map((definition) => definition.name),
+    ...(options.definitions || []).map((definition) => definition.name),
+  ];
+  return names.find((known) => known.toLowerCase() === name.toLowerCase()) || name;
 }
 
 function querySourceElement(host: Element, options: HtmdxRegisterOptions) {
@@ -514,6 +592,29 @@ function renderError(host: Element, error: string, source: string) {
 function assertComponentName(name: string) {
   if (!/^[A-Za-z][A-Za-z0-9]*$/.test(name)) {
     throw new Error(`invalid component name "${name}"`);
+  }
+}
+
+function registeredComponentNames() {
+  return [
+    ...bundledComponentNames,
+    ...Object.keys(globalReactComponents),
+    ...globalDefinitions.map(({ name }) => name),
+  ];
+}
+
+function assertUniqueComponentNames(names: Iterable<string>) {
+  assertAvailableComponentNames(names, []);
+}
+
+function assertAvailableComponentNames(names: Iterable<string>, reservedNames: Iterable<string>) {
+  const known = new Map(Array.from(reservedNames, (name) => [name.toLowerCase(), name]));
+  for (const name of names) {
+    const existing = known.get(name.toLowerCase());
+    if (existing) {
+      throw new Error(`component <${name}> collides with <${existing}>`);
+    }
+    known.set(name.toLowerCase(), name);
   }
 }
 

@@ -42,10 +42,10 @@ export const DecisionMatrix = rawBody(({ body = '' }: RawBodyProps) => {
   return (
     <Block name="DecisionMatrix">
       <div className="overflow-hidden rounded-lg border">
-        <table className="w-full border-collapse text-sm">
+        <table className="w-full border-collapse text-sm" style={{ margin: 0 }}>
           <thead>
             <tr className="border-b bg-muted/40">
-              <th className="p-3 text-left align-bottom font-medium text-muted-foreground">
+              <th className="p-3 text-left align-top font-medium text-muted-foreground">
                 <Inline text={corner} />
               </th>
               {optionHeaders.map((header, index) => {
@@ -54,7 +54,7 @@ export const DecisionMatrix = rawBody(({ body = '' }: RawBodyProps) => {
                   <th
                     key={index}
                     className={cn(
-                      'p-3 text-left align-bottom font-semibold text-foreground',
+                      'p-3 text-left align-top font-semibold text-foreground',
                       chosen && TONE_SURFACE.blue,
                     )}
                   >

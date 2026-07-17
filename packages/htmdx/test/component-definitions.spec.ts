@@ -111,6 +111,36 @@ describe('definition-driven component contracts', () => {
     expect(block.ok && block.html).toContain('<li>first</li>');
   });
 
+  test('renders block Markdown alongside nested HTMDX children', () => {
+    const Composition = definition({
+      name: 'MixedBlockComposition',
+      body: 'htmdx',
+      Component: ({ children }: { children?: ReactNode }) =>
+        createElement('section', null, children),
+    });
+    const Child = definition({
+      name: 'MixedBlockChild',
+      body: 'none',
+      Component: () => createElement('mark', null, 'nested'),
+    });
+
+    const rendered = compile(
+      `<MixedBlockComposition>
+- first
+- second
+
+<MixedBlockChild />
+
+After **nested** content.
+</MixedBlockComposition>`,
+      { definitions: [Composition, Child] },
+    );
+
+    expect(rendered.ok && rendered.html).toContain(
+      '<section><ul><li>first</li><li>second</li></ul><mark>nested</mark><p>After <strong>nested</strong> content.</p></section>',
+    );
+  });
+
   test('preserves meaningful spaces around nested HTMDX children', () => {
     const Composition = definition({
       name: 'SpacedComposition',

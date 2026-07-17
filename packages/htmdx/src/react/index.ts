@@ -529,6 +529,9 @@ function nodeToReact(
     if (!text) {
       return null;
     }
+    if (contractDriven && text.trim() && isBlockMarkdown(text)) {
+      return createElement(Fragment, { key }, ...renderMarkdown(text));
+    }
     return text.trim() ? createElement('span', { key }, renderInline(text)) : text;
   }
 

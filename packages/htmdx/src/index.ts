@@ -811,6 +811,15 @@ const RUNTIME_CSS = `
     letter-spacing: -0.02em;
     color: var(--md-sys-color-on-primary);
   }
+  .htmdx-hero-subtitle {
+    margin: 10px 0 0;
+    font-family: var(--md-ref-typeface-brand);
+    font-size: 1.35rem;
+    line-height: 1.2;
+    font-weight: 400;
+    opacity: 0.9;
+    color: var(--md-sys-color-on-primary);
+  }
   .htmdx-hero-desc {
     margin: 24px 0 0;
     font-family: var(--md-ref-typeface-brand);
@@ -862,6 +871,9 @@ const RUNTIME_CSS = `
     background: var(--md-sys-color-surface-container);
     border-radius: var(--md-sys-shape-corner-extra-large);
     padding: 24px;
+  }
+  .htmdx-doc-section-card > .htmdx-content-component:not(:last-child) {
+    margin-bottom: 24px;
   }
 
   .htmdx-error {

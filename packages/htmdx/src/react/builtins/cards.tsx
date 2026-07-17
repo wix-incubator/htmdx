@@ -107,12 +107,12 @@ export const Timeline = rawBody(({ body = '' }: RawBodyProps) => {
             {index < items.length - 1 ? (
               <span className="absolute top-[18px] bottom-[-18px] left-1 w-0.5 bg-[var(--md-sys-color-primary)]" />
             ) : null}
-            <span className="text-[var(--md-sys-color-on-surface)]">
-              <Inline text={item.label} />:{' '}
-            </span>
-            <span className="text-[var(--md-sys-color-on-surface-variant)]">
+            <div className="text-xs font-semibold tracking-wide text-[var(--md-sys-color-primary)] uppercase">
+              <Inline text={item.label} />
+            </div>
+            <div className="mt-0.5 text-[var(--md-sys-color-on-surface)]">
               <Inline text={item.value} />
-            </span>
+            </div>
           </div>
         ))}
       </div>

@@ -188,11 +188,6 @@ export const shadcnManifestComponents: readonly HtmdxReactManifestComponent[] = 
     example: '<Separator orientation="horizontal" />',
   },
   {
-    name: 'Spacer',
-    purpose: 'Add explicit vertical space between adjacent content blocks. Display-only.',
-    example: '<Spacer />',
-  },
-  {
     name: 'Table',
     purpose: 'Data table root; wrap TableHeader/TableBody rows. Display-only.',
     example:

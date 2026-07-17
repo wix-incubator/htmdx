@@ -1,4 +1,5 @@
 import { parseComponentBody } from './body-contracts';
+import { audience } from './audience';
 import { callout } from './callout';
 import { chartArea } from './chart-area';
 import { chartBar } from './chart-bar';
@@ -6,18 +7,23 @@ import { chartLine } from './chart-line';
 import { chartPie } from './chart-pie';
 import { compare } from './compare';
 import { dataTable } from './data-table';
+import { decisionMatrix } from './decision-matrix';
 import { decisionTable } from './decision-table';
 import { evidence } from './evidence';
 import { executiveSummary } from './executive-summary';
 import { finding } from './finding';
+import { intentList } from './intent-list';
 import { metricStrip } from './metric-strip';
+import { openQuestions } from './open-questions';
 import { riskTable } from './risk-table';
+import { signalGrid } from './signal-grid';
 import { sourceQuote } from './source-quote';
+import { sources } from './sources';
 import { stat } from './stat';
 import { timeline } from './timeline';
 import type { HtmdxComponent } from './types';
 
-export const builtInComponents: readonly HtmdxComponent[] = [
+export const builtInComponents = [
   executiveSummary,
   callout,
   sourceQuote,
@@ -31,10 +37,16 @@ export const builtInComponents: readonly HtmdxComponent[] = [
   compare,
   finding,
   evidence,
+  sources,
+  audience,
+  intentList,
+  signalGrid,
+  decisionMatrix,
+  openQuestions,
   riskTable,
   decisionTable,
   timeline,
-];
+] as const satisfies readonly HtmdxComponent[];
 
 const names = new Set<string>();
 for (const component of builtInComponents) {

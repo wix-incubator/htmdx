@@ -553,7 +553,7 @@ function injectFonts() {
   fonts.id = FONTS_LINK_ID;
   fonts.rel = 'stylesheet';
   fonts.href =
-    'https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&family=Roboto:wght@400;500;700&display=swap';
+    'https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&display=swap';
   document.head.append(fonts);
 }
 
@@ -619,7 +619,7 @@ const RUNTIME_CSS = `
     --md-sys-color-shadow: #000000;
 
     --md-ref-typeface-brand: "Figtree", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
-    --md-ref-typeface-plain: "Roboto", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+    --md-ref-typeface-plain: "Figtree", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
 
     --md-sys-shape-corner-none: 0;
     --md-sys-shape-corner-small: 8px;
@@ -798,7 +798,7 @@ const RUNTIME_CSS = `
     margin: 0;
     font-family: var(--md-ref-typeface-brand);
     font-weight: 300;
-    font-size: 1.02rem;
+    font-size: 20px;
     line-height: 1.25;
     color: var(--md-sys-color-on-primary);
   }
@@ -898,7 +898,7 @@ const RUNTIME_CSS = `
   .htmdx-component-header { display: none; }
 
   .htmdx-doc-section-card > h3,
-  .htmdx-doc-section-card h3 {
+  .htmdx-doc-section-card h3:not([data-slot]) {
     font-family: var(--md-ref-typeface-brand);
     font-size: 1.375rem;
     line-height: 1.75rem;
@@ -932,6 +932,19 @@ const RUNTIME_CSS = `
     box-shadow: var(--md-sys-elevation-level1);
     padding: 18px 22px;
     color: var(--md-sys-color-on-surface);
+  }
+  /* The white Card surface ships shadcn's py-6 (24px) top/bottom — tighten to
+     20px. Unlayered runtime CSS outranks Tailwind's layered py-6 utility. */
+  .htmdx-doc-section-card [data-slot="card"] {
+    padding-top: 20px;
+    padding-bottom: 20px;
+  }
+  /* shadcn Card renders a markdown body into a bare (non-slot) div with no
+     horizontal padding of its own — inset it 20px L/R. Composed bodies using
+     CardHeader/CardContent carry data-slot and keep their built-in px-6. */
+  .htmdx-doc-section-card [data-slot="card"] > div:not([data-slot]) {
+    padding-left: 20px;
+    padding-right: 20px;
   }
   .htmdx-executive-summary .htmdx-component-body {
     background: var(--md-sys-color-primary-container);

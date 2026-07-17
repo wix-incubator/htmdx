@@ -83,7 +83,7 @@ export const RiskTable = rawBody(({ body = '' }: RawBodyProps) => {
           const tier = tierOf(item);
           const { text } = splitFeature(item);
           return (
-            <div key={index} className="flex items-start gap-3 rounded-lg border bg-card p-3">
+            <div key={index} className="flex items-center gap-3 rounded-lg border bg-card p-3">
               <span className={tierBadge({ tier })}>{TIER_LABEL[tier]}</span>
               <span className="text-sm text-muted-foreground">
                 <Inline text={text} />
@@ -100,7 +100,7 @@ export const Timeline = rawBody(({ body = '' }: RawBodyProps) => {
   const items = parseComponentBody('Timeline', 'label-value-list', body);
   return (
     <Block name="Timeline">
-      <div className="w-full rounded-[var(--md-sys-shape-corner-large)] border border-[var(--md-sys-color-outline-variant)] bg-[var(--md-sys-color-surface-container-lowest)] px-5 py-4 shadow-sm">
+      <div className="w-full rounded-[var(--md-sys-shape-corner-large)] border border-[var(--md-sys-color-outline-variant)] bg-[var(--md-sys-color-surface-container-lowest)] px-5 py-4">
         {items.map((item, index) => (
           <div key={index} className="relative pt-1.5 pr-0 pb-[22px] pl-7 last:pb-1">
             <span className="absolute top-[13px] left-0 z-10 size-2.5 rounded-full border-2 border-[var(--md-sys-color-primary)] bg-[var(--md-sys-color-surface-container-lowest)]" />

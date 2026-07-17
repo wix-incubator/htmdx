@@ -1,5 +1,7 @@
 # Publish a versioned built-in component manifest
 
+> Superseded for `@wix/htmdx@4.0.0` by [Use component definitions as the agent authoring contract](../../adr/component-definitions-as-agent-contracts.md). This ADR remains the historical record for the manifest introduced in 1.1.0.
+
 Starting with `@wix/htmdx@1.1.0`, each package release publishes `dist/components.json` so agents and validators can discover the built-in components supported by the exact runtime version pinned in an artifact. The manifest describes built-ins only; host-registered components are outside this contract, and releases before `1.1.0` are not backfilled.
 
 Each built-in is defined in its own file as an internal `HtmdxComponent` containing its canonical name, body format, purpose, required valid example, renderer, and optional component-specific validator. An explicit typed catalog is the single source for the runtime registry and manifest, while shared body-format parsers validate and parse content before renderers receive it. Objective syntax and structural rules are enforced at runtime; semantic intent remains descriptive.

@@ -1,0 +1,97 @@
+# Checkout Migration — Decision Brief
+
+Prepared for the platform review, **July 16**. An agent wrote this file as a
+single HTML artifact; everything below is HTMDX source rendered through
+React and shadcn/ui.
+
+<Card>
+  <CardHeader>
+    <CardTitle>Recommendation</CardTitle>
+    <CardDescription>Migrate checkout to the new payments API in Q3</CardDescription>
+  </CardHeader>
+  <CardContent>
+    The legacy gateway reaches end-of-life in **November**. Migrating in Q3
+    gives us one full quarter of dual-running before the deadline.
+    <Badge>approved-pending-budget</Badge>
+    <Badge variant="secondary">owner: payments team</Badge>
+  </CardContent>
+</Card>
+
+## Numbers that matter
+
+<Card>
+  <CardContent>
+    Conversion on the legacy flow dropped **1.8pp** since January while the
+    new API pilot held steady. Support tickets tell the same story:
+    **340/month** on legacy vs **12/month** on the pilot cohort.
+    <Badge variant="destructive">legacy: 4.2% error rate</Badge>
+    <Badge variant="secondary">pilot: 0.3% error rate</Badge>
+  </CardContent>
+</Card>
+
+## Migration plan
+
+<Tabs defaultValue="q3">
+  <TabsList>
+    <TabsTrigger value="q3">Q3 — Migrate</TabsTrigger>
+    <TabsTrigger value="q4">Q4 — Dual-run</TabsTrigger>
+    <TabsTrigger value="q1">Q1 — Decommission</TabsTrigger>
+  </TabsList>
+  <TabsContent value="q3">
+    Move 100% of new merchants plus the 20% pilot cohort. Weekly conversion
+    review; instant rollback per merchant segment.
+  </TabsContent>
+  <TabsContent value="q4">
+    Remaining 80% migrate in four weekly waves. Legacy stays warm as
+    fallback. Freeze window during peak season, **Nov 20 – Dec 2**.
+  </TabsContent>
+  <TabsContent value="q1">
+    Legacy gateway decommissioned. Contract savings of **$38k/month** start
+    February.
+  </TabsContent>
+</Tabs>
+
+## Risks and open questions
+
+<Accordion type="single" collapsible>
+  <AccordionItem value="refunds">
+    <AccordionTrigger>Refund flows are not API-compatible</AccordionTrigger>
+    <AccordionContent>
+      Legacy refunds reference internal transaction ids the new API does not
+      know. We need the mapping table live **before** wave one, or refunds on
+      migrated merchants fail silently.
+    </AccordionContent>
+  </AccordionItem>
+  <AccordionItem value="peak">
+    <AccordionTrigger>Peak season overlap</AccordionTrigger>
+    <AccordionContent>
+      Wave four lands two weeks before the freeze. If wave three slips, we
+      either compress testing or carry legacy through December at
+      **$38k** extra cost.
+    </AccordionContent>
+  </AccordionItem>
+  <AccordionItem value="team">
+    <AccordionTrigger>Payments team capacity</AccordionTrigger>
+    <AccordionContent>
+      Two of five engineers are committed to the tax project until August.
+      The plan assumes they return; confirm with their lead this week.
+    </AccordionContent>
+  </AccordionItem>
+</Accordion>
+
+## Decision needed
+
+<Card>
+  <CardContent>
+    Approve the Q3 migration budget (**$120k**, mostly the mapping-table
+    work) by **July 25** so wave one starts on schedule.
+    <Badge variant="outline">decision by: July 25</Badge>
+  </CardContent>
+  <CardFooter>
+    <Button size="sm">Approve budget</Button>
+    <Button variant="ghost" size="sm">Request revision</Button>
+  </CardFooter>
+</Card>
+
+Edit this file's script block to change the report — the rendering updates on
+reload. That is the whole artifact contract.

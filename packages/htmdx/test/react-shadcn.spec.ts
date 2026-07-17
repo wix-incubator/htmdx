@@ -55,6 +55,24 @@ describe('react renderer with shadcn/ui', () => {
     expect(html).toContain('h-8');
   });
 
+  test('renders top-level Badge and Button labels as inline children', () => {
+    const html = renderToStaticMarkup(
+      compileToReact(
+        '<Badge variant="secondary">audited</Badge><Button variant="outline">Download</Button>',
+        { components: shadcnComponents },
+      ),
+    );
+    const container = document.createElement('div');
+    container.innerHTML = html;
+
+    const badge = container.querySelector('[data-slot="badge"]');
+    const button = container.querySelector('[data-slot="button"]');
+    expect(badge?.textContent).toBe('audited');
+    expect(badge?.firstElementChild).toBeNull();
+    expect(button?.textContent).toBe('Download');
+    expect(button?.firstElementChild).toBeNull();
+  });
+
   test('badge variants resolve through CVA from HTMDX attributes', () => {
     const html = renderToStaticMarkup(
       compileToReact('<Badge variant="destructive">blocked</Badge>', {
@@ -188,19 +206,12 @@ describe('react renderer with shadcn/ui', () => {
     expect(html).toContain('translateX(-40%)');
   });
 
-  test('Separator and Skeleton render their slot markers', () => {
+  test('Separator renders its slot marker and orientation', () => {
     const separator = renderToStaticMarkup(
       compileToReact('<Separator orientation="vertical" />', { components: shadcnComponents }),
     );
     expect(separator).toContain('data-slot="separator"');
     expect(separator).toContain('data-orientation="vertical"');
-
-    const skeleton = renderToStaticMarkup(
-      compileToReact('<Skeleton class="h-4 w-32" />', { components: shadcnComponents }),
-    );
-    expect(skeleton).toContain('data-slot="skeleton"');
-    expect(skeleton).toContain('animate-pulse');
-    expect(skeleton).toContain('h-4');
   });
 
   test('Breadcrumb family renders trail markup', () => {
@@ -225,15 +236,6 @@ describe('react renderer with shadcn/ui', () => {
     expect(html).toContain('data-slot="breadcrumb-page"');
     expect(html).toContain('data-slot="breadcrumb-separator"');
     expect(html).toContain('aria-current="page"');
-  });
-
-  test('Toggle resolves variant classes through CVA', () => {
-    const html = renderToStaticMarkup(
-      compileToReact('<Toggle variant="outline">Bold</Toggle>', { components: shadcnComponents }),
-    );
-    expect(html).toContain('data-slot="toggle"');
-    expect(html).toContain('border-input');
-    expect(html).toContain('Bold');
   });
 
   test('Dialog opens on trigger click and portals content outside the host', () => {
@@ -289,25 +291,6 @@ describe('react renderer with shadcn/ui', () => {
       trigger?.click();
     });
     expect(trigger?.getAttribute('data-state')).toBe('closed');
-    unmount(host, root);
-  });
-
-  test('ToggleGroup selects an item on click', () => {
-    const { host, root } = mount(`<ToggleGroup type="single" variant="outline">
-  <ToggleGroupItem value="left">Left</ToggleGroupItem>
-  <ToggleGroupItem value="center">Center</ToggleGroupItem>
-  <ToggleGroupItem value="right">Right</ToggleGroupItem>
-</ToggleGroup>`);
-
-    const items = Array.from(host.querySelectorAll<HTMLElement>('[data-slot="toggle-group-item"]'));
-    expect(items).toHaveLength(3);
-    const center = items.find((item) => item.textContent?.includes('Center'));
-    expect(center?.getAttribute('data-state')).toBe('off');
-
-    act(() => {
-      center?.click();
-    });
-    expect(center?.getAttribute('data-state')).toBe('on');
     unmount(host, root);
   });
 

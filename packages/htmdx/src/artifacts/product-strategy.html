@@ -1,71 +1,195 @@
 <!doctype html>
+<!--
+  Creator Kit htmdx@2 artifact. Before you edit ANY part of this document, you
+  MUST read ~/.agents/skills/ck-internal-htmdx/SKILL.md first — it defines the
+  htmdx@2 contract. Edit ONLY the content inside <script type="text/htmdx">;
+  the runtime script, metadata, and source-block attributes are fixed by the
+  contract.
+-->
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Product Strategy</title>
-    <script src="../../dist/browser.js" defer></script>
+    <meta name="ck-artifact-format" content="htmdx@2" />
+    <meta name="ck-renderer" content="@wix/htmdx@2.2.1" />
+    <meta name="ck-template-skill" content="ck-product-strategy" />
+    <title>Product Strategy — Native File Upload on Product Pages</title>
+    <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@2.2.1/dist/browser.js" defer></script>
   </head>
   <body>
-    <htmdx-code>
-      <!-- prettier-ignore -->
-      <script
-        type="text/htmdx"
-        data-htmdx-edit-instruction="Edit only this script content. HTMDX format."
-      >
+    <!-- prettier-ignore -->
+    <script
+      type="text/htmdx"
+      data-ck-source="primary"
+      data-ck-format="htmdx@2"
+    >
 ---
-project: SEO Settings
-theme: purple
+project: Wix Stores · Custom Goods
+title: Native File Upload on Product Pages
+subtitle: Product Strategy
+owner: Noa Tal
+phase: Product · Strategy
+updated: 2026-07-16
 logo: creator-kit
 logo-alt: Creator Kit
 ---
 
-# Product Strategy
-
-Bring bulk SEO management to SEO Settings by adopting Wix's proven URL Redirect Manager pattern — a CSV export, template, and safe merge-on-import round-trip — so teams work on the whole set at once, not one row at a time.
-
 ## Overview
 
 <ExecutiveSummary>
-3–4 sentences max. No subsections. Orients any reader before they go deeper.
+**Direction —** Wix Stores will let store owners collect customer files natively during purchase by extending the existing product-modifier framework with a **File upload** type, so Self-Creators selling customizable products can fulfill orders without manual workarounds.
+
+**The gap —** Today the customization pipeline is text-only from product editor to order, so a store owner cannot collect a buyer's image or design file anywhere in the purchase flow — pushing ~3,755 custom-product stores into poorly-rated third-party apps, Velo hacks, or pasted links. This is validated, sustained pain: 55 support mentions with activity as recent as March 2026.
 </ExecutiveSummary>
 
-### Supporting evidence
-
-<DecisionTable>
-- User research: Qualitative signals from interviews or surveys
-- Quantitative data: Metrics, funnel data, population sizes
-- Competitive signals: What competitors are doing or not doing
-- Customer feedback: Support tickets, verbatims, direct quotes
-- Internal data: BI reports, usage analytics, cohort analysis
-</DecisionTable>
-
-_Each evidence item links to its source artifact via an evidence badge_
+<Sources>
+- Data Analysis
+- User Voice
+- **Product Strategy**
+</Sources>
 
 ## Target audience
 
-_TBD_
+<Audience>
+- **Self-Creator · Custom Goods Merchant — Primary:** Sells personalized, made-to-order, or print-on-demand products on Wix Stores. Needs to collect a reference file from the shopper at purchase; today they improvise with a text box or pay a third-party app. · metrics: ~19.8K — stores above $50K GPV; 4.85% — of ~408K active stores; ~$5.1B — surrounding T12M GPV pool · priority: High
+- **Partner / Freelancer — Secondary:** Hits the upload gap on every relevant client build. Has to explain the workaround or install a paid app each time. · priority: Medium
+- **Studio User — Secondary:** Builds advanced storefronts where personalized-product flows are common; the gap undermines Studio's credibility with pro clients. · priority: Medium
+- **Shopper (UoU) — Secondary · Risk:** Wants to attach a reference file during purchase. A required-upload step may add checkout friction — conversion impact is unmeasured. · priority: Unmeasured
+</Audience>
+
+<Sources>
+- Data Analysis
+- Internal Discovery
+- **Product Strategy**
+</Sources>
 
 ## The problem
 
-_TBD_
+<Timeline>
+- Why?: Store owners can't collect a shopper's file during purchase.
+- Why?: Wix Stores offers no native file-upload capability on a product — the only shopper-input field is a free-text message box.
+- Why?: The product-option mechanism (Catalog V3 Modifiers) supports only FREE_TEXT and choice types — no FILE_UPLOAD value type exists.
+- Why?: A file-upload render type was never built, even though Wix owns every primitive — Media Manager upload URLs, a storefront FileUploader, and line-item carriage.
+- Root cause: Demand routed through apps, forums, and CCFRs rather than the support queue, so a medium-effort integration never had the visibility to get prioritized.
+</Timeline>
+
+<SignalGrid>
+- **The problem | red:** No native file-upload option forces custom-goods merchants into text workarounds or $14–60/mo paid apps — creating manual back-and-forth and app-breakage risk for Wix's highest-GPV segment.
+- **Root cause | amber:** The custom-goods segment is unmeasurable in the warehouse, so a low-cost integration never had the visibility to get prioritized.
+- **Opportunity | green:** Closing this gap turns a willing-to-pay unmet need into native value using existing primitives — low build cost, high retention impact, parity with 4 competitors, plus a traceability edge none of them have.
+</SignalGrid>
+
+<Sources>
+- User Voice
+- Internal Discovery
+- Data Analysis
+- **Product Strategy**
+</Sources>
 
 ## Intents & feelings
 
-_TBD_
+<IntentList>
+- **#int-001 · Blocker · Self-Creator · Main intent:** "I want to collect a shopper's file on the product page at purchase, so the attachment is tied to the order and I don't have to chase it over email." — frustrated, resigned, improvising → in control, professional, relieved
+- **#int-004 · Blocker · Self-Creator · Sub-intent:** "I want the uploaded file surfaced in the order details, emails, and invoices, so I can find it instantly when fulfilling." — disorganized, worried about losing files → organized, assured
+- **#int-002 · Critical · Self-Creator · Sub-intent:** "I want to require the upload before add-to-cart for products that need it, so I never receive an order I can't fulfill." — anxious, exposed → confident, protected
+- **#int-003 · Critical · Self-Creator · Sub-intent:** "I want to limit accepted file types and sizes, so I only get files I can actually use." — uncertain, burdened by cleanup → in control, set up correctly
+- **#int-001 · Critical · Partner / Studio · Main intent:** "I want to enable file upload natively on any client store I build, so I can deliver the requirement without installing a paid app each time." — repeatedly blocked, apologetic to clients → capable, trusted
+- **#int-001 · Critical · Shopper (UoU) · Main intent:** "I want to attach my file while buying, so the seller gets exactly what I mean without a separate email exchange." — uncertain, friction → understood, reassured · note: Required-upload step is an unmeasured conversion risk — guardrail KPI required at launch
+- **#int-005 · Nice to have · Self-Creator · Sub-intent:** "I want to stop paying for and maintaining a third-party upload app, so I reduce cost and avoid breakage on platform updates." — nickel-and-dimed, wary of breakage → self-sufficient, secure
+- **#int-002 · Nice to have · Partner · Sub-intent:** "I want the upload option configurable per-product like other product options, so it fits the build patterns I already use." — working around limitations → efficient, fluent
+</IntentList>
+
+<Sources>
+- User Voice
+- UX Research
+- **Product Strategy**
+</Sources>
 
 ## The solution
 
-_TBD_
+<ExecutiveSummary>
+Add a native **Upload File** product option to Wix Stores — configurable per product like any other option and uploaded by the shopper on the product page — and carry the uploaded file as a first-class part of the order across order details, emails, invoices, and the customer account, reaching native-tier parity while leapfrogging competitors on file-to-order traceability.
+</ExecutiveSummary>
+
+### How we chose this direction
+
+<DecisionMatrix>
+| Criterion | A — Text workaround enhancement | B — Native FILE_UPLOAD modifier ✓ | C — Partner app ecosystem |
+| --- | --- | --- | --- |
+| User fit | Partial — binary file attachment still impossible | [green] Fully solves the root intent for all user types | Partial — adds cost dependency, not native |
+| Build effort | [green] Low — existing text field | [amber] Medium — composing existing primitives | [red] Partnership / marketplace overhead |
+| Competitive | No parity gain at all | [green] Parity + unique traceability edge | No parity gain — merchant still pays an app |
+| Revenue | Minimal uplift | [green] Displaces $14–60/mo app spend; retention uplift | Revenue goes to partner, not Wix |
+| Key risk | Doesn't solve the problem — merchant still can't get files | Required-upload step carries unmeasured buyer-conversion risk | No platform investment or retention benefit |
+</DecisionMatrix>
+
+### What ships — V1 vs. Later
+
+<Compare>
+- **V1 — ships this quarter:** Upload File option configurable per-product (label, required toggle, accepted types, size limit); shopper uploads on the storefront product page before add-to-cart; required-before-add-to-cart enforcement; file surfaced in order details, emails, invoices, and the customer account — the traceability differentiator.
+- **Later — roadmap:** Multiple files per option; image preview, crop, and edit before submission; cloud / social-source upload (Google Drive, Dropbox); buyer-conversion optimization for the required-upload UX.
+</Compare>
+
+<OpenQuestions>
+- **Assumption:** Architecture: FILE_UPLOAD render type on the Catalog V3 Modifier mechanism (vs. the standalone "Upload File" type named in the original brief). To be confirmed in spec.
+- **Risk:** Required-before-add-to-cart enforcement is new storefront work and carries an unmeasured buyer-conversion risk. A guardrail KPI must be in place at launch.
+- **Risk:** The custom-goods segment is unmeasurable from the data warehouse. The demand case rests on qualitative + proxy evidence (surrounding ~$5.1B GPV pool).
+- **Open:** Order-carriage path (descriptionLines vs. Extended Fields), public-vs-private storage, and buyer-file retention policy — all deferred to spec.
+</OpenQuestions>
+
+<Sources>
+- Internal Discovery
+- Data Analysis
+- **Product Strategy**
+</Sources>
 
 ## Why now
 
-_TBD_
+<SignalGrid>
+- **User pain · Escalated | red:** Merchants are paying $14–60/mo for a workaround and escalating to support — Salesforce case 00153591 / GPV-5438 is documented, willingness-to-pay demand for a gap they expect Wix to own natively.
+- **Competitive gap | amber:** 4 of 6 native competitors ship upload — Wix doesn't. Ecwid, BigCommerce, and Etsy support native file upload; every month the gap stays open it leaks custom-goods merchants to platforms that already have it.
+- **Strategic alignment | blue:** Directly serves the upmarket_growth domain priority — custom-goods sellers cluster in the main_income_merchants tier (>$50K GPV), the exact segment the domain named as its strategic priority.
+- **Timing · Build cost | green:** With AI-assisted development, a medium-effort integration is no longer a deferral-worthy bottleneck — every primitive exists; what's needed is integration, not invention.
+</SignalGrid>
+
+<Sources>
+- Data Analysis
+- Internal Discovery
+- **Product Strategy**
+</Sources>
 
 ## Business KPIs
 
-_TBD_
-      </script>
-    </htmdx-code>
+### Wix impact
+
+<MetricStrip>
+- ↑ Retention of custom-goods merchants who adopt upload (12mo): **baseline TBD** — post-launch adopter cohort
+- ↑ GPV among upload-option adopters (T12M per store): **surrounding median $772/yr** — P90 $22,363
+- ↓ Stores relying on third-party upload apps: **baseline TBD** — requires app_def_id unblock
+- ↑ Native-feature parity vs. Ecwid / BigCommerce / Etsy: **binary** — achieved at launch
+</MetricStrip>
+
+### User impact
+
+<MetricStrip>
+- ↑ % of orders on upload-enabled products that arrive with a usable file: **baseline TBD**
+- ↓ Merchant time / touches to obtain reference files per order: **eliminates** — post-order email back-and-forth
+- ⊘ Buyer checkout-completion rate on upload-enabled products: **guardrail** — hold at or above non-upload baseline
+</MetricStrip>
+
+### Monitoring
+
+<MetricStrip>
+- ↑ Adoption: stores that add Upload File to ≥1 product: **30- and 90-day** — windows post-launch
+- ↑ Happy-flow: % of started uploads that succeed without error: **baseline TBD**
+- ↓ Upload error / timeout rate: **baseline TBD**
+- ↑ File-in-order traceability success rate: **order details · emails · invoices**
+</MetricStrip>
+
+<Sources>
+- Data Analysis
+- **Product Strategy**
+</Sources>
+    </script>
   </body>
 </html>

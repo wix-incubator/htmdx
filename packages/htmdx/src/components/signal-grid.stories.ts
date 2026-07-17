@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { createComponentStory, type ComponentStoryArgs } from '../storybook/component-story';
-import { card } from './card';
+import { signalGrid } from './signal-grid';
 
 const meta = {
-  title: 'Components/default/Card',
-  ...createComponentStory(card),
+  title: 'Components/default/SignalGrid',
+  ...createComponentStory(signalGrid),
 } satisfies Meta<ComponentStoryArgs>;
 
 export default meta;

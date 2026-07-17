@@ -188,11 +188,6 @@ export const shadcnManifestComponents: readonly HtmdxReactManifestComponent[] = 
     example: '<Separator orientation="horizontal" />',
   },
   {
-    name: 'Skeleton',
-    purpose: 'Pulsing placeholder box for loading state. Display-only.',
-    example: '<Skeleton class="h-4 w-32" />',
-  },
-  {
     name: 'Table',
     purpose: 'Data table root; wrap TableHeader/TableBody rows. Display-only.',
     example:
@@ -205,31 +200,6 @@ export const shadcnManifestComponents: readonly HtmdxReactManifestComponent[] = 
   { name: 'TableHead', purpose: 'Header cell (th) inside a TableRow.' },
   { name: 'TableCell', purpose: 'Data cell (td) inside a TableRow.' },
   { name: 'TableCaption', purpose: 'Caption line rendered under the Table.' },
-  {
-    name: 'Toggle',
-    purpose: 'Two-state pressable button; state lives inside the component.',
-    props: [
-      { name: 'variant', values: ['default', 'outline'] },
-      { name: 'size', values: ['default', 'sm', 'lg'] },
-    ],
-    example: '<Toggle variant="outline">Bold</Toggle>',
-  },
-  {
-    name: 'ToggleGroup',
-    purpose: 'Group of Toggle buttons with shared variant/size; single or multiple selection.',
-    props: [
-      { name: 'type', values: ['single', 'multiple'], required: true },
-      { name: 'variant', values: ['default', 'outline'] },
-      { name: 'size', values: ['default', 'sm', 'lg'] },
-    ],
-    example:
-      '<ToggleGroup type="single" variant="outline">\n  <ToggleGroupItem value="left">Left</ToggleGroupItem>\n  <ToggleGroupItem value="center">Center</ToggleGroupItem>\n  <ToggleGroupItem value="right">Right</ToggleGroupItem>\n</ToggleGroup>',
-  },
-  {
-    name: 'ToggleGroupItem',
-    purpose: 'One selectable button inside a ToggleGroup.',
-    props: [{ name: 'value', required: true }],
-  },
   {
     name: 'Tooltip',
     purpose:

@@ -43,7 +43,6 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from './hover-card';
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from './popover';
 import { Progress } from './progress';
 import { Separator } from './separator';
-import { Skeleton } from './skeleton';
 import {
   Table,
   TableBody,
@@ -55,9 +54,11 @@ import {
   TableRow,
 } from './table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs';
-import { Toggle } from './toggle';
-import { ToggleGroup, ToggleGroupItem } from './toggle-group';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip';
+
+function inlineBody<T extends object>(component: T) {
+  return Object.assign(component, { htmdxInlineBody: true as const });
+}
 
 export const shadcnComponents = {
   Accordion,
@@ -71,7 +72,7 @@ export const shadcnComponents = {
   Avatar,
   AvatarFallback,
   AvatarImage,
-  Badge,
+  Badge: inlineBody(Badge),
   Breadcrumb,
   BreadcrumbEllipsis,
   BreadcrumbItem,
@@ -79,7 +80,7 @@ export const shadcnComponents = {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-  Button,
+  Button: inlineBody(Button),
   Card,
   CardAction,
   CardContent,
@@ -109,7 +110,6 @@ export const shadcnComponents = {
   PopoverTrigger,
   Progress,
   Separator,
-  Skeleton,
   Table,
   TableBody,
   TableCaption,
@@ -122,9 +122,6 @@ export const shadcnComponents = {
   TabsContent,
   TabsList,
   TabsTrigger,
-  Toggle,
-  ToggleGroup,
-  ToggleGroupItem,
   Tooltip,
   TooltipContent,
   TooltipProvider,

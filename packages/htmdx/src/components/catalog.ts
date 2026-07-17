@@ -1,26 +1,30 @@
 import { parseComponentBody } from './body-contracts';
+import { audience } from './audience';
 import { callout } from './callout';
-import { card } from './card';
 import { chartArea } from './chart-area';
 import { chartBar } from './chart-bar';
 import { chartLine } from './chart-line';
 import { chartPie } from './chart-pie';
 import { compare } from './compare';
 import { dataTable } from './data-table';
+import { decisionMatrix } from './decision-matrix';
 import { decisionTable } from './decision-table';
 import { evidence } from './evidence';
 import { executiveSummary } from './executive-summary';
 import { finding } from './finding';
+import { intentList } from './intent-list';
 import { metricStrip } from './metric-strip';
+import { openQuestions } from './open-questions';
 import { riskTable } from './risk-table';
+import { signalGrid } from './signal-grid';
 import { sourceQuote } from './source-quote';
+import { sources } from './sources';
 import { stat } from './stat';
 import { timeline } from './timeline';
 import type { HtmdxComponent } from './types';
 
-export const builtInComponents: readonly HtmdxComponent[] = [
+export const builtInComponents = [
   executiveSummary,
-  card,
   callout,
   sourceQuote,
   metricStrip,
@@ -33,10 +37,16 @@ export const builtInComponents: readonly HtmdxComponent[] = [
   compare,
   finding,
   evidence,
+  sources,
+  audience,
+  intentList,
+  signalGrid,
+  decisionMatrix,
+  openQuestions,
   riskTable,
   decisionTable,
   timeline,
-];
+] as const satisfies readonly HtmdxComponent[];
 
 const names = new Set<string>();
 for (const component of builtInComponents) {
@@ -83,33 +93,4 @@ function validateExample(component: HtmdxComponent) {
       parseComponentBody(component.name, component.body, body, component.validate);
       break;
   }
-}
-
-export type BuiltInRenderer = (name: string, body: string) => string;
-
-export function createBuiltInRenderer(component: HtmdxComponent): BuiltInRenderer {
-  return (name, rawBody) => {
-    switch (component.body) {
-      case 'markdown': {
-        const body = parseComponentBody(name, component.body, rawBody, component.validate);
-        return component.renderer(name, body);
-      }
-      case 'label-value-list': {
-        const body = parseComponentBody(name, component.body, rawBody, component.validate);
-        return component.renderer(name, body);
-      }
-      case 'label-number-list': {
-        const body = parseComponentBody(name, component.body, rawBody, component.validate);
-        return component.renderer(name, body);
-      }
-      case 'gfm-table': {
-        const body = parseComponentBody(name, component.body, rawBody, component.validate);
-        return component.renderer(name, body);
-      }
-      case 'markdown-list-cards': {
-        const body = parseComponentBody(name, component.body, rawBody, component.validate);
-        return component.renderer(name, body);
-      }
-    }
-  };
 }

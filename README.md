@@ -1,17 +1,24 @@
 # htmdx
 
-`@wix/htmdx` renders editable, MDX-like source inside a plain HTML file. It is built for artifacts that people view as finished pages and agents edit as text — a report, brief, or dashboard that stays a single self-contained file.
+`@wix/htmdx` creates rich HTML artifacts that humans review and agents edit.
 
-**Live examples:** [examples index](https://wix-incubator.github.io/htmdx/) · [decision brief](https://wix-incubator.github.io/htmdx/decision-brief.html) · [component tour](https://wix-incubator.github.io/htmdx/component-tour.html) · [Storybook](https://wix-incubator.github.io/htmdx/storybook/). Every example page is itself an htmdx artifact — view source to see exactly what an agent edits.
+- **One portable file:** Source and browser-facing artifact stay together.
+- **No build step:** The browser renders HTMDX in place, with no generated output to keep in sync.
+- **Human- and agent-readable:** Edit Markdown, component tags, and Tailwind classes instead of generated markup.
+- **Token-efficient:** Benchmarks show 2–3× fewer tokens than hand-written HTML with Tailwind.
+- **Rich by default:** Use interactive components, themes, charts, and structured report elements.
+- **Safe by design:** Source cannot contain imports, JavaScript expressions, or function-valued props.
 
-## One file is the whole artifact
+**Examples:** [index](https://wix-incubator.github.io/htmdx/) · [decision brief](https://wix-incubator.github.io/htmdx/decision-brief.html) · [component tour](https://wix-incubator.github.io/htmdx/component-tour.html) · [Storybook](https://wix-incubator.github.io/htmdx/storybook/). View any example's source to see what an agent edits.
+
+## One file, two audiences
 
 ```html
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@2.0.0/dist/browser.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@3.0.0/dist/browser.js" defer></script>
   </head>
   <body>
     <!-- prettier-ignore -->
@@ -22,50 +29,65 @@
 The HTML is viewable as-is. Agents edit only this source block.
 </ExecutiveSummary>
 
-<Card>
-  <CardHeader><CardTitle>Revenue</CardTitle></CardHeader>
-  <CardContent>Grew **12%**. <Badge variant="secondary">audited</Badge></CardContent>
+<Card class="max-w-xl border-l-4 border-l-teal-500 shadow-lg">
+  <CardHeader class="flex-row items-center justify-between">
+    <CardTitle>Revenue</CardTitle>
+    <Badge variant="secondary">audited</Badge>
+  </CardHeader>
+  <CardContent class="text-2xl font-semibold text-teal-700">Grew **12%**</CardContent>
 </Card>
     </script>
   </body>
 </html>
 ```
 
-The runtime script injects React, the component catalog, the shadcn/ui pack, a theme, and Tailwind's browser compiler, then renders each source block in place. The source itself stays declarative text.
+The pinned runtime renders the source block with React, the component catalog, a theme, and Tailwind. Humans and agents edit that block instead of generated HTML, CSS, or application code.
 
-Pin an exact package version in artifacts. Saved files must keep rendering the same runtime over time, so never use floating aliases like `@latest`.
+Always pin the package version so saved artifacts keep rendering consistently; never use `@latest`.
 
-## The language: MDX minus JavaScript
+## Token efficiency
 
-HTMDX looks like MDX but carries data, not code:
+The reproducible benchmark measures complete artifact files with `gpt-tokenizer` (`o200k_base`):
 
-- Markdown prose, headings (which build the page's section rail), lists, tables, links.
-- Component tags with nested composition: `<Card><CardHeader>...</CardHeader></Card>`.
-- Attributes as typed props: `class` becomes `className`, kebab-case becomes camelCase, and values parse as booleans, numbers, or JSON when they look like data.
+| Format | Decision brief | Executive report | Size vs htmdx |
+| --- | ---: | ---: | --- |
+| htmdx | 950 | 853 | — |
+| compiled HTML (`compile()` output) | 4589 | 3612 | 4.2-4.8x larger |
+| hand-written HTML + Tailwind | 1881 | 2568 | 2.0-3.0x larger |
+| React/JSX (assumes a platform hosts the runtime) | 1263 | 1790 | 1.3-2.1x larger |
+| plain markdown (no components) | 474 | 788 | 0.5-0.9x of htmdx |
 
-Three things are rejected on purpose: imports, MDX `{expressions}`, and function-valued props. Nothing in the source can execute. Interactivity — tabs switching, accordions expanding — comes from state inside the registered components, never from the artifact. Unknown capitalized tags fail compilation, so an agent that typos a component name gets an error and the raw source instead of silently degraded output.
+Adding an accordion item takes 91 tokens in HTMDX versus 428 in compiled HTML. Plain Markdown remains valid HTMDX, so components add cost only where used. See the [methodology and limitations](./packages/htmdx/bench/RESULTS.md), or run `yarn bench`.
+
+## Familiar syntax, no build step
+
+HTMDX uses familiar MDX-style syntax, but the browser runtime renders it in place without requiring build-time compilation or a generated output file:
+
+- Markdown prose, headings, lists, tables, and links.
+- HTML-like nested component tags such as `<Card><CardHeader>...</CardHeader></Card>`.
+- Standard Tailwind classes and typed props. `class` becomes `className`, kebab-case becomes camelCase, and values parse as booleans, numbers, or JSON when applicable.
+
+The source remains declarative: imports, MDX `{expressions}`, and function-valued props are rejected. Registered React components provide interactivity. Unknown capitalized tags show an error with the raw source.
 
 ## Components
 
-The runtime ships 33 components. `dist/components.json` (served next to the runtime at the same exact version) is the machine-readable contract: every component with its purpose, props, allowed values, and a canonical example.
+The runtime ships 82 components. Its exact-version `dist/components.json` manifest documents every component, prop, allowed value, and example.
 
-**Report built-ins.** `ExecutiveSummary`, `Callout`, `SourceQuote`, and `Evidence` take markdown bodies and compose — other components work inside them. The structured ones enforce a body format and fail the whole artifact when it does not match: `MetricStrip`, `Stat`, `DecisionTable`, `Timeline` (label–value lists), `ChartBar`, `ChartArea`, `ChartLine`, `ChartPie` (label–number lists), `DataTable` (GFM table), `Compare`, `Finding`, `RiskTable` (markdown list cards).
+**Report built-ins** cover summaries, callouts, metrics, charts, tables, timelines, findings, evidence, and risks. Composable components accept Markdown and nested components; structured components validate their expected list or table format.
 
-**shadcn/ui pack.** `Card` (with `CardHeader`, `CardTitle`, `CardDescription`, `CardContent`, `CardFooter`, `CardAction`), `Badge`, `Button`, `Tabs`, and `Accordion` — vendored shadcn components on real Radix state, with a bundled Tailwind v4 theme. Where both catalogs name a `Card`, the shadcn component wins.
+**shadcn/ui pack** provides 16 vendored families on real Radix state with a bundled Tailwind v4 theme — `Card` (with `CardHeader`, `CardTitle`, `CardContent`, …), `Badge`, `Button`, `Tabs`, `Accordion`, `Alert`, `Avatar`, `Breadcrumb`, `Dialog`, `HoverCard`, `Popover`, `Progress`, `Separator`, `Table`, `Tooltip`, and `AspectRatio`. `Card` is provided exclusively by the shadcn pack.
 
 ## Source blocks
 
-- `<script type="text/htmdx">` is the canonical holder. Browsers keep its content as raw text, so tag casing, code fences, and angle brackets survive byte-for-byte and formatters leave it alone (add `<!-- prettier-ignore -->` above it).
-- `<template type="text/htmdx">` also works, but browsers HTML-parse its content, which lowercases component tags and can restructure code fences. Prefer `script`.
-- A literal `</script>` inside the source ends the block early; keep such examples in an external file: `<script type="text/htmdx" src="./artifact.mdx"></script>`.
+- Prefer `<script type="text/htmdx">`: browsers preserve its raw text, including tag casing, code fences, and angle brackets. Add `<!-- prettier-ignore -->` above it.
+- `<template type="text/htmdx">` works but HTML-parses and may rewrite its content.
+- For source containing literal `</script>`, use `<script type="text/htmdx" src="./artifact.mdx"></script>`.
 
-The runtime auto-mounts each bare source block by wrapping it in a generated `<htmdx-code>` host. Write `<htmdx-code>` yourself only for explicit placement or `src`; disable scanning with `register({ automount: false })`.
+The runtime auto-mounts bare source blocks. Use `<htmdx-code>` for explicit placement or `src`, or disable scanning with `register({ automount: false })`.
 
 ## Frontmatter
 
-An optional YAML-style frontmatter block at the top of the HTMDX source sets
-document metadata. All fields are single-line strings; unknown fields are
-ignored.
+Optional frontmatter sets document metadata. Values are single-line strings; unknown fields are ignored.
 
 ```mdx
 ---
@@ -82,36 +104,27 @@ logo-alt: Creator Kit
 
 | Field | Effect |
 | --- | --- |
-| `title` | Document title; overrides the first `# heading` in the hero and sticky header. |
-| `project` | Project name shown in the hero eyebrow and sticky header. |
-| `owner` | Owner label in the hero. |
-| `phase` | Phase label in the hero. |
-| `updated` | Updated label in the hero. |
-| `theme` | Built-in color theme (see Themes below). |
-| `logo` | Logo pinned to the bottom-left of the section nav. Either a built-in logo name (`creator-kit`) or an image URL. Because artifacts are portable single files, use an absolute URL or a `data:` URI, not a relative path. |
-| `logo-alt` | Alt text for the logo image. Omit for a decorative logo. |
+| `title` | Hero and sticky-header title; overrides the first `# heading`. |
+| `project` | Project name in the hero and sticky header. |
+| `owner` | Owner label. |
+| `phase` | Phase label. |
+| `updated` | Updated label. |
+| `theme` | Built-in color theme. |
+| `logo` | Built-in logo name or absolute/data URI shown in the section nav. |
+| `logo-alt` | Logo alt text; omit for decorative images. |
 
-The Creator Kit logo ships built into the runtime for now (`logo: creator-kit`);
-this placement will be revisited (see `adr/frontmatter-driven-nav-logo.md`).
+`logo: creator-kit` is built in for now; see [`adr/frontmatter-driven-nav-logo.md`](./adr/frontmatter-driven-nav-logo.md).
 
 ## Themes
 
-An artifact picks its accent palette with a frontmatter key:
+Set `theme` to `blue` (default), `purple`, `green`, `teal`, `amber`, `magenta`, `fuchsia`, `rose`, `lime`, or `coral`. Unknown values fall back to `blue`. All palettes preserve the same OKLCh lightness and chroma and pass WCAG AA contrast; use `registerTheme` for custom CSS.
 
-```yaml
----
-theme: teal
----
-```
+## Extending the catalog with React
 
-Ten built-in ids: `blue` (default), `purple`, `green`, `teal`, `amber`, `magenta`, `fuchsia`, `rose`, `lime`, `coral`. An omitted or unknown value falls back to `blue`. Every palette shares the same DNA — the default blue tokens hue-rotated in OKLCh with lightness and chroma kept, then contrast-checked to WCAG AA — so switching themes never changes the artifact's weight or readability. For anything beyond accent color, hosts register custom CSS with `registerTheme` (below).
-
-## Extending the catalog
-
-Host code — not the artifact — registers extra React components and theme CSS through `window.Htmdx`. The bundle exposes its React copy so extension scripts need no build step:
+Host code registers standard React components and themes through `window.Htmdx`; artifact source only supplies data. The bundle exposes React, so extension scripts need no build step:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@2.0.0/dist/browser.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@3.0.0/dist/browser.js" defer></script>
 <script>
   window.addEventListener('htmdx:ready', () => {
     const { createElement } = window.Htmdx.React;
@@ -128,13 +141,11 @@ Host code — not the artifact — registers extra React components and theme CS
 </script>
 ```
 
-Artifacts then use `<ProductCard>` declaratively. Tailwind utility classes in registered components compile on the fly; hosts that want their own CSS pipeline can pass `register({ tailwind: false })` or point at a mirror with `register({ tailwind: { src: './tailwind-browser.js' } })`.
-
-This division is the security model: components are host-owned and trusted; the artifact supplies only data to them.
+Artifacts then use `<ProductCard>` declaratively. Tailwind classes compile on the fly; disable that with `register({ tailwind: false })` or use a mirror with `register({ tailwind: { src: './tailwind-browser.js' } })`.
 
 ## Using htmdx from a React app
 
-React hosts skip the browser bundle and use the module entries (react and react-dom are optional peer dependencies):
+React hosts use the module entries; `react` and `react-dom` are optional peer dependencies:
 
 ```tsx
 import { Htmdx, builtInReactComponents } from '@wix/htmdx/react';
@@ -151,7 +162,7 @@ injectShadcnTheme();
 
 ## Package
 
-- npm: `@wix/htmdx` · CDN entry: `dist/browser.js` (~90KB gzip) · module entries: `.`, `./react`, `./react/shadcn`
+- npm: `@wix/htmdx` · CDN entry: `dist/browser.js` (~125KB gzip) · module entries: `.`, `./react`, `./react/shadcn`
 - custom element: `<htmdx-code>` · browser API: `window.Htmdx`
 - component contract: `dist/components.json`
 - architecture decisions: [`adr/`](./adr/)

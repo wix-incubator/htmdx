@@ -1,15 +1,10 @@
-import type { LabelValue } from './body-contracts';
-import { componentShell, renderMetricsContent } from './rendering';
 import type { HtmdxComponent } from './types';
 
-export const metricStrip: HtmdxComponent = {
+export const metricStrip = {
   name: 'MetricStrip',
   body: 'label-value-list',
-  purpose: 'Show a compact set of labeled headline values.',
-  example: '<MetricStrip>\n- Format: **HTML**\n- Source: **HTMDX**\n</MetricStrip>',
-  renderer: renderMetricStrip,
-};
-
-function renderMetricStrip(name: string, body: LabelValue[]) {
-  return componentShell(name, renderMetricsContent(body));
-}
+  purpose:
+    'Show a compact set of labeled headline values. A leading trend glyph (↑ up/green, ↓ down/red, ⊘ guardrail/amber) is colored automatically; an ` — ` or ` · ` in the value renders the remainder as a muted caption.',
+  example:
+    '<MetricStrip>\n- ↑ Active stores using upload: **baseline 0** — post-launch adopter cohort\n- ↓ File-upload support tickets: **55** · 3 months post-launch\n- ⊘ Buyer checkout-completion rate: **guardrail** — hold at or above baseline\n</MetricStrip>',
+} as const satisfies HtmdxComponent;

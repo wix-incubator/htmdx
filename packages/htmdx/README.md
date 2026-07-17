@@ -172,6 +172,13 @@ MetricStrip, charts, ...), the shadcn/ui pack (Card, Badge, Button, Tabs,
 Accordion), and the shadcn theme (~147KB gzip, including the static-render
 path that powers `compile()`).
 
+Authoring htmdx source instead of rendered markup is measurably cheaper for
+agents: the full single-file artifact is 2.9-4.5x smaller in tokens than the
+same artifact as compiled HTML, and 2-3x smaller than hand-written
+HTML+Tailwind, with edits cheaper in the same range. Reproducible benchmark in
+[`bench/RESULTS.md`](https://github.com/wix-incubator/htmdx/blob/master/packages/htmdx/bench/RESULTS.md)
+(`yarn bench`).
+
 React host apps use the module entries instead (react/react-dom are optional
 peer dependencies):
 
@@ -191,6 +198,7 @@ values parse as booleans/numbers/JSON when they look like data. Well-formed
 bodies are parsed as XML, so camelCase attributes like `defaultValue` survive
 verbatim; malformed bodies fall back to forgiving HTML parsing.
 
-Security note: unlike the string renderer's inert HTML output, the React path
-runs the registered component code with agent-authored props. Components are
-host-owned and whitelisted; the source still cannot express code, only data.
+Security note: the React runtime runs the registered component code with
+agent-authored props (`compile()` can still emit a static HTML snapshot of the
+same tree). Components are host-owned and whitelisted; the source still cannot
+express code, only data.

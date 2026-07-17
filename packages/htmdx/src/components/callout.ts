@@ -1,14 +1,8 @@
-import { componentShell, renderNarrativeContent } from './rendering';
 import type { HtmdxComponent } from './types';
 
-export const callout: HtmdxComponent = {
+export const callout = {
   name: 'Callout',
   body: 'markdown',
   purpose: 'Emphasize an important note, warning, or takeaway.',
   example: '<Callout>\n**Important:** Validate the artifact before publishing.\n</Callout>',
-  renderer: renderCallout,
-};
-
-function renderCallout(name: string, body: string) {
-  return componentShell(name, renderNarrativeContent(body));
-}
+} as const satisfies HtmdxComponent;

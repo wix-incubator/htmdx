@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>htmdx — component tour</title>
-    <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@2.1.0/dist/browser.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@3.0.0/dist/browser.js" defer></script>
   </head>
   <body>
     <!-- prettier-ignore -->
@@ -154,7 +154,7 @@ shadcn <Badge variant="secondary">Badge</Badge> inside it.
 
 <Alert>
   <AlertTitle>Display-only components</AlertTitle>
-  <AlertDescription>Alert, Table, Avatar, Progress and Skeleton render statically — no interaction required.</AlertDescription>
+  <AlertDescription>Alert, Table, Avatar and Progress render statically — no interaction required.</AlertDescription>
 </Alert>
 
 <Alert variant="destructive">
@@ -189,7 +189,7 @@ shadcn <Badge variant="secondary">Badge</Badge> inside it.
   </TableBody>
 </Table>
 
-## Avatars, progress, and skeletons
+## Avatars and progress
 
 <Avatar>
   <AvatarImage src="https://github.com/shadcn.png" alt="shadcn" />
@@ -197,8 +197,6 @@ shadcn <Badge variant="secondary">Badge</Badge> inside it.
 </Avatar>
 
 <Progress value="72" class="max-w-xl" />
-
-<Skeleton class="h-4 w-48" />
 
 ## Breadcrumbs
 
@@ -263,7 +261,7 @@ renders its floating content in a portal outside the source block.
   </DialogContent>
 </Dialog>
 
-## Collapsible and toggles
+## Collapsible
 
 <Collapsible class="max-w-xl">
   <CollapsibleTrigger>
@@ -271,14 +269,6 @@ renders its floating content in a portal outside the source block.
   </CollapsibleTrigger>
   <CollapsibleContent>Revealed only when the collapsible is open.</CollapsibleContent>
 </Collapsible>
-
-<Toggle variant="outline">Bold</Toggle>
-
-<ToggleGroup type="single" variant="outline">
-  <ToggleGroupItem value="left">Left</ToggleGroupItem>
-  <ToggleGroupItem value="center">Center</ToggleGroupItem>
-  <ToggleGroupItem value="right">Right</ToggleGroupItem>
-</ToggleGroup>
 
 Back to the [examples index](./index.html).
     </script>

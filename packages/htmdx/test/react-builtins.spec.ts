@@ -6,8 +6,8 @@ import { shadcnComponents } from '../src/react/shadcn';
 
 const merged = { ...builtInReactComponents, ...shadcnComponents };
 
-describe('bridged string built-ins in the React path', () => {
-  test('renders ExecutiveSummary and MetricStrip with string-pipeline markup', () => {
+describe('built-ins in the React path', () => {
+  test('renders the ExecutiveSummary shell and MetricStrip as native JSX', () => {
     const html = renderToStaticMarkup(
       compileToReact(
         `<ExecutiveSummary>
@@ -24,8 +24,25 @@ Ship **one HTML file** with editable HTMDX source.
 
     expect(html).toContain('htmdx-executive-summary');
     expect(html).toContain('<strong>one HTML file</strong>');
-    expect(html).toContain('htmdx-metric-strip');
+    expect(html).toContain('data-htmdx-component="MetricStrip"');
     expect(html).toContain('HTMDX');
+  });
+
+  test('preserves apostrophes in quoted intents', () => {
+    const html = renderToStaticMarkup(
+      compileToReact(
+        `<IntentList>
+- **#int-001 · Blocker · Self-Creator · Main intent:** "I want to collect a shopper's file, so I don't have to chase it over email." — frustrated, resigned → in control, relieved
+</IntentList>`,
+        { components: merged },
+      ),
+    );
+    const container = document.createElement('div');
+    container.innerHTML = html;
+
+    expect(container.textContent).toContain(
+      "I want to collect a shopper's file, so I don't have to chase it over email.",
+    );
   });
 
   test('built-in body contracts still validate in the React path', () => {
@@ -55,14 +72,6 @@ Artifacts should remain editable.
     expect(html).toContain('data-slot="card"');
     expect(html).toContain('htmdx-source-quote');
     expect(html).toContain('Artifacts should remain editable.');
-  });
-
-  test('shadcn wins the Card name collision in the merged map', () => {
-    const html = renderToStaticMarkup(
-      compileToReact('<Card>plain body</Card>', { components: merged }),
-    );
-    expect(html).toContain('data-slot="card"');
-    expect(html).not.toContain('htmdx-card');
   });
 
   test('react manifest covers exactly the merged component map', () => {

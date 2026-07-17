@@ -872,6 +872,9 @@ const RUNTIME_CSS = `
     border-radius: var(--md-sys-shape-corner-extra-large);
     padding: 24px;
   }
+  .htmdx-doc-section-card > .htmdx-content-component:not(:last-child) {
+    margin-bottom: 24px;
+  }
 
   .htmdx-error {
     border: 1px solid var(--md-sys-color-error);

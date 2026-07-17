@@ -149,7 +149,15 @@ function groupSections(
 
   for (const [index, block] of blocks.entries()) {
     if (block.type === 'component') {
-      current.children.push(renderComponentBlock(block, components, `c-${index}`));
+      // Mark only top-level Component blocks so the document shell can own
+      // their vertical rhythm without affecting prose or nested composition.
+      current.children.push(
+        createElement(
+          'div',
+          { className: 'htmdx-content-component', key: `c-${index}` },
+          renderComponentBlock(block, components, `c-${index}-content`),
+        ),
+      );
       continue;
     }
 

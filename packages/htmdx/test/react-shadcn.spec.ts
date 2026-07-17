@@ -206,18 +206,12 @@ describe('react renderer with shadcn/ui', () => {
     expect(html).toContain('translateX(-40%)');
   });
 
-  test('Separator and Spacer render their slot markers', () => {
+  test('Separator renders its slot marker and orientation', () => {
     const separator = renderToStaticMarkup(
       compileToReact('<Separator orientation="vertical" />', { components: shadcnComponents }),
     );
     expect(separator).toContain('data-slot="separator"');
     expect(separator).toContain('data-orientation="vertical"');
-
-    const spacer = renderToStaticMarkup(
-      compileToReact('<Spacer />', { components: shadcnComponents }),
-    );
-    expect(spacer).toContain('data-slot="spacer"');
-    expect(spacer).toContain('aria-hidden="true"');
   });
 
   test('Breadcrumb family renders trail markup', () => {

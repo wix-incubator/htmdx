@@ -442,6 +442,7 @@ describe('Table family at the HTMDX catalog boundary', () => {
     expect(shadcnDefinitions.TableHead.props).toEqual([
       expect.objectContaining({ name: 'colSpan', type: 'number', min: 1, max: 1000 }),
       expect.objectContaining({ name: 'rowSpan', type: 'number', min: 0, max: 65534 }),
+      expect.objectContaining({ name: 'headers', type: 'string' }),
       expect.objectContaining({
         name: 'scope',
         type: 'string',

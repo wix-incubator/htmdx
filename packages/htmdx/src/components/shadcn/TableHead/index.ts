@@ -24,6 +24,11 @@ export const TableHead = {
         'Number of rows this header cell spans; 0 spans all remaining rows in the section.',
     },
     {
+      name: 'headers',
+      type: 'string',
+      description: 'Space-separated ids of other TableHead cells that label this header cell.',
+    },
+    {
       name: 'scope',
       type: 'string',
       values: ['row', 'col', 'rowgroup', 'colgroup'],

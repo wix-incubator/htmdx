@@ -57,13 +57,14 @@ Use the same exact version as the artifact's runtime URL. The manifest lists
 the full runtime catalog — built-ins plus the shadcn/ui pack, each entry
 tagged with its `source`, props (with allowed values), and an example.
 
-Composable components (shadcn and markdown-bodied built-ins) accept markdown
-bodies and nested components. Structured built-ins declare an enforced body
-format: `label-value-list`, `label-number-list`, `gfm-table`, or
-`markdown-list-cards`; a body that does not match fails compilation of the
-whole artifact and browser hosts display the error fallback with the raw
-source. Imports, MDX `{expressions}`, and function-valued props cannot be
-expressed — the source is data, not code.
+Each manifest entry declares `body: "markdown" | "htmdx" | "none"`.
+`markdown` passes raw Markdown to the component and rejects nested tags;
+`htmdx` accepts Markdown, HTML, and nested registered component tags; `none`
+accepts only an empty or self-closing tag. A Built-in's `purpose` and `example`
+describe any stricter list or table grammar it checks. Invalid bodies fail the
+whole compile, and browser hosts show the error with the raw source. Imports,
+exports, brace expressions, event handlers, and function-valued props cannot
+be expressed — the source is data, not code.
 
 Use `src` when the source should live next to the HTML, in either form:
 
@@ -93,9 +94,13 @@ CSS from an inline or external script:
   window.addEventListener('htmdx:ready', () => {
     const { createElement } = window.Htmdx.React;
 
-    window.Htmdx.registerComponent('ProductCard', (props) =>
-      createElement('aside', { className: 'product-card' }, props.children),
-    );
+    window.Htmdx.registerComponent({
+      name: 'ProductCard',
+      purpose: 'Group product details in a card.',
+      example: '<ProductCard>Product details.</ProductCard>',
+      body: 'htmdx',
+      Component: (props) => createElement('aside', { className: 'product-card' }, props.children),
+    });
 
     window.Htmdx.registerTheme({
       id: 'product',
@@ -128,11 +133,12 @@ Use the browser compiler for portable artifacts and prototypes. Production hosts
 
 ## React runtime (MDX minus JavaScript)
 
-htmdx renders through React everywhere: built-ins are React components, the
-shadcn/ui pack is bundled, and the components map accepts any React
-component. The source stays declarative data: component tags, nested
-composition, and attribute props work; imports, `{expressions}`, and function
-props are rejected by design.
+htmdx renders through React everywhere: Built-ins and the shadcn/ui pack are
+bundled as complete component definitions. Global registration and per-render
+extensions accept the same definitions, and names cannot replace bundled or
+registered definitions. The source stays declarative data: component tags,
+nested composition, and declared attribute props work; imports, exports,
+brace expressions, event handlers, and function props are rejected by design.
 
 The standard runtime script gives an artifact the full catalog:
 
@@ -202,10 +208,13 @@ const MyChart = {
 />;
 ```
 
-Attribute conventions: `class` -> `className`, kebab-case -> camelCase, and
-values parse as booleans/numbers/JSON when they look like data. Well-formed
-bodies are parsed as XML, so camelCase attributes like `defaultValue` survive
-verbatim; malformed bodies fall back to forgiving HTML parsing.
+Definitions are available from `@wix/htmdx/components`,
+`@wix/htmdx/components/builtins`, and `@wix/htmdx/components/shadcn`.
+Component-specific attributes form an allowlist and parse by their declared
+`string`, `number`, `boolean`, or `json` type. Every component also accepts
+`class`, `id`, `aria-*`, and `data-*`. Well-formed HTMDX bodies are parsed as
+XML, so camelCase names such as `defaultValue` stay intact; malformed bodies
+fall back to HTML parsing.
 
 Security note: the React runtime runs the registered component code with
 agent-authored props (`compile()` can still emit a static HTML snapshot of the

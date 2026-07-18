@@ -112,8 +112,8 @@ export function validateGlobalBody(body: string) {
   const jsx = firstMatch(syntax, /<\/?[A-Za-z][A-Za-z0-9]*\b|<>|<\/>/);
   if (jsx) {
     throw new BodyContractError(
-      'nested JSX is not allowed',
-      'one-level HTMDX without nested JSX',
+      'nested component tags are not allowed',
+      'Markdown without nested component tags',
       jsx.line,
       jsx.column,
     );

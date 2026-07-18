@@ -1,0 +1,1244 @@
+{
+  "format": "htmdx@2",
+  "runtime": "@wix/htmdx@4.0.0",
+  "note": "Body values: markdown passes raw Markdown and does not allow nested tags; htmdx allows Markdown, HTML, and nested registered component tags; none allows no body. Every component accepts class, id, aria-*, and data-* attributes; all other props must be declared. Declared string values stay strings, number values must be finite numbers, boolean values use a bare attribute or true/false, and JSON values must parse as valid JSON before declared constraints run. HTMDX is declarative: imports, exports, brace expressions, event handlers, and function-valued props are not allowed.",
+  "components": [
+    {
+      "name": "Audience",
+      "purpose": "Show target segments from one or more `- item` rows. Format each item as `**Persona — Type:** Description · metrics: value — caption; … · priority: High|Medium|Unmeasured`; Type is Primary, Secondary, or Secondary · Risk.",
+      "example": "<Audience>\n- **Self-Creator · Custom Goods Merchant — Primary:** Sells made-to-order products and needs a file from the shopper at purchase. · metrics: ~19.8K — stores above $50K GPV; 4.85% — of ~408K active stores · priority: High\n- **Partner / Freelancer — Secondary:** Hits the upload gap on every relevant client build. · priority: Medium\n</Audience>",
+      "body": "markdown",
+      "source": "built-in"
+    },
+    {
+      "name": "Callout",
+      "purpose": "Emphasize an important note, warning, or takeaway using a Markdown body.",
+      "example": "<Callout>\n**Important:** Validate the artifact before publishing.\n</Callout>",
+      "body": "markdown",
+      "source": "built-in"
+    },
+    {
+      "name": "ChartArea",
+      "purpose": "Compare non-negative numeric values written as '- label: number' rows; currently rendered with the shared bar-chart visualization.",
+      "example": "<ChartArea>\n- January: 18\n- February: 27\n</ChartArea>",
+      "body": "markdown",
+      "source": "built-in"
+    },
+    {
+      "name": "ChartBar",
+      "purpose": "Compare non-negative numeric values with a bar chart using '- label: number' rows.",
+      "example": "<ChartBar>\n- Free users: 48\n- Paid users: 12\n</ChartBar>",
+      "body": "markdown",
+      "source": "built-in"
+    },
+    {
+      "name": "ChartLine",
+      "purpose": "Compare non-negative numeric values written as '- label: number' rows; currently rendered with the shared bar-chart visualization.",
+      "example": "<ChartLine>\n- Week 1: 8\n- Week 2: 13\n</ChartLine>",
+      "body": "markdown",
+      "source": "built-in"
+    },
+    {
+      "name": "ChartPie",
+      "purpose": "Compare non-negative numeric values written as '- label: number' rows; currently rendered with the shared bar-chart visualization.",
+      "example": "<ChartPie>\n- Direct: 62\n- Referral: 38\n</ChartPie>",
+      "body": "markdown",
+      "source": "built-in"
+    },
+    {
+      "name": "Compare",
+      "purpose": "Place alternatives or contrasting concepts side by side. Write one or more `- item` rows; use `**Title:** details` to label a card.",
+      "example": "<Compare>\n- **Current:** Manual component discovery\n- **Proposed:** Versioned manifest\n</Compare>",
+      "body": "markdown",
+      "source": "built-in"
+    },
+    {
+      "name": "DataTable",
+      "purpose": "Display structured records written as a GFM table with a non-empty header, separator row, and at least one consistently sized data row.",
+      "example": "<DataTable>\n| Plan | Users |\n| --- | ---: |\n| Free | 48 |\n| Pro | 12 |\n</DataTable>",
+      "body": "markdown",
+      "source": "built-in"
+    },
+    {
+      "name": "DecisionMatrix",
+      "purpose": "Compare options as GFM-table columns against criteria as rows. Put a ✓ in the chosen option header to highlight it. A body cell may start with `[blue]`, `[green]`, `[amber]`, `[red]`, `[gray]`, or `[purple]` to show a colored status dot.",
+      "example": "<DecisionMatrix>\n| Criterion | A — Text workaround | B — Native upload ✓ | C — Partner app |\n| --- | --- | --- | --- |\n| User fit | Partial | [green] Fully solves the intent | Partial |\n| Build effort | [green] Low | [amber] Medium | [red] High |\n</DecisionMatrix>",
+      "body": "markdown",
+      "source": "built-in"
+    },
+    {
+      "name": "DecisionTable",
+      "purpose": "Present decision criteria and outcomes written as '- label: value' rows, splitting each row at its first colon.",
+      "example": "<DecisionTable>\n- Scope: Built-in components only\n- Delivery: Versioned manifest\n</DecisionTable>",
+      "body": "markdown",
+      "source": "built-in"
+    },
+    {
+      "name": "Evidence",
+      "purpose": "List evidence that supports the surrounding analysis. Write one or more `- item` rows; use `**Title:** details` to label an evidence card.",
+      "example": "<Evidence>\n- **Runtime:** The allowlist currently lives in implementation code.\n</Evidence>",
+      "body": "markdown",
+      "source": "built-in"
+    },
+    {
+      "name": "ExecutiveSummary",
+      "purpose": "Summarize the artifact’s most important conclusion or recommendation.",
+      "example": "<ExecutiveSummary>\nShip **one HTML file** with editable HTMDX source.\n</ExecutiveSummary>",
+      "body": "markdown",
+      "source": "built-in"
+    },
+    {
+      "name": "Finding",
+      "purpose": "Present key findings as a scannable card list. Write one or more `- item` rows; use `**Title:** details` to label a finding.",
+      "example": "<Finding>\n- **Drift:** Runtime support is not machine-discoverable.\n</Finding>",
+      "body": "markdown",
+      "source": "built-in"
+    },
+    {
+      "name": "IntentList",
+      "purpose": "Group user intents by priority (Blocker/Critical/Nice to have) with a persona · type header, the intent quote, and current → expected feeling chips (red → green). Each item title is `#id · Priority · Persona · Type`; the text is the quote followed by `negative, negative → positive, positive`. Append an optional `· note: …` to flag an intent with a caution strip (e.g. a guardrail) inside its card.",
+      "example": "<IntentList>\n- **#int-001 · Blocker · Self-Creator · Main intent:** \"I want to collect a shopper's file at purchase, so the attachment is tied to the order.\" — frustrated, resigned → in control, relieved\n- **#int-001 · Critical · Shopper · Main intent:** \"I want to attach my file while buying, so the seller gets exactly what I mean.\" — uncertain, friction → understood, reassured · note: Required-upload step is an unmeasured conversion risk — guardrail KPI required at launch\n</IntentList>",
+      "body": "markdown",
+      "source": "built-in"
+    },
+    {
+      "name": "MetricStrip",
+      "purpose": "Show a compact set of labeled headline values written as '- label: value' rows. A leading trend glyph (↑ up/green, ↓ down/red, ⊘ guardrail/amber) is colored automatically; an ` — ` or ` · ` in the value renders the remainder as a muted caption.",
+      "example": "<MetricStrip>\n- ↑ Active stores using upload: **baseline 0** — post-launch adopter cohort\n- ↓ File-upload support tickets: **55** · 3 months post-launch\n- ⊘ Buyer checkout-completion rate: **guardrail** — hold at or above baseline\n</MetricStrip>",
+      "body": "markdown",
+      "source": "built-in"
+    },
+    {
+      "name": "OpenQuestions",
+      "purpose": "An amber-framed panel of open questions and assumptions, each row carrying a labeled badge. Item title is the label (Assumption = blue, Risk = red, Open = amber); the text is the note.",
+      "example": "<OpenQuestions>\n- **Assumption:** FILE_UPLOAD render type on the Catalog V3 Modifier mechanism. To be confirmed in spec.\n- **Risk:** Required-before-add-to-cart carries an unmeasured buyer-conversion risk. Guardrail KPI at launch.\n- **Open:** Order-carriage path and buyer-file retention policy are deferred to spec.\n</OpenQuestions>",
+      "body": "markdown",
+      "source": "built-in"
+    },
+    {
+      "name": "RiskTable",
+      "purpose": "Classify priorities written as Markdown list rows. Each row must start with one unique, case-sensitive bold tier—`Must-have`, `Differentiator`, `Not now`, or `Won't do`—followed by non-empty text.",
+      "example": "<RiskTable>\n- **Must-have:** Publish exact-version metadata.\n- **Not now:** Describe host components.\n</RiskTable>",
+      "body": "markdown",
+      "source": "built-in"
+    },
+    {
+      "name": "SignalGrid",
+      "purpose": "A grid of category cards with a colored top accent — for Why-Now signals or a Problem / Root cause / Opportunity trio. Item title is `Category | tone` (tone: blue/green/amber/red/gray/purple); the text is an optional `Headline — ` followed by the body.",
+      "example": "<SignalGrid>\n- **User pain · Escalated | red:** Paying for a workaround — merchants pay $14–60/mo and escalate to support.\n- **Competitive gap | amber:** 4 of 6 native competitors ship upload — Wix does not.\n</SignalGrid>",
+      "body": "markdown",
+      "source": "built-in"
+    },
+    {
+      "name": "SourceQuote",
+      "purpose": "Display a source quotation or excerpt as Markdown, with attribution supplied in the surrounding content.",
+      "example": "<SourceQuote>\n“Artifacts should remain editable.”\n</SourceQuote>",
+      "body": "markdown",
+      "source": "built-in"
+    },
+    {
+      "name": "Sources",
+      "purpose": "Show research artifacts as provenance pills prefixed with ↗. Write one or more `- source` rows; make an item bold to highlight the current artifact.",
+      "example": "<Sources>\n- Data Analysis\n- User Voice\n- **Product Strategy**\n</Sources>",
+      "body": "markdown",
+      "source": "built-in"
+    },
+    {
+      "name": "Stat",
+      "purpose": "Highlight one or more labeled statistics written as '- label: value' rows.",
+      "example": "<Stat>\n- Adoption: **72%**\n</Stat>",
+      "body": "markdown",
+      "source": "built-in"
+    },
+    {
+      "name": "Timeline",
+      "purpose": "Describe milestones as labeled points in time written as '- label: value' rows, splitting each row at its first colon.",
+      "example": "<Timeline>\n- July: Publish the manifest\n- August: Adopt it in validators\n</Timeline>",
+      "body": "markdown",
+      "source": "built-in"
+    },
+    {
+      "name": "Accordion",
+      "purpose": "Group of expandable AccordionItem sections; choose single or multiple open items.",
+      "example": "<Accordion type=\"single\" collapsible defaultValue='\"risks\"'>\n  <AccordionItem value=\"risks\">\n    <AccordionTrigger>Key risks</AccordionTrigger>\n    <AccordionContent>Vendor lock-in.</AccordionContent>\n  </AccordionItem>\n</Accordion>",
+      "body": "htmdx",
+      "props": [
+        {
+          "name": "type",
+          "type": "string",
+          "required": true,
+          "values": [
+            "single",
+            "multiple"
+          ],
+          "description": "Whether one or many items can be open at once."
+        },
+        {
+          "name": "collapsible",
+          "type": "boolean",
+          "default": false,
+          "description": "For type single, lets the open item close when selected again."
+        },
+        {
+          "name": "defaultValue",
+          "type": "json",
+          "description": "Initially open item value: a JSON string for type single or a JSON string array for type multiple."
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "AccordionContent",
+      "purpose": "Content revealed when its AccordionItem is open.",
+      "example": "<Accordion type=\"single\" collapsible defaultValue='\"risks\"'>\n  <AccordionItem value=\"risks\">\n    <AccordionTrigger>Key risks</AccordionTrigger>\n    <AccordionContent>Vendor **lock-in**.</AccordionContent>\n  </AccordionItem>\n</Accordion>",
+      "body": "htmdx",
+      "source": "shadcn"
+    },
+    {
+      "name": "AccordionItem",
+      "purpose": "One named expandable section inside an Accordion.",
+      "example": "<Accordion type=\"single\" collapsible>\n  <AccordionItem value=\"risks\">\n    <AccordionTrigger>Key risks</AccordionTrigger>\n    <AccordionContent>Vendor lock-in.</AccordionContent>\n  </AccordionItem>\n</Accordion>",
+      "body": "htmdx",
+      "props": [
+        {
+          "name": "value",
+          "type": "string",
+          "required": true,
+          "description": "Unique value that identifies this item within its Accordion."
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "AccordionTrigger",
+      "purpose": "Heading control that opens or closes its AccordionItem.",
+      "example": "<Accordion type=\"single\" collapsible>\n  <AccordionItem value=\"risks\">\n    <AccordionTrigger>Key risks</AccordionTrigger>\n    <AccordionContent>Vendor lock-in.</AccordionContent>\n  </AccordionItem>\n</Accordion>",
+      "body": "htmdx",
+      "source": "shadcn"
+    },
+    {
+      "name": "Alert",
+      "purpose": "Callout banner for a titled note or warning.",
+      "example": "<Alert>\n  <AlertTitle>Heads up</AlertTitle>\n  <AlertDescription>This artifact is display-only.</AlertDescription>\n</Alert>",
+      "body": "htmdx",
+      "props": [
+        {
+          "name": "variant",
+          "type": "string",
+          "values": [
+            "default",
+            "destructive"
+          ],
+          "default": "default",
+          "description": "Visual emphasis of the alert."
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "AlertDescription",
+      "purpose": "Supporting body text inside an Alert.",
+      "example": "<Alert>\n  <AlertTitle>Heads up</AlertTitle>\n  <AlertDescription>Review this note before publishing.</AlertDescription>\n</Alert>",
+      "body": "htmdx",
+      "source": "shadcn"
+    },
+    {
+      "name": "AlertTitle",
+      "purpose": "Title line inside an Alert.",
+      "example": "<Alert>\n  <AlertTitle>Heads up</AlertTitle>\n  <AlertDescription>Review this note before publishing.</AlertDescription>\n</Alert>",
+      "body": "htmdx",
+      "source": "shadcn"
+    },
+    {
+      "name": "AspectRatio",
+      "purpose": "Keeps nested media at a fixed width-to-height ratio.",
+      "example": "<AspectRatio ratio=\"1.7778\">\n  <img src=\"https://images.unsplash.com/photo-1535025183041-0991a977e25b\" alt=\"Mountain landscape\" />\n</AspectRatio>",
+      "body": "htmdx",
+      "props": [
+        {
+          "name": "ratio",
+          "type": "number",
+          "min": 5e-324,
+          "default": 1,
+          "description": "Width divided by height; use a positive number such as 1.7778 for 16:9."
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "Avatar",
+      "purpose": "Round image container that holds an AvatarImage and AvatarFallback.",
+      "example": "<Avatar>\n  <AvatarImage src=\"https://github.com/shadcn.png\" alt=\"shadcn\" />\n  <AvatarFallback>CN</AvatarFallback>\n</Avatar>",
+      "body": "htmdx",
+      "source": "shadcn"
+    },
+    {
+      "name": "AvatarFallback",
+      "purpose": "Initials or short text shown when an AvatarImage is unavailable.",
+      "example": "<Avatar>\n  <AvatarImage src=\"https://github.com/shadcn.png\" alt=\"shadcn\" />\n  <AvatarFallback>CN</AvatarFallback>\n</Avatar>",
+      "body": "htmdx",
+      "source": "shadcn"
+    },
+    {
+      "name": "AvatarImage",
+      "purpose": "Image inside an Avatar; pair it with AvatarFallback for missing images.",
+      "example": "<Avatar>\n  <AvatarImage src=\"https://github.com/shadcn.png\" alt=\"shadcn\" />\n  <AvatarFallback>CN</AvatarFallback>\n</Avatar>",
+      "body": "none",
+      "props": [
+        {
+          "name": "src",
+          "type": "string",
+          "required": true,
+          "description": "URL of the avatar image."
+        },
+        {
+          "name": "alt",
+          "type": "string",
+          "description": "Text alternative for the image."
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "Badge",
+      "purpose": "Small status or label chip.",
+      "example": "<Badge variant=\"secondary\">audited</Badge>",
+      "body": "htmdx",
+      "props": [
+        {
+          "name": "variant",
+          "type": "string",
+          "values": [
+            "default",
+            "secondary",
+            "destructive",
+            "outline"
+          ],
+          "default": "default",
+          "description": "Visual emphasis of the chip."
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "Breadcrumb",
+      "purpose": "Navigation trail that shows the current page within a hierarchy.",
+      "example": "<Breadcrumb>\n  <BreadcrumbList>\n    <BreadcrumbItem><BreadcrumbLink href=\"/\">Home</BreadcrumbLink></BreadcrumbItem>\n    <BreadcrumbSeparator />\n    <BreadcrumbItem><BreadcrumbPage>Reports</BreadcrumbPage></BreadcrumbItem>\n  </BreadcrumbList>\n</Breadcrumb>",
+      "body": "htmdx",
+      "source": "shadcn"
+    },
+    {
+      "name": "BreadcrumbEllipsis",
+      "purpose": "Collapsed-items marker inside a BreadcrumbItem.",
+      "example": "<Breadcrumb>\n  <BreadcrumbList>\n    <BreadcrumbItem><BreadcrumbLink href=\"/\">Home</BreadcrumbLink></BreadcrumbItem>\n    <BreadcrumbSeparator />\n    <BreadcrumbItem><BreadcrumbEllipsis /></BreadcrumbItem>\n    <BreadcrumbSeparator />\n    <BreadcrumbItem><BreadcrumbPage>Reports</BreadcrumbPage></BreadcrumbItem>\n  </BreadcrumbList>\n</Breadcrumb>",
+      "body": "none",
+      "source": "shadcn"
+    },
+    {
+      "name": "BreadcrumbItem",
+      "purpose": "One linked or current-page entry inside a BreadcrumbList.",
+      "example": "<Breadcrumb>\n  <BreadcrumbList>\n    <BreadcrumbItem><BreadcrumbLink href=\"/reports\">Reports</BreadcrumbLink></BreadcrumbItem>\n    <BreadcrumbSeparator />\n    <BreadcrumbItem><BreadcrumbPage>Quarterly</BreadcrumbPage></BreadcrumbItem>\n  </BreadcrumbList>\n</Breadcrumb>",
+      "body": "htmdx",
+      "source": "shadcn"
+    },
+    {
+      "name": "BreadcrumbLink",
+      "purpose": "Link to an ancestor page inside a BreadcrumbItem.",
+      "example": "<Breadcrumb>\n  <BreadcrumbList>\n    <BreadcrumbItem><BreadcrumbLink href=\"/\">Home</BreadcrumbLink></BreadcrumbItem>\n    <BreadcrumbSeparator />\n    <BreadcrumbItem><BreadcrumbPage>Reports</BreadcrumbPage></BreadcrumbItem>\n  </BreadcrumbList>\n</Breadcrumb>",
+      "body": "htmdx",
+      "props": [
+        {
+          "name": "href",
+          "type": "string",
+          "required": true,
+          "description": "URL of the ancestor page."
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "BreadcrumbList",
+      "purpose": "Ordered list that lays out the items and separators in a Breadcrumb.",
+      "example": "<Breadcrumb>\n  <BreadcrumbList>\n    <BreadcrumbItem><BreadcrumbLink href=\"/\">Home</BreadcrumbLink></BreadcrumbItem>\n    <BreadcrumbSeparator />\n    <BreadcrumbItem><BreadcrumbPage>Reports</BreadcrumbPage></BreadcrumbItem>\n  </BreadcrumbList>\n</Breadcrumb>",
+      "body": "htmdx",
+      "source": "shadcn"
+    },
+    {
+      "name": "BreadcrumbPage",
+      "purpose": "Current, non-clickable page inside a BreadcrumbItem.",
+      "example": "<Breadcrumb>\n  <BreadcrumbList>\n    <BreadcrumbItem><BreadcrumbLink href=\"/\">Home</BreadcrumbLink></BreadcrumbItem>\n    <BreadcrumbSeparator />\n    <BreadcrumbItem><BreadcrumbPage>Reports</BreadcrumbPage></BreadcrumbItem>\n  </BreadcrumbList>\n</Breadcrumb>",
+      "body": "htmdx",
+      "source": "shadcn"
+    },
+    {
+      "name": "BreadcrumbSeparator",
+      "purpose": "Separator between two BreadcrumbItem elements; uses a chevron when empty.",
+      "example": "<Breadcrumb>\n  <BreadcrumbList>\n    <BreadcrumbItem><BreadcrumbLink href=\"/\">Home</BreadcrumbLink></BreadcrumbItem>\n    <BreadcrumbSeparator />\n    <BreadcrumbItem><BreadcrumbPage>Reports</BreadcrumbPage></BreadcrumbItem>\n  </BreadcrumbList>\n</Breadcrumb>",
+      "body": "htmdx",
+      "source": "shadcn"
+    },
+    {
+      "name": "Button",
+      "purpose": "Button-styled label for display-only artifact actions.",
+      "example": "<Button variant=\"outline\" size=\"sm\">Download</Button>",
+      "body": "htmdx",
+      "props": [
+        {
+          "name": "variant",
+          "type": "string",
+          "values": [
+            "default",
+            "destructive",
+            "outline",
+            "secondary",
+            "ghost",
+            "link"
+          ],
+          "default": "default",
+          "description": "Visual emphasis of the button."
+        },
+        {
+          "name": "size",
+          "type": "string",
+          "values": [
+            "default",
+            "sm",
+            "lg",
+            "icon"
+          ],
+          "default": "default",
+          "description": "Button height and padding preset."
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "Card",
+      "purpose": "Container for a self-contained block with optional header, content, and footer areas.",
+      "example": "<Card>\n  <CardHeader>\n    <CardTitle>Revenue</CardTitle>\n    <CardDescription>Quarterly numbers</CardDescription>\n  </CardHeader>\n  <CardContent>Grew **12%** quarter over quarter.</CardContent>\n  <CardFooter><Button variant=\"outline\" size=\"sm\">Details</Button></CardFooter>\n</Card>",
+      "body": "htmdx",
+      "source": "shadcn"
+    },
+    {
+      "name": "CardAction",
+      "purpose": "Action area aligned at the end of a CardHeader.",
+      "example": "<Card>\n  <CardHeader>\n    <CardTitle>Revenue</CardTitle>\n    <CardAction><Button variant=\"outline\" size=\"sm\">Export</Button></CardAction>\n  </CardHeader>\n  <CardContent>Quarterly results.</CardContent>\n</Card>",
+      "body": "htmdx",
+      "source": "shadcn"
+    },
+    {
+      "name": "CardContent",
+      "purpose": "Main body of a Card; accepts Markdown, HTML, and nested HTMDX components.",
+      "example": "<Card>\n  <CardHeader><CardTitle>Revenue</CardTitle></CardHeader>\n  <CardContent>Grew **12%** quarter over quarter. <Badge variant=\"secondary\">audited</Badge></CardContent>\n</Card>",
+      "body": "htmdx",
+      "source": "shadcn"
+    },
+    {
+      "name": "CardDescription",
+      "purpose": "Supporting description line inside a CardHeader.",
+      "example": "<Card>\n  <CardHeader>\n    <CardTitle>Revenue</CardTitle>\n    <CardDescription>Audited quarterly numbers</CardDescription>\n  </CardHeader>\n  <CardContent>Quarterly results.</CardContent>\n</Card>",
+      "body": "htmdx",
+      "source": "shadcn"
+    },
+    {
+      "name": "CardFooter",
+      "purpose": "Footer row of a Card, usually holding actions or status labels.",
+      "example": "<Card>\n  <CardHeader><CardTitle>Revenue</CardTitle></CardHeader>\n  <CardContent>Quarterly results.</CardContent>\n  <CardFooter><Button variant=\"outline\" size=\"sm\">Details</Button></CardFooter>\n</Card>",
+      "body": "htmdx",
+      "source": "shadcn"
+    },
+    {
+      "name": "CardHeader",
+      "purpose": "Header area of a Card; holds its title, description, and optional action.",
+      "example": "<Card>\n  <CardHeader>\n    <CardTitle>Revenue</CardTitle>\n    <CardDescription>Quarterly numbers</CardDescription>\n    <CardAction><Button size=\"sm\">Export</Button></CardAction>\n  </CardHeader>\n  <CardContent>Grew **12%** quarter over quarter.</CardContent>\n</Card>",
+      "body": "htmdx",
+      "source": "shadcn"
+    },
+    {
+      "name": "CardTitle",
+      "purpose": "Title line inside a CardHeader.",
+      "example": "<Card>\n  <CardHeader>\n    <CardTitle>Revenue</CardTitle>\n  </CardHeader>\n  <CardContent>Quarterly results.</CardContent>\n</Card>",
+      "body": "htmdx",
+      "source": "shadcn"
+    },
+    {
+      "name": "Collapsible",
+      "purpose": "Single expandable region controlled by a CollapsibleTrigger.",
+      "example": "<Collapsible defaultOpen>\n  <CollapsibleTrigger>Toggle details</CollapsibleTrigger>\n  <CollapsibleContent>Supporting details.</CollapsibleContent>\n</Collapsible>",
+      "body": "htmdx",
+      "props": [
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the region starts open."
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "CollapsibleContent",
+      "purpose": "Content shown while its Collapsible region is open.",
+      "example": "<Collapsible defaultOpen>\n  <CollapsibleTrigger>Toggle details</CollapsibleTrigger>\n  <CollapsibleContent>Supporting **details**.</CollapsibleContent>\n</Collapsible>",
+      "body": "htmdx",
+      "source": "shadcn"
+    },
+    {
+      "name": "CollapsibleTrigger",
+      "purpose": "Control that opens or closes the related CollapsibleContent.",
+      "example": "<Collapsible>\n  <CollapsibleTrigger>Toggle details</CollapsibleTrigger>\n  <CollapsibleContent>Supporting details.</CollapsibleContent>\n</Collapsible>",
+      "body": "htmdx",
+      "source": "shadcn"
+    },
+    {
+      "name": "Dialog",
+      "purpose": "Modal state container for a trigger and accessible dialog content.",
+      "example": "<Dialog>\n  <DialogTrigger>Open dialog</DialogTrigger>\n  <DialogContent>\n    <DialogHeader>\n      <DialogTitle>Confirm migration</DialogTitle>\n      <DialogDescription>Review the migration before continuing.</DialogDescription>\n    </DialogHeader>\n    <DialogFooter><DialogClose>Cancel</DialogClose></DialogFooter>\n  </DialogContent>\n</Dialog>",
+      "body": "htmdx",
+      "props": [
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the dialog starts open."
+        },
+        {
+          "name": "modal",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether the dialog blocks interaction with content outside it."
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "DialogClose",
+      "purpose": "Control inside DialogContent that closes the dialog.",
+      "example": "<Dialog defaultOpen>\n  <DialogContent>\n    <DialogHeader>\n      <DialogTitle>Discard draft?</DialogTitle>\n      <DialogDescription>Your unsaved changes will be lost.</DialogDescription>\n    </DialogHeader>\n    <DialogFooter><DialogClose>Keep editing</DialogClose></DialogFooter>\n  </DialogContent>\n</Dialog>",
+      "body": "htmdx",
+      "props": [
+        {
+          "name": "asChild",
+          "type": "boolean",
+          "default": false,
+          "description": "Use the single child element as the close control instead of rendering a button."
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "DialogContent",
+      "purpose": "Portalled modal surface; include a DialogTitle and DialogDescription for accessibility.",
+      "example": "<Dialog defaultOpen>\n  <DialogContent showCloseButton=\"true\">\n    <DialogHeader>\n      <DialogTitle>Publish report?</DialogTitle>\n      <DialogDescription>The report will become visible to the team.</DialogDescription>\n    </DialogHeader>\n    <DialogFooter><DialogClose>Cancel</DialogClose></DialogFooter>\n  </DialogContent>\n</Dialog>",
+      "body": "htmdx",
+      "props": [
+        {
+          "name": "showCloseButton",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to show the icon close control in the top corner."
+        },
+        {
+          "name": "forceMount",
+          "type": "boolean",
+          "default": false,
+          "description": "Keep the content mounted even when the dialog is closed."
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "DialogDescription",
+      "purpose": "Accessible description that explains a DialogContent surface.",
+      "example": "<Dialog defaultOpen>\n  <DialogContent>\n    <DialogHeader>\n      <DialogTitle>Archive report?</DialogTitle>\n      <DialogDescription>The report will move to the archive.</DialogDescription>\n    </DialogHeader>\n  </DialogContent>\n</Dialog>",
+      "body": "htmdx",
+      "source": "shadcn"
+    },
+    {
+      "name": "DialogFooter",
+      "purpose": "Bottom action section of DialogContent with an optional built-in close button.",
+      "example": "<Dialog defaultOpen>\n  <DialogContent>\n    <DialogHeader>\n      <DialogTitle>Save changes?</DialogTitle>\n      <DialogDescription>Confirm whether to keep your edits.</DialogDescription>\n    </DialogHeader>\n    <DialogFooter showCloseButton=\"true\"><Button>Save</Button></DialogFooter>\n  </DialogContent>\n</Dialog>",
+      "body": "htmdx",
+      "props": [
+        {
+          "name": "showCloseButton",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to append an outline close button."
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "DialogHeader",
+      "purpose": "Top section of DialogContent that groups its accessible title and description.",
+      "example": "<Dialog defaultOpen>\n  <DialogContent>\n    <DialogHeader>\n      <DialogTitle>Export data?</DialogTitle>\n      <DialogDescription>The export may take several minutes.</DialogDescription>\n    </DialogHeader>\n  </DialogContent>\n</Dialog>",
+      "body": "htmdx",
+      "source": "shadcn"
+    },
+    {
+      "name": "DialogOverlay",
+      "purpose": "Bodyless backdrop layer for a custom DialogPortal; DialogContent already adds one.",
+      "example": "<Dialog defaultOpen>\n  <DialogPortal><DialogOverlay /></DialogPortal>\n  <DialogContent>\n    <DialogHeader>\n      <DialogTitle>Custom backdrop</DialogTitle>\n      <DialogDescription>This dialog also demonstrates its overlay layer.</DialogDescription>\n    </DialogHeader>\n  </DialogContent>\n</Dialog>",
+      "body": "none",
+      "props": [
+        {
+          "name": "forceMount",
+          "type": "boolean",
+          "default": false,
+          "description": "Keep the overlay mounted even when the dialog is closed."
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "DialogPortal",
+      "purpose": "Moves custom Dialog layers to the document body; DialogContent already uses one.",
+      "example": "<Dialog defaultOpen>\n  <DialogPortal><DialogOverlay /></DialogPortal>\n  <DialogContent>\n    <DialogHeader>\n      <DialogTitle>Portalled dialog</DialogTitle>\n      <DialogDescription>The modal layers render outside the source host.</DialogDescription>\n    </DialogHeader>\n  </DialogContent>\n</Dialog>",
+      "body": "htmdx",
+      "props": [
+        {
+          "name": "forceMount",
+          "type": "boolean",
+          "default": false,
+          "description": "Keep the portal children mounted even when the dialog is closed."
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "DialogTitle",
+      "purpose": "Required accessible name for a DialogContent surface.",
+      "example": "<Dialog defaultOpen>\n  <DialogContent>\n    <DialogHeader>\n      <DialogTitle>Delete workspace?</DialogTitle>\n      <DialogDescription>This action cannot be undone.</DialogDescription>\n    </DialogHeader>\n  </DialogContent>\n</Dialog>",
+      "body": "htmdx",
+      "source": "shadcn"
+    },
+    {
+      "name": "DialogTrigger",
+      "purpose": "Control inside Dialog that opens its dialog content.",
+      "example": "<Dialog>\n  <DialogTrigger>Open migration review</DialogTrigger>\n  <DialogContent>\n    <DialogHeader>\n      <DialogTitle>Migration review</DialogTitle>\n      <DialogDescription>Check the planned changes.</DialogDescription>\n    </DialogHeader>\n  </DialogContent>\n</Dialog>",
+      "body": "htmdx",
+      "props": [
+        {
+          "name": "asChild",
+          "type": "boolean",
+          "default": false,
+          "description": "Use the single child element as the trigger instead of rendering a button."
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "HoverCard",
+      "purpose": "State container for a trigger and a rich preview card shown after a pointer pause.",
+      "example": "<HoverCard openDelay=\"300\" closeDelay=\"200\">\n  <HoverCardTrigger>@htmdx</HoverCardTrigger>\n  <HoverCardContent>Build editable **HTML artifacts**.</HoverCardContent>\n</HoverCard>",
+      "body": "htmdx",
+      "props": [
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the card starts open."
+        },
+        {
+          "name": "openDelay",
+          "type": "number",
+          "default": 700,
+          "min": 0,
+          "description": "Milliseconds to wait before opening."
+        },
+        {
+          "name": "closeDelay",
+          "type": "number",
+          "default": 300,
+          "min": 0,
+          "description": "Milliseconds to wait before closing."
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "HoverCardContent",
+      "purpose": "Portalled rich preview surface positioned relative to its HoverCardTrigger.",
+      "example": "<HoverCard defaultOpen>\n  <HoverCardTrigger>@htmdx</HoverCardTrigger>\n  <HoverCardContent side=\"right\" align=\"start\">Build editable **HTML artifacts**.</HoverCardContent>\n</HoverCard>",
+      "body": "htmdx",
+      "props": [
+        {
+          "name": "forceMount",
+          "type": "boolean",
+          "default": false,
+          "description": "Keep the content mounted when closed."
+        },
+        {
+          "name": "side",
+          "type": "string",
+          "values": [
+            "top",
+            "right",
+            "bottom",
+            "left"
+          ],
+          "default": "bottom",
+          "description": "Preferred side of the trigger."
+        },
+        {
+          "name": "sideOffset",
+          "type": "number",
+          "default": 4,
+          "description": "Distance in pixels from the trigger."
+        },
+        {
+          "name": "align",
+          "type": "string",
+          "values": [
+            "start",
+            "center",
+            "end"
+          ],
+          "default": "center",
+          "description": "Content alignment along the trigger."
+        },
+        {
+          "name": "alignOffset",
+          "type": "number",
+          "default": 0,
+          "description": "Alignment shift in pixels."
+        },
+        {
+          "name": "avoidCollisions",
+          "type": "boolean",
+          "default": true,
+          "description": "Shift or flip content to keep it in view."
+        },
+        {
+          "name": "collisionPadding",
+          "type": "number",
+          "default": 0,
+          "min": 0,
+          "description": "Viewport edge padding in pixels."
+        },
+        {
+          "name": "sticky",
+          "type": "string",
+          "values": [
+            "partial",
+            "always"
+          ],
+          "default": "partial",
+          "description": "How content stays aligned when the trigger leaves view."
+        },
+        {
+          "name": "hideWhenDetached",
+          "type": "boolean",
+          "default": false,
+          "description": "Hide content when its trigger is fully clipped."
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "HoverCardTrigger",
+      "purpose": "Control inside HoverCard whose pointer or focus state reveals HoverCardContent.",
+      "example": "<HoverCard>\n  <HoverCardTrigger>@htmdx</HoverCardTrigger>\n  <HoverCardContent>Editable artifact tools.</HoverCardContent>\n</HoverCard>",
+      "body": "htmdx",
+      "props": [
+        {
+          "name": "asChild",
+          "type": "boolean",
+          "default": false,
+          "description": "Use the single child element as the trigger instead of rendering a link."
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "Popover",
+      "purpose": "State container for a control and a floating panel shown on demand.",
+      "example": "<Popover>\n  <PopoverTrigger>Open filters</PopoverTrigger>\n  <PopoverContent>Choose the report filters.</PopoverContent>\n</Popover>",
+      "body": "htmdx",
+      "props": [
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the popover starts open."
+        },
+        {
+          "name": "modal",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether open content blocks interaction outside it."
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "PopoverAnchor",
+      "purpose": "Optional element inside Popover used as the positioning anchor for PopoverContent.",
+      "example": "<Popover defaultOpen>\n  <PopoverAnchor>Report filters</PopoverAnchor>\n  <PopoverContent>Choose the report filters.</PopoverContent>\n</Popover>",
+      "body": "htmdx",
+      "props": [
+        {
+          "name": "asChild",
+          "type": "boolean",
+          "default": false,
+          "description": "Use the single child element as the anchor instead of rendering a wrapper."
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "PopoverContent",
+      "purpose": "Portalled floating panel positioned relative to a PopoverTrigger or PopoverAnchor.",
+      "example": "<Popover defaultOpen>\n  <PopoverTrigger>Open filters</PopoverTrigger>\n  <PopoverContent side=\"bottom\" align=\"start\">Choose the **report filters**.</PopoverContent>\n</Popover>",
+      "body": "htmdx",
+      "props": [
+        {
+          "name": "forceMount",
+          "type": "boolean",
+          "default": false,
+          "description": "Keep the content mounted when closed."
+        },
+        {
+          "name": "side",
+          "type": "string",
+          "values": [
+            "top",
+            "right",
+            "bottom",
+            "left"
+          ],
+          "default": "bottom",
+          "description": "Preferred side of the anchor."
+        },
+        {
+          "name": "sideOffset",
+          "type": "number",
+          "default": 4,
+          "description": "Distance in pixels from the anchor."
+        },
+        {
+          "name": "align",
+          "type": "string",
+          "values": [
+            "start",
+            "center",
+            "end"
+          ],
+          "default": "center",
+          "description": "Content alignment along the anchor."
+        },
+        {
+          "name": "alignOffset",
+          "type": "number",
+          "default": 0,
+          "description": "Alignment shift in pixels."
+        },
+        {
+          "name": "avoidCollisions",
+          "type": "boolean",
+          "default": true,
+          "description": "Shift or flip content to keep it in view."
+        },
+        {
+          "name": "collisionPadding",
+          "type": "number",
+          "default": 0,
+          "min": 0,
+          "description": "Viewport edge padding in pixels."
+        },
+        {
+          "name": "sticky",
+          "type": "string",
+          "values": [
+            "partial",
+            "always"
+          ],
+          "default": "partial",
+          "description": "How content stays aligned when the anchor leaves view."
+        },
+        {
+          "name": "hideWhenDetached",
+          "type": "boolean",
+          "default": false,
+          "description": "Hide content when its anchor is fully clipped."
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "PopoverTrigger",
+      "purpose": "Control inside Popover that opens or closes PopoverContent.",
+      "example": "<Popover>\n  <PopoverTrigger>Open filters</PopoverTrigger>\n  <PopoverContent>Choose the report filters.</PopoverContent>\n</Popover>",
+      "body": "htmdx",
+      "props": [
+        {
+          "name": "asChild",
+          "type": "boolean",
+          "default": false,
+          "description": "Use the single child element as the trigger instead of rendering a button."
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "Progress",
+      "purpose": "Displays determinate progress from 0 to 100.",
+      "example": "<Progress value=\"60\" />",
+      "body": "none",
+      "props": [
+        {
+          "name": "value",
+          "type": "number",
+          "min": 0,
+          "max": 100,
+          "default": 0,
+          "description": "Completed percentage from 0 to 100."
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "Separator",
+      "purpose": "Draws a horizontal or vertical rule between sections.",
+      "example": "<Separator orientation=\"horizontal\" />",
+      "body": "none",
+      "props": [
+        {
+          "name": "orientation",
+          "type": "string",
+          "values": [
+            "horizontal",
+            "vertical"
+          ],
+          "default": "horizontal",
+          "description": "Direction of the dividing rule."
+        },
+        {
+          "name": "decorative",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether assistive tools should ignore the separator."
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "Table",
+      "purpose": "Responsive data table root; compose a caption, header, body, and optional footer inside it.",
+      "example": "<Table><TableCaption>Quarterly revenue</TableCaption><TableHeader><TableRow><TableHead scope=\"col\">Plan</TableHead><TableHead scope=\"col\">MRR</TableHead></TableRow></TableHeader><TableBody><TableRow><TableCell>Pro</TableCell><TableCell>$1,140</TableCell></TableRow></TableBody></Table>",
+      "body": "htmdx",
+      "source": "shadcn"
+    },
+    {
+      "name": "TableBody",
+      "purpose": "Body section of a Table; place data TableRow elements inside it.",
+      "example": "<Table><TableHeader><TableRow><TableHead scope=\"col\">Plan</TableHead></TableRow></TableHeader><TableBody><TableRow><TableCell>Pro</TableCell></TableRow></TableBody></Table>",
+      "body": "htmdx",
+      "source": "shadcn"
+    },
+    {
+      "name": "TableCaption",
+      "purpose": "Accessible caption that names or describes its containing Table.",
+      "example": "<Table><TableCaption>Quarterly revenue by plan</TableCaption><TableBody><TableRow><TableCell>Pro</TableCell></TableRow></TableBody></Table>",
+      "body": "htmdx",
+      "source": "shadcn"
+    },
+    {
+      "name": "TableCell",
+      "purpose": "Data cell inside a TableRow; use spans to cover more than one row or column.",
+      "example": "<Table><TableHeader><TableRow><TableHead id=\"plan\" scope=\"col\">Plan</TableHead><TableHead scope=\"col\">Status</TableHead></TableRow></TableHeader><TableBody><TableRow><TableCell headers=\"plan\">Pro</TableCell><TableCell rowSpan=\"2\">Active</TableCell></TableRow><TableRow><TableCell headers=\"plan\">Business</TableCell></TableRow></TableBody></Table>",
+      "body": "htmdx",
+      "props": [
+        {
+          "name": "colSpan",
+          "type": "number",
+          "min": 1,
+          "max": 1000,
+          "description": "Number of columns this cell spans."
+        },
+        {
+          "name": "rowSpan",
+          "type": "number",
+          "min": 0,
+          "max": 65534,
+          "description": "Number of rows this cell spans; 0 spans all remaining rows in the section."
+        },
+        {
+          "name": "headers",
+          "type": "string",
+          "description": "Space-separated ids of TableHead cells that label this cell."
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "TableFooter",
+      "purpose": "Footer section of a Table for totals or summary rows.",
+      "example": "<Table><TableBody><TableRow><TableCell>Pro</TableCell><TableCell>$1,140</TableCell></TableRow></TableBody><TableFooter><TableRow><TableCell>Total</TableCell><TableCell>$1,140</TableCell></TableRow></TableFooter></Table>",
+      "body": "htmdx",
+      "source": "shadcn"
+    },
+    {
+      "name": "TableHead",
+      "purpose": "Header cell inside a TableRow; use scope to link it to its row, column, or group.",
+      "example": "<Table><TableHeader><TableRow><TableHead scope=\"col\" abbr=\"Plan name\">Plan</TableHead><TableHead scope=\"col\">MRR</TableHead></TableRow></TableHeader><TableBody><TableRow><TableCell>Pro</TableCell><TableCell>$1,140</TableCell></TableRow></TableBody></Table>",
+      "body": "htmdx",
+      "props": [
+        {
+          "name": "colSpan",
+          "type": "number",
+          "min": 1,
+          "max": 1000,
+          "description": "Number of columns this header cell spans."
+        },
+        {
+          "name": "rowSpan",
+          "type": "number",
+          "min": 0,
+          "max": 65534,
+          "description": "Number of rows this header cell spans; 0 spans all remaining rows in the section."
+        },
+        {
+          "name": "headers",
+          "type": "string",
+          "description": "Space-separated ids of other TableHead cells that label this header cell."
+        },
+        {
+          "name": "scope",
+          "type": "string",
+          "values": [
+            "row",
+            "col",
+            "rowgroup",
+            "colgroup"
+          ],
+          "description": "Cells this header labels."
+        },
+        {
+          "name": "abbr",
+          "type": "string",
+          "description": "Short form of the header label."
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "TableHeader",
+      "purpose": "Header section of a Table; place rows of TableHead cells inside it.",
+      "example": "<Table><TableHeader><TableRow><TableHead scope=\"col\">Plan</TableHead><TableHead scope=\"col\">MRR</TableHead></TableRow></TableHeader><TableBody><TableRow><TableCell>Pro</TableCell><TableCell>$1,140</TableCell></TableRow></TableBody></Table>",
+      "body": "htmdx",
+      "source": "shadcn"
+    },
+    {
+      "name": "TableRow",
+      "purpose": "One row inside a TableHeader, TableBody, or TableFooter; fill it with matching cell tags.",
+      "example": "<Table><TableBody><TableRow><TableCell>Pro</TableCell><TableCell>$1,140</TableCell></TableRow></TableBody></Table>",
+      "body": "htmdx",
+      "source": "shadcn"
+    },
+    {
+      "name": "Tabs",
+      "purpose": "Tab group that shows the TabsContent matching the selected TabsTrigger.",
+      "example": "<Tabs defaultValue=\"summary\">\n  <TabsList>\n    <TabsTrigger value=\"summary\">Summary</TabsTrigger>\n    <TabsTrigger value=\"details\">Details</TabsTrigger>\n  </TabsList>\n  <TabsContent value=\"summary\">Summary panel.</TabsContent>\n  <TabsContent value=\"details\">Details panel.</TabsContent>\n</Tabs>",
+      "body": "htmdx",
+      "props": [
+        {
+          "name": "defaultValue",
+          "type": "string",
+          "required": true,
+          "description": "Value of the tab selected when the group first renders."
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "TabsContent",
+      "purpose": "Panel shown when its value matches the selected TabsTrigger.",
+      "example": "<Tabs defaultValue=\"summary\">\n  <TabsList>\n    <TabsTrigger value=\"summary\">Summary</TabsTrigger>\n    <TabsTrigger value=\"details\">Details</TabsTrigger>\n  </TabsList>\n  <TabsContent value=\"summary\">Summary with **key metrics**.</TabsContent>\n  <TabsContent value=\"details\">Details panel.</TabsContent>\n</Tabs>",
+      "body": "htmdx",
+      "props": [
+        {
+          "name": "value",
+          "type": "string",
+          "required": true,
+          "description": "Value that links this panel to its TabsTrigger control."
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "TabsList",
+      "purpose": "Container for the TabsTrigger controls in a Tabs group.",
+      "example": "<Tabs defaultValue=\"summary\">\n  <TabsList>\n    <TabsTrigger value=\"summary\">Summary</TabsTrigger>\n    <TabsTrigger value=\"details\">Details</TabsTrigger>\n  </TabsList>\n  <TabsContent value=\"summary\">Summary panel.</TabsContent>\n  <TabsContent value=\"details\">Details panel.</TabsContent>\n</Tabs>",
+      "body": "htmdx",
+      "source": "shadcn"
+    },
+    {
+      "name": "TabsTrigger",
+      "purpose": "Tab control whose value selects the matching TabsContent.",
+      "example": "<Tabs defaultValue=\"summary\">\n  <TabsList>\n    <TabsTrigger value=\"summary\">Summary</TabsTrigger>\n    <TabsTrigger value=\"details\">Details</TabsTrigger>\n  </TabsList>\n  <TabsContent value=\"summary\">Summary panel.</TabsContent>\n  <TabsContent value=\"details\">Details panel.</TabsContent>\n</Tabs>",
+      "body": "htmdx",
+      "props": [
+        {
+          "name": "value",
+          "type": "string",
+          "required": true,
+          "description": "Value that links this control to its TabsContent panel."
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "Tooltip",
+      "purpose": "State container for a control and a short text label; includes standalone provider wiring.",
+      "example": "<Tooltip>\n  <TooltipTrigger>Report status</TooltipTrigger>\n  <TooltipContent>Published yesterday</TooltipContent>\n</Tooltip>",
+      "body": "htmdx",
+      "props": [
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the tooltip starts open."
+        },
+        {
+          "name": "delayDuration",
+          "type": "number",
+          "default": 0,
+          "min": 0,
+          "description": "Milliseconds to wait before opening this tooltip."
+        },
+        {
+          "name": "disableHoverableContent",
+          "type": "boolean",
+          "default": false,
+          "description": "Close when the pointer leaves the trigger instead of allowing hover over content."
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "TooltipContent",
+      "purpose": "Portalled short label positioned relative to its TooltipTrigger.",
+      "example": "<Tooltip>\n  <TooltipTrigger>Report status</TooltipTrigger>\n  <TooltipContent side=\"top\" align=\"center\">Published **yesterday**</TooltipContent>\n</Tooltip>",
+      "body": "htmdx",
+      "props": [
+        {
+          "name": "forceMount",
+          "type": "boolean",
+          "default": false,
+          "description": "Keep the content mounted when closed."
+        },
+        {
+          "name": "side",
+          "type": "string",
+          "values": [
+            "top",
+            "right",
+            "bottom",
+            "left"
+          ],
+          "default": "top",
+          "description": "Preferred side of the trigger."
+        },
+        {
+          "name": "sideOffset",
+          "type": "number",
+          "default": 0,
+          "description": "Distance in pixels from the trigger."
+        },
+        {
+          "name": "align",
+          "type": "string",
+          "values": [
+            "start",
+            "center",
+            "end"
+          ],
+          "default": "center",
+          "description": "Content alignment along the trigger."
+        },
+        {
+          "name": "alignOffset",
+          "type": "number",
+          "default": 0,
+          "description": "Alignment shift in pixels."
+        },
+        {
+          "name": "avoidCollisions",
+          "type": "boolean",
+          "default": true,
+          "description": "Shift or flip content to keep it in view."
+        },
+        {
+          "name": "collisionPadding",
+          "type": "number",
+          "default": 0,
+          "min": 0,
+          "description": "Viewport edge padding in pixels."
+        },
+        {
+          "name": "sticky",
+          "type": "string",
+          "values": [
+            "partial",
+            "always"
+          ],
+          "default": "partial",
+          "description": "How content stays aligned when the trigger leaves view."
+        },
+        {
+          "name": "hideWhenDetached",
+          "type": "boolean",
+          "default": false,
+          "description": "Hide content when its trigger is fully clipped."
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "TooltipProvider",
+      "purpose": "Shared timing and pointer-behavior settings for one or more nested Tooltip components.",
+      "example": "<TooltipProvider delayDuration=\"200\" skipDelayDuration=\"100\">\n  <Tooltip>\n    <TooltipTrigger>Report status</TooltipTrigger>\n    <TooltipContent>Published yesterday</TooltipContent>\n  </Tooltip>\n</TooltipProvider>",
+      "body": "htmdx",
+      "props": [
+        {
+          "name": "delayDuration",
+          "type": "number",
+          "default": 0,
+          "min": 0,
+          "description": "Milliseconds to wait before opening a tooltip."
+        },
+        {
+          "name": "skipDelayDuration",
+          "type": "number",
+          "default": 300,
+          "min": 0,
+          "description": "Grace period for moving between tooltip triggers without another delay."
+        },
+        {
+          "name": "disableHoverableContent",
+          "type": "boolean",
+          "default": false,
+          "description": "Close when the pointer leaves a trigger instead of allowing hover over content."
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "TooltipTrigger",
+      "purpose": "Control inside Tooltip whose pointer or focus state reveals TooltipContent.",
+      "example": "<Tooltip>\n  <TooltipTrigger>Report status</TooltipTrigger>\n  <TooltipContent>Published yesterday</TooltipContent>\n</Tooltip>",
+      "body": "htmdx",
+      "props": [
+        {
+          "name": "asChild",
+          "type": "boolean",
+          "default": false,
+          "description": "Use the single child element as the trigger instead of rendering a button."
+        }
+      ],
+      "source": "shadcn"
+    }
+  ]
+}

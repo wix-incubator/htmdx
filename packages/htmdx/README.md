@@ -1,6 +1,6 @@
 # @wix/htmdx
 
-Render editable MDX-like source inside a plain HTML file. HTMDX is built for artifacts that should be easy for people to view and easy for agents to edit.
+Render editable MDX-like source inside a plain HTML file. `@wix/htmdx@4.0.0` uses one component definition model for Built-ins, shadcn, and host extensions. HTMDX is built for artifacts that should be easy for people to view and easy for agents to edit.
 
 **Live examples:** [examples index](https://wix-incubator.github.io/htmdx/) · [decision brief](https://wix-incubator.github.io/htmdx/decision-brief.html) · [component tour](https://wix-incubator.github.io/htmdx/component-tour.html) · [Storybook](https://wix-incubator.github.io/htmdx/storybook/) — every page is itself an htmdx artifact; view source to see what an agent edits.
 
@@ -11,10 +11,7 @@ Start with one HTML file:
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <script
-      src="https://cdn.jsdelivr.net/npm/@wix/htmdx@<exact-version>/dist/browser.js"
-      defer
-    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@4.0.0/dist/browser.js" defer></script>
   </head>
   <body>
     <!-- prettier-ignore -->
@@ -50,17 +47,21 @@ CDN caveats:
 Every release includes its machine-readable component contract at:
 
 ```text
-https://cdn.jsdelivr.net/npm/@wix/htmdx@<exact-version>/dist/components.json
+https://cdn.jsdelivr.net/npm/@wix/htmdx@4.0.0/dist/components.json
 ```
 
-Use the same exact version as the artifact's runtime URL. The manifest lists
-the full runtime catalog — built-ins plus the shadcn/ui pack, each entry
-tagged with its `source`, props (with allowed values), and an example.
+Use the same exact version as the artifact's runtime URL. The `htmdx@2`
+manifest lists the full runtime catalog — Built-ins plus the shadcn/ui pack,
+each entry tagged with its `source`, body mode, prop schema, and canonical
+example. It projects this data from the same definitions used by the runtime;
+the executable `Component` field does not appear in JSON.
 
 Each manifest entry declares `body: "markdown" | "htmdx" | "none"`.
 `markdown` passes raw Markdown to the component and rejects nested tags;
-`htmdx` accepts Markdown, HTML, and nested registered component tags; `none`
-accepts only an empty or self-closing tag. A Built-in's `purpose` and `example`
+Built-ins use this mode. `htmdx` accepts Markdown, HTML, and nested registered
+component tags; shadcn and external definitions use it when they support
+composition. `none` accepts only an empty or self-closing tag. A Built-in's
+`purpose` and `example`
 describe any stricter list or table grammar it checks. Invalid bodies fail the
 whole compile, and browser hosts show the error with the raw source. Imports,
 exports, brace expressions, event handlers, and function-valued props cannot

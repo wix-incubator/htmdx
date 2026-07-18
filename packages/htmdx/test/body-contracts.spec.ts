@@ -103,8 +103,8 @@ describe('component body contracts', () => {
     ['import data from "./data.js"', 'import statements are not allowed'],
     ['export const value = 1', 'export statements are not allowed'],
     ['Hello {name}', 'MDX expressions are not allowed'],
-    ['<Card>nested</Card>', 'nested JSX is not allowed'],
-    ['<>fragment</>', 'nested JSX is not allowed'],
+    ['<Card>nested</Card>', 'nested component tags are not allowed'],
+    ['<>fragment</>', 'nested component tags are not allowed'],
   ])('rejects global body violation in %j', (body, violation) => {
     expect(() => parseComponentBody('Callout', 'markdown', body)).toThrow(
       new RegExp(`Invalid body for <Callout>.*${violation}.*expected`),

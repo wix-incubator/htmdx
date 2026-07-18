@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>htmdx — component tour</title>
-    <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@3.0.0/dist/browser.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@4.0.0/dist/browser.js" defer></script>
   </head>
   <body>
     <!-- prettier-ignore -->
@@ -22,9 +22,17 @@ Summarize the artifact's most important conclusion — this block is the
 </ExecutiveSummary>
 
 <Callout>
-**Callout** emphasizes a note or warning. Markdown bodies compose: here is a
-shadcn <Badge variant="secondary">Badge</Badge> inside it.
+**Callout** emphasizes a note or warning. Its Markdown body supports prose,
+but rejects nested component tags.
 </Callout>
+
+Shadcn bodies use composable HTMDX instead. This Card nests a Badge:
+
+<Card class="max-w-xl">
+  <CardContent>
+    Release contract <Badge variant="secondary">verified</Badge>
+  </CardContent>
+</Card>
 
 <SourceQuote>
 "SourceQuote displays a quotation attributed in the surrounding content."
@@ -35,7 +43,7 @@ shadcn <Badge variant="secondary">Badge</Badge> inside it.
 <MetricStrip>
 - Format: **HTML**
 - Source: **HTMDX**
-- Components: **85**
+- Components: **87**
 - Eval: **none**
 </MetricStrip>
 

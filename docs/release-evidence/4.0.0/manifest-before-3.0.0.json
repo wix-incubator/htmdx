@@ -1,0 +1,626 @@
+{
+  "format": "htmdx-react@1",
+  "runtime": "@wix/htmdx@3.0.0",
+  "note": "This manifest lists the components in the htmdx React runtime (dist/browser.js and the module entries): the built-in catalog plus the shadcn/ui pack. shadcn components allow nested composition and markdown bodies; builtin components keep their declared body format. Attributes are data only: class -> className, kebab-case -> camelCase, values parse as booleans/numbers/JSON. Imports, expressions, and function-valued props cannot be expressed.",
+  "components": [
+    {
+      "name": "ExecutiveSummary",
+      "purpose": "Summarize the artifact’s most important conclusion or recommendation.",
+      "example": "<ExecutiveSummary>\nShip **one HTML file** with editable HTMDX source.\n</ExecutiveSummary>",
+      "body": "markdown",
+      "source": "builtin"
+    },
+    {
+      "name": "Callout",
+      "purpose": "Emphasize an important note, warning, or takeaway.",
+      "example": "<Callout>\n**Important:** Validate the artifact before publishing.\n</Callout>",
+      "body": "markdown",
+      "source": "builtin"
+    },
+    {
+      "name": "SourceQuote",
+      "purpose": "Display a quotation or excerpt attributed in the surrounding content.",
+      "example": "<SourceQuote>\n“Artifacts should remain editable.”\n</SourceQuote>",
+      "body": "markdown",
+      "source": "builtin"
+    },
+    {
+      "name": "MetricStrip",
+      "purpose": "Show a compact set of labeled headline values. A leading trend glyph (↑ up/green, ↓ down/red, ⊘ guardrail/amber) is colored automatically; an ` — ` or ` · ` in the value renders the remainder as a muted caption.",
+      "example": "<MetricStrip>\n- ↑ Active stores using upload: **baseline 0** — post-launch adopter cohort\n- ↓ File-upload support tickets: **55** · 3 months post-launch\n- ⊘ Buyer checkout-completion rate: **guardrail** — hold at or above baseline\n</MetricStrip>",
+      "body": "label-value-list",
+      "source": "builtin"
+    },
+    {
+      "name": "Stat",
+      "purpose": "Highlight one or more labeled statistics.",
+      "example": "<Stat>\n- Adoption: **72%**\n</Stat>",
+      "body": "label-value-list",
+      "source": "builtin"
+    },
+    {
+      "name": "ChartBar",
+      "purpose": "Compare non-negative numeric values with a bar chart.",
+      "example": "<ChartBar>\n- Free users: 48\n- Paid users: 12\n</ChartBar>",
+      "body": "label-number-list",
+      "source": "builtin"
+    },
+    {
+      "name": "ChartArea",
+      "purpose": "Compare non-negative numeric values; currently rendered with the shared bar-chart visualization.",
+      "example": "<ChartArea>\n- January: 18\n- February: 27\n</ChartArea>",
+      "body": "label-number-list",
+      "source": "builtin"
+    },
+    {
+      "name": "ChartLine",
+      "purpose": "Compare non-negative numeric values; currently rendered with the shared bar-chart visualization.",
+      "example": "<ChartLine>\n- Week 1: 8\n- Week 2: 13\n</ChartLine>",
+      "body": "label-number-list",
+      "source": "builtin"
+    },
+    {
+      "name": "ChartPie",
+      "purpose": "Compare non-negative numeric values; currently rendered with the shared bar-chart visualization.",
+      "example": "<ChartPie>\n- Direct: 62\n- Referral: 38\n</ChartPie>",
+      "body": "label-number-list",
+      "source": "builtin"
+    },
+    {
+      "name": "DataTable",
+      "purpose": "Display structured records in rows and columns.",
+      "example": "<DataTable>\n| Plan | Users |\n| --- | ---: |\n| Free | 48 |\n| Pro | 12 |\n</DataTable>",
+      "body": "gfm-table",
+      "source": "builtin"
+    },
+    {
+      "name": "Compare",
+      "purpose": "Place alternatives or contrasting concepts side by side.",
+      "example": "<Compare>\n- **Current:** Manual component discovery\n- **Proposed:** Versioned manifest\n</Compare>",
+      "body": "markdown-list-cards",
+      "source": "builtin"
+    },
+    {
+      "name": "Finding",
+      "purpose": "Present key findings as a scannable list.",
+      "example": "<Finding>\n- **Drift:** Runtime support is not machine-discoverable.\n</Finding>",
+      "body": "markdown-list-cards",
+      "source": "builtin"
+    },
+    {
+      "name": "Evidence",
+      "purpose": "List evidence that supports the surrounding analysis.",
+      "example": "<Evidence>\n- **Runtime:** The allowlist currently lives in implementation code.\n</Evidence>",
+      "body": "markdown-list-cards",
+      "source": "builtin"
+    },
+    {
+      "name": "Sources",
+      "purpose": "Show the research artifacts a section draws on as a row of provenance pills (each prefixed with ↗). A **bold** item renders as the highlighted current-artifact pill.",
+      "example": "<Sources>\n- Data Analysis\n- User Voice\n- **Product Strategy**\n</Sources>",
+      "body": "markdown-list-cards",
+      "source": "builtin"
+    },
+    {
+      "name": "Audience",
+      "purpose": "Target-audience segments: the Primary segment renders as a wide tinted hero card with a metric row, the rest as a secondary grid. Item title is `Persona — Type` (Type: Primary | Secondary | Secondary · Risk); the text is `Description · metrics: value — caption; … · priority: High|Medium|Unmeasured`.",
+      "example": "<Audience>\n- **Self-Creator · Custom Goods Merchant — Primary:** Sells made-to-order products and needs a file from the shopper at purchase. · metrics: ~19.8K — stores above $50K GPV; 4.85% — of ~408K active stores · priority: High\n- **Partner / Freelancer — Secondary:** Hits the upload gap on every relevant client build. · priority: Medium\n</Audience>",
+      "body": "markdown-list-cards",
+      "source": "builtin"
+    },
+    {
+      "name": "IntentList",
+      "purpose": "Group user intents by priority (Blocker/Critical/Nice to have) with a persona · type header, the intent quote, and current → expected feeling chips (red → green). Each item title is `#id · Priority · Persona · Type`; the text is the quote followed by `negative, negative → positive, positive`. Append an optional `· note: …` to flag an intent with a caution strip (e.g. a guardrail) inside its card.",
+      "example": "<IntentList>\n- **#int-001 · Blocker · Self-Creator · Main intent:** \"I want to collect a shopper's file at purchase, so the attachment is tied to the order.\" — frustrated, resigned → in control, relieved\n- **#int-001 · Critical · Shopper · Main intent:** \"I want to attach my file while buying, so the seller gets exactly what I mean.\" — uncertain, friction → understood, reassured · note: Required-upload step is an unmeasured conversion risk — guardrail KPI required at launch\n</IntentList>",
+      "body": "markdown-list-cards",
+      "source": "builtin"
+    },
+    {
+      "name": "SignalGrid",
+      "purpose": "A grid of category cards with a colored top accent — for Why-Now signals or a Problem / Root cause / Opportunity trio. Item title is `Category | tone` (tone: blue/green/amber/red/gray/purple); the text is an optional `Headline — ` followed by the body.",
+      "example": "<SignalGrid>\n- **User pain · Escalated | red:** Paying for a workaround — merchants pay $14–60/mo and escalate to support.\n- **Competitive gap | amber:** 4 of 6 native competitors ship upload — Wix does not.\n</SignalGrid>",
+      "body": "markdown-list-cards",
+      "source": "builtin"
+    },
+    {
+      "name": "DecisionMatrix",
+      "purpose": "Compare solution options as columns against criteria as rows. The header lists options (first cell is the criteria corner); put a ✓ in the chosen option header to highlight its column and badge it \"Chosen\". A cell may lead with `[green]`/`[amber]`/`[red]` to show a colored effort dot.",
+      "example": "<DecisionMatrix>\n| Criterion | A — Text workaround | B — Native FILE_UPLOAD ✓ | C — Partner app |\n| --- | --- | --- | --- |\n| User fit | Partial | [green] Fully solves the intent | Partial |\n| Build effort | [green] Low | [amber] Medium | [red] High |\n</DecisionMatrix>",
+      "body": "gfm-table",
+      "source": "builtin"
+    },
+    {
+      "name": "OpenQuestions",
+      "purpose": "An amber-framed panel of open questions and assumptions, each row carrying a labeled badge. Item title is the label (Assumption = blue, Risk = red, Open = amber); the text is the note.",
+      "example": "<OpenQuestions>\n- **Assumption:** FILE_UPLOAD render type on the Catalog V3 Modifier mechanism. To be confirmed in spec.\n- **Risk:** Required-before-add-to-cart carries an unmeasured buyer-conversion risk. Guardrail KPI at launch.\n- **Open:** Order-carriage path and buyer-file retention policy are deferred to spec.\n</OpenQuestions>",
+      "body": "markdown-list-cards",
+      "source": "builtin"
+    },
+    {
+      "name": "RiskTable",
+      "purpose": "Classify priorities using the canonical product-planning tiers.",
+      "example": "<RiskTable>\n- **Must-have:** Publish exact-version metadata.\n- **Not now:** Describe host components.\n</RiskTable>",
+      "body": "markdown-list-cards",
+      "source": "builtin"
+    },
+    {
+      "name": "DecisionTable",
+      "purpose": "Present decision criteria and their corresponding outcomes.",
+      "example": "<DecisionTable>\n- Scope: Built-in components only\n- Delivery: Versioned manifest\n</DecisionTable>",
+      "body": "label-value-list",
+      "source": "builtin"
+    },
+    {
+      "name": "Timeline",
+      "purpose": "Describe milestones as labeled points in time.",
+      "example": "<Timeline>\n- July: Publish the manifest\n- August: Adopt it in validators\n</Timeline>",
+      "body": "label-value-list",
+      "source": "builtin"
+    },
+    {
+      "name": "Card",
+      "purpose": "Container for a self-contained block of content.",
+      "example": "<Card>\n  <CardHeader>\n    <CardTitle>Revenue</CardTitle>\n    <CardDescription>Quarterly numbers</CardDescription>\n  </CardHeader>\n  <CardContent>\nGrew **12%** quarter over quarter.\n  </CardContent>\n  <CardFooter>\n    <Button variant=\"outline\" size=\"sm\">Details</Button>\n  </CardFooter>\n</Card>",
+      "source": "shadcn"
+    },
+    {
+      "name": "CardHeader",
+      "purpose": "Header area of a Card; holds CardTitle and CardDescription.",
+      "source": "shadcn"
+    },
+    {
+      "name": "CardTitle",
+      "purpose": "Title line inside CardHeader.",
+      "source": "shadcn"
+    },
+    {
+      "name": "CardDescription",
+      "purpose": "Muted description line inside CardHeader.",
+      "source": "shadcn"
+    },
+    {
+      "name": "CardAction",
+      "purpose": "Action slot aligned to the end of CardHeader.",
+      "source": "shadcn"
+    },
+    {
+      "name": "CardContent",
+      "purpose": "Main body of a Card; markdown and components allowed.",
+      "source": "shadcn"
+    },
+    {
+      "name": "CardFooter",
+      "purpose": "Footer row of a Card, usually Buttons or Badges.",
+      "source": "shadcn"
+    },
+    {
+      "name": "Badge",
+      "purpose": "Small status or label chip.",
+      "props": [
+        {
+          "name": "variant",
+          "values": [
+            "default",
+            "secondary",
+            "destructive",
+            "outline"
+          ]
+        }
+      ],
+      "example": "<Badge variant=\"secondary\">audited</Badge>",
+      "source": "shadcn"
+    },
+    {
+      "name": "Button",
+      "purpose": "Button-styled element. Inert in artifacts: function props cannot be expressed.",
+      "props": [
+        {
+          "name": "variant",
+          "values": [
+            "default",
+            "destructive",
+            "outline",
+            "secondary",
+            "ghost",
+            "link"
+          ]
+        },
+        {
+          "name": "size",
+          "values": [
+            "default",
+            "sm",
+            "lg",
+            "icon"
+          ]
+        }
+      ],
+      "example": "<Button variant=\"outline\" size=\"sm\">Download</Button>",
+      "source": "shadcn"
+    },
+    {
+      "name": "Tabs",
+      "purpose": "Interactive tab group; state lives inside the component.",
+      "props": [
+        {
+          "name": "defaultValue",
+          "required": true,
+          "description": "value of the initially active tab"
+        }
+      ],
+      "example": "<Tabs defaultValue=\"a\">\n  <TabsList>\n    <TabsTrigger value=\"a\">First</TabsTrigger>\n    <TabsTrigger value=\"b\">Second</TabsTrigger>\n  </TabsList>\n  <TabsContent value=\"a\">First panel.</TabsContent>\n  <TabsContent value=\"b\">Second panel.</TabsContent>\n</Tabs>",
+      "source": "shadcn"
+    },
+    {
+      "name": "TabsList",
+      "purpose": "Row of TabsTrigger elements inside Tabs.",
+      "source": "shadcn"
+    },
+    {
+      "name": "TabsTrigger",
+      "purpose": "Clickable tab label.",
+      "props": [
+        {
+          "name": "value",
+          "required": true
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "TabsContent",
+      "purpose": "Panel shown when its value matches the active tab.",
+      "props": [
+        {
+          "name": "value",
+          "required": true
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "Accordion",
+      "purpose": "Expandable sections; state lives inside the component.",
+      "props": [
+        {
+          "name": "type",
+          "values": [
+            "single",
+            "multiple"
+          ],
+          "required": true
+        },
+        {
+          "name": "collapsible",
+          "description": "bare attribute; allows closing the open item"
+        }
+      ],
+      "example": "<Accordion type=\"single\" collapsible>\n  <AccordionItem value=\"risks\">\n    <AccordionTrigger>Key risks</AccordionTrigger>\n    <AccordionContent>Vendor lock-in.</AccordionContent>\n  </AccordionItem>\n</Accordion>",
+      "source": "shadcn"
+    },
+    {
+      "name": "AccordionItem",
+      "purpose": "One expandable section inside Accordion.",
+      "props": [
+        {
+          "name": "value",
+          "required": true
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "AccordionTrigger",
+      "purpose": "Clickable header that toggles its AccordionItem.",
+      "source": "shadcn"
+    },
+    {
+      "name": "AccordionContent",
+      "purpose": "Body revealed when the AccordionItem is open.",
+      "source": "shadcn"
+    },
+    {
+      "name": "Alert",
+      "purpose": "Callout banner for a titled note or warning. Display-only.",
+      "props": [
+        {
+          "name": "variant",
+          "values": [
+            "default",
+            "destructive"
+          ]
+        }
+      ],
+      "example": "<Alert>\n  <AlertTitle>Heads up</AlertTitle>\n  <AlertDescription>This artifact is display-only.</AlertDescription>\n</Alert>",
+      "source": "shadcn"
+    },
+    {
+      "name": "AlertTitle",
+      "purpose": "Bold title line inside an Alert.",
+      "source": "shadcn"
+    },
+    {
+      "name": "AlertDescription",
+      "purpose": "Body text inside an Alert.",
+      "source": "shadcn"
+    },
+    {
+      "name": "AspectRatio",
+      "purpose": "Locks its child to a fixed width:height ratio. Display-only.",
+      "props": [
+        {
+          "name": "ratio",
+          "description": "number, e.g. 1.7778 for 16:9"
+        }
+      ],
+      "example": "<AspectRatio ratio=\"1.7778\">\n  <img src=\"https://images.unsplash.com/photo-1535025183041-0991a977e25b\" alt=\"cover\" />\n</AspectRatio>",
+      "source": "shadcn"
+    },
+    {
+      "name": "Avatar",
+      "purpose": "Round avatar container; holds AvatarImage and AvatarFallback. Display-only.",
+      "example": "<Avatar>\n  <AvatarImage src=\"https://github.com/shadcn.png\" alt=\"shadcn\" />\n  <AvatarFallback>CN</AvatarFallback>\n</Avatar>",
+      "source": "shadcn"
+    },
+    {
+      "name": "AvatarImage",
+      "purpose": "Avatar photo; falls back to AvatarFallback when it fails to load.",
+      "props": [
+        {
+          "name": "src",
+          "required": true
+        },
+        {
+          "name": "alt"
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "AvatarFallback",
+      "purpose": "Initials or icon shown when AvatarImage is unavailable.",
+      "source": "shadcn"
+    },
+    {
+      "name": "Breadcrumb",
+      "purpose": "Breadcrumb navigation trail. Display-only.",
+      "example": "<Breadcrumb>\n  <BreadcrumbList>\n    <BreadcrumbItem>\n      <BreadcrumbLink href=\"/\">Home</BreadcrumbLink>\n    </BreadcrumbItem>\n    <BreadcrumbSeparator />\n    <BreadcrumbItem>\n      <BreadcrumbPage>Reports</BreadcrumbPage>\n    </BreadcrumbItem>\n  </BreadcrumbList>\n</Breadcrumb>",
+      "source": "shadcn"
+    },
+    {
+      "name": "BreadcrumbList",
+      "purpose": "Ordered-list wrapper for breadcrumb items.",
+      "source": "shadcn"
+    },
+    {
+      "name": "BreadcrumbItem",
+      "purpose": "One entry in the breadcrumb trail.",
+      "source": "shadcn"
+    },
+    {
+      "name": "BreadcrumbLink",
+      "purpose": "Linked breadcrumb entry.",
+      "props": [
+        {
+          "name": "href",
+          "required": true
+        }
+      ],
+      "source": "shadcn"
+    },
+    {
+      "name": "BreadcrumbPage",
+      "purpose": "Current-page breadcrumb entry (not a link).",
+      "source": "shadcn"
+    },
+    {
+      "name": "BreadcrumbSeparator",
+      "purpose": "Chevron between breadcrumb items.",
+      "source": "shadcn"
+    },
+    {
+      "name": "BreadcrumbEllipsis",
+      "purpose": "Collapsed-items indicator in a breadcrumb.",
+      "source": "shadcn"
+    },
+    {
+      "name": "Collapsible",
+      "purpose": "Single expandable region toggled by CollapsibleTrigger; state lives inside.",
+      "props": [
+        {
+          "name": "defaultOpen",
+          "description": "defaultOpen=\"true\" starts expanded"
+        }
+      ],
+      "example": "<Collapsible>\n  <CollapsibleTrigger>\n    <Button variant=\"outline\">Toggle details</Button>\n  </CollapsibleTrigger>\n  <CollapsibleContent>Hidden until expanded.</CollapsibleContent>\n</Collapsible>",
+      "source": "shadcn"
+    },
+    {
+      "name": "CollapsibleTrigger",
+      "purpose": "Element that expands/collapses the CollapsibleContent.",
+      "source": "shadcn"
+    },
+    {
+      "name": "CollapsibleContent",
+      "purpose": "Region shown when the Collapsible is open.",
+      "source": "shadcn"
+    },
+    {
+      "name": "Dialog",
+      "purpose": "Modal dialog opened by DialogTrigger; content renders in a portal over an overlay.",
+      "example": "<Dialog>\n  <DialogTrigger>\n    <Button variant=\"outline\">Open dialog</Button>\n  </DialogTrigger>\n  <DialogContent>\n    <DialogHeader>\n      <DialogTitle>Confirm</DialogTitle>\n      <DialogDescription>This is a real modal.</DialogDescription>\n    </DialogHeader>\n    <DialogFooter>\n      <DialogClose>\n        <Button variant=\"outline\">Close</Button>\n      </DialogClose>\n    </DialogFooter>\n  </DialogContent>\n</Dialog>",
+      "source": "shadcn"
+    },
+    {
+      "name": "DialogTrigger",
+      "purpose": "Element that opens the Dialog on click.",
+      "source": "shadcn"
+    },
+    {
+      "name": "DialogContent",
+      "purpose": "Modal surface (portalled) holding header, body, and footer.",
+      "source": "shadcn"
+    },
+    {
+      "name": "DialogHeader",
+      "purpose": "Top area of DialogContent; holds title and description.",
+      "source": "shadcn"
+    },
+    {
+      "name": "DialogFooter",
+      "purpose": "Bottom action row of DialogContent.",
+      "source": "shadcn"
+    },
+    {
+      "name": "DialogTitle",
+      "purpose": "Accessible title of the Dialog.",
+      "source": "shadcn"
+    },
+    {
+      "name": "DialogDescription",
+      "purpose": "Muted description under the DialogTitle.",
+      "source": "shadcn"
+    },
+    {
+      "name": "DialogClose",
+      "purpose": "Element that closes the Dialog on click.",
+      "source": "shadcn"
+    },
+    {
+      "name": "DialogOverlay",
+      "purpose": "Dimmed backdrop behind the Dialog; rendered automatically by DialogContent.",
+      "source": "shadcn"
+    },
+    {
+      "name": "DialogPortal",
+      "purpose": "Portal host for Dialog layers; used internally by DialogContent.",
+      "source": "shadcn"
+    },
+    {
+      "name": "HoverCard",
+      "purpose": "Rich card revealed on hover of HoverCardTrigger.",
+      "example": "<HoverCard>\n  <HoverCardTrigger>\n    <Button variant=\"link\">@shadcn</Button>\n  </HoverCardTrigger>\n  <HoverCardContent>Preview shown on hover.</HoverCardContent>\n</HoverCard>",
+      "source": "shadcn"
+    },
+    {
+      "name": "HoverCardTrigger",
+      "purpose": "Element that opens the HoverCardContent on hover.",
+      "source": "shadcn"
+    },
+    {
+      "name": "HoverCardContent",
+      "purpose": "Floating card body, portalled to the document.",
+      "source": "shadcn"
+    },
+    {
+      "name": "Popover",
+      "purpose": "Click-triggered floating panel; state lives inside.",
+      "example": "<Popover>\n  <PopoverTrigger>\n    <Button variant=\"outline\">Open</Button>\n  </PopoverTrigger>\n  <PopoverContent>Panel content in a portal.</PopoverContent>\n</Popover>",
+      "source": "shadcn"
+    },
+    {
+      "name": "PopoverTrigger",
+      "purpose": "Element that toggles the PopoverContent on click.",
+      "source": "shadcn"
+    },
+    {
+      "name": "PopoverContent",
+      "purpose": "Floating panel body, portalled to the document.",
+      "source": "shadcn"
+    },
+    {
+      "name": "PopoverAnchor",
+      "purpose": "Optional custom positioning anchor for PopoverContent.",
+      "source": "shadcn"
+    },
+    {
+      "name": "Progress",
+      "purpose": "Determinate progress bar. Display-only.",
+      "props": [
+        {
+          "name": "value",
+          "description": "number 0-100"
+        }
+      ],
+      "example": "<Progress value=\"60\" />",
+      "source": "shadcn"
+    },
+    {
+      "name": "Separator",
+      "purpose": "Thin dividing rule between sections. Display-only.",
+      "props": [
+        {
+          "name": "orientation",
+          "values": [
+            "horizontal",
+            "vertical"
+          ]
+        }
+      ],
+      "example": "<Separator orientation=\"horizontal\" />",
+      "source": "shadcn"
+    },
+    {
+      "name": "Table",
+      "purpose": "Data table root; wrap TableHeader/TableBody rows. Display-only.",
+      "example": "<Table>\n  <TableCaption>Quarterly revenue</TableCaption>\n  <TableHeader>\n    <TableRow>\n      <TableHead>Plan</TableHead>\n      <TableHead>MRR</TableHead>\n    </TableRow>\n  </TableHeader>\n  <TableBody>\n    <TableRow>\n      <TableCell>Pro</TableCell>\n      <TableCell>$1,140</TableCell>\n    </TableRow>\n  </TableBody>\n</Table>",
+      "source": "shadcn"
+    },
+    {
+      "name": "TableHeader",
+      "purpose": "Header section (thead) of a Table.",
+      "source": "shadcn"
+    },
+    {
+      "name": "TableBody",
+      "purpose": "Body section (tbody) holding data rows.",
+      "source": "shadcn"
+    },
+    {
+      "name": "TableFooter",
+      "purpose": "Footer section (tfoot), usually totals.",
+      "source": "shadcn"
+    },
+    {
+      "name": "TableRow",
+      "purpose": "One row (tr) inside a Table section.",
+      "source": "shadcn"
+    },
+    {
+      "name": "TableHead",
+      "purpose": "Header cell (th) inside a TableRow.",
+      "source": "shadcn"
+    },
+    {
+      "name": "TableCell",
+      "purpose": "Data cell (td) inside a TableRow.",
+      "source": "shadcn"
+    },
+    {
+      "name": "TableCaption",
+      "purpose": "Caption line rendered under the Table.",
+      "source": "shadcn"
+    },
+    {
+      "name": "Tooltip",
+      "purpose": "Hover tooltip; wraps its own provider so it works standalone. Shows on hover of TooltipTrigger.",
+      "example": "<Tooltip>\n  <TooltipTrigger>\n    <Button variant=\"outline\">Hover me</Button>\n  </TooltipTrigger>\n  <TooltipContent>Extra context on hover.</TooltipContent>\n</Tooltip>",
+      "source": "shadcn"
+    },
+    {
+      "name": "TooltipTrigger",
+      "purpose": "Element that reveals the TooltipContent on hover/focus.",
+      "source": "shadcn"
+    },
+    {
+      "name": "TooltipContent",
+      "purpose": "Floating tooltip body, portalled to the document.",
+      "source": "shadcn"
+    },
+    {
+      "name": "TooltipProvider",
+      "purpose": "Optional shared tooltip config wrapper; Tooltip includes one by default.",
+      "source": "shadcn"
+    }
+  ]
+}

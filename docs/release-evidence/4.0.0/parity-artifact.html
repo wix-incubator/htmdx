@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HTMDX 4.0 rendering parity</title>
+    <script src="./browser.js" defer></script>
+  </head>
+  <body>
+    <!-- prettier-ignore -->
+    <script type="text/htmdx">
+---
+title: Release parity
+project: HTMDX 4.0
+owner: Runtime team
+phase: Review
+updated: 2026-07-18
+theme: teal
+---
+
+# Release parity
+
+<ExecutiveSummary>
+The component contract changed while valid Built-in and shadcn output kept its intended presentation.
+</ExecutiveSummary>
+
+## Built-ins
+
+<Callout>
+**Markdown body:** report prose stays clear, compact, and easy to scan.
+</Callout>
+
+<MetricStrip>
+- Catalog: **87 definitions**
+- Manifest: **htmdx@2**
+- Runtime: **4.0.0**
+</MetricStrip>
+
+## shadcn HTMDX composition
+
+<Card class="max-w-xl">
+  <CardHeader>
+    <CardTitle>Definition-driven release</CardTitle>
+    <CardDescription>Composable HTMDX remains available in shadcn bodies.</CardDescription>
+  </CardHeader>
+  <CardContent>
+    The same source nests a <Badge variant="secondary">verified Badge</Badge> in Card content.
+  </CardContent>
+  <CardFooter>
+    <Button size="sm">Review complete</Button>
+  </CardFooter>
+</Card>
+    </script>
+  </body>
+</html>

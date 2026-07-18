@@ -4,6 +4,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import terser from '@rollup/plugin-terser';
 import typescript from '@rollup/plugin-typescript';
 import { defineConfig } from 'rollup';
+import { JSDOM } from 'jsdom';
+import { validateCanonicalExamples } from './build/canonical-example-validation.js';
 import { packageVersionPlugin } from './build/package-version-plugin.js';
 
 const packageDirectory = dirname(fileURLToPath(import.meta.url));
@@ -38,7 +40,26 @@ function emitComponentManifest(targetFile) {
     async writeBundle(outputOptions) {
       const outputFile = resolve(packageDirectory, outputOptions.file);
       const moduleUrl = `${pathToFileURL(outputFile).href}?version=${packageVersion}`;
-      const { default: manifest } = await import(moduleUrl);
+      const { canonicalExamples, default: manifest } = await import(moduleUrl);
+      const dom = new JSDOM(undefined, { pretendToBeVisual: true });
+      Object.assign(globalThis, {
+        window: dom.window,
+        document: dom.window.document,
+        Node: dom.window.Node,
+        Element: dom.window.Element,
+        HTMLElement: dom.window.HTMLElement,
+        HTMLTemplateElement: dom.window.HTMLTemplateElement,
+        DOMParser: dom.window.DOMParser,
+        CustomEvent: dom.window.CustomEvent,
+        customElements: dom.window.customElements,
+        requestAnimationFrame: dom.window.requestAnimationFrame.bind(dom.window),
+        cancelAnimationFrame: dom.window.cancelAnimationFrame.bind(dom.window),
+        getComputedStyle: dom.window.getComputedStyle.bind(dom.window),
+        MutationObserver: dom.window.MutationObserver,
+      });
+      const runtimeUrl = `${pathToFileURL(resolve(packageDirectory, 'dist/index.js')).href}?validation=${packageVersion}`;
+      const { compile } = await import(runtimeUrl);
+      validateCanonicalExamples(canonicalExamples, compile);
 
       await writeFile(
         resolve(packageDirectory, targetFile),

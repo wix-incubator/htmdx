@@ -2,7 +2,7 @@
 // catalog, the shadcn/ui pack, its theme, and the Tailwind browser compiler.
 import * as React from 'react';
 import * as htmdx from './index';
-import { injectShadcnTheme } from './react/shadcn';
+import { injectShadcnTheme } from './components/shadcn/shared/theme';
 
 // Extension scripts need createElement to define components without a build
 // step; expose the bundled React so they don't load a second copy.

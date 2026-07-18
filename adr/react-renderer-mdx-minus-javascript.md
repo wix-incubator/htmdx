@@ -2,6 +2,7 @@
 
 - Status: accepted
 - Date: 2026-07-16
+- Superseded in part by [Use component definitions as the agent authoring contract](./component-definitions-as-agent-contracts.md) for the 4.0 component catalogs, body composition, manifest schema, package exports, and extension API.
 
 ## Context
 

@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "htmdxVersion": "3.0.0",
+    "htmdxVersion": "4.0.0",
     "encoding": "o200k_base",
     "gptTokenizerVersion": "3.4.0"
   },
@@ -54,13 +54,13 @@
         {
           "format": "compiled",
           "artifact": {
-            "tokens": 4589,
-            "chars": 17303
+            "tokens": 4045,
+            "chars": 14892
           },
-          "artifactAltTokens": 4624,
+          "artifactAltTokens": 4055,
           "payload": {
-            "tokens": 4497,
-            "chars": 16978
+            "tokens": 3953,
+            "chars": 14567
           },
           "edits": [
             {
@@ -75,22 +75,22 @@
               "id": "add-badge",
               "description": "Add a \"source: support dashboard\" badge to the Numbers card",
               "cost": {
-                "tokens": 163,
-                "chars": 629
+                "tokens": 44,
+                "chars": 139
               }
             },
             {
               "id": "add-accordion-item",
               "description": "Add a fourth risk item about the refund audit trail",
               "cost": {
-                "tokens": 428,
-                "chars": 1622
+                "tokens": 434,
+                "chars": 1631
               }
             }
           ],
           "editTotal": {
-            "tokens": 615,
-            "chars": 2321
+            "tokens": 502,
+            "chars": 1840
           }
         },
         {
@@ -261,13 +261,13 @@
         {
           "format": "compiled",
           "artifact": {
-            "tokens": 3612,
-            "chars": 13805
+            "tokens": 3686,
+            "chars": 14143
           },
-          "artifactAltTokens": 3627,
+          "artifactAltTokens": 3701,
           "payload": {
-            "tokens": 3517,
-            "chars": 13458
+            "tokens": 3591,
+            "chars": 13796
           },
           "edits": [
             {
@@ -282,8 +282,8 @@
               "id": "add-callout",
               "description": "Add a data-freshness callout right after the executive summary",
               "cost": {
-                "tokens": 113,
-                "chars": 424
+                "tokens": 120,
+                "chars": 456
               }
             },
             {
@@ -296,8 +296,8 @@
             }
           ],
           "editTotal": {
-            "tokens": 161,
-            "chars": 560
+            "tokens": 168,
+            "chars": 592
           }
         },
         {

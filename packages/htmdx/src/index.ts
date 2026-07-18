@@ -2,33 +2,27 @@
 // built-ins are React components, the shadcn/ui pack is included, and
 // compile() produces a static HTML snapshot of the same tree.
 import type { ReactElement } from 'react';
+import {
+  createDefinitionRegistry,
+  type HtmdxComponent,
+  type HtmdxComponentDefinitions,
+} from './component-definition';
 import { flushSync } from 'react-dom';
 import { createRoot, type Root } from 'react-dom/client';
+import * as builtinDefinitionExports from './components/builtins';
+import { calloutStyles } from './components/builtins/Callout/Callout';
+import { executiveSummaryStyles } from './components/builtins/ExecutiveSummary/ExecutiveSummary';
+import { sourceQuoteStyles } from './components/builtins/SourceQuote/SourceQuote';
+import * as shadcnDefinitionExports from './components/shadcn';
 import { escapeHtml } from './components/rendering';
-import {
-  builtInReactComponents,
-  compileDocument,
-  tokenizeSource,
-  type HtmdxReactComponent,
-  type HtmdxReactComponents,
-} from './react';
-import { shadcnComponents } from './react/shadcn';
+import { compileDocument, tokenizeSource } from './react';
 import { THEME_CSS } from './themes';
 import { VERSION } from './version';
 
 export { THEME_IDS, type HtmdxThemeId } from './themes';
 export { VERSION } from './version';
-export { injectShadcnTheme, shadcnComponents } from './react/shadcn';
-export {
-  builtInReactComponents,
-  compileDocument,
-  compileToReact,
-  Htmdx,
-  listComponents,
-  type HtmdxReactComponent,
-  type HtmdxReactComponents,
-} from './react';
-
+export { injectShadcnTheme } from './components/shadcn/shared/theme';
+export { compileDocument, compileToReact, Htmdx, listComponents } from './react';
 export type HtmdxToken =
   | { type: 'markdown'; value: string }
   | { type: 'component'; name: string; body: string };
@@ -43,7 +37,7 @@ export type HtmdxThemeDefinition = {
 };
 
 export type HtmdxCompileOptions = {
-  components?: HtmdxReactComponents;
+  definitions?: HtmdxComponentDefinitions;
 };
 
 export type HtmdxExtensionOptions = {
@@ -69,7 +63,13 @@ export const DEFAULT_TAG_NAME = 'htmdx-code';
 export const DEFAULT_TAILWIND_BROWSER_SRC = 'https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4';
 const DEFAULT_SOURCE_SELECTOR = 'script[type="text/htmdx"], template[type="text/htmdx"]';
 
-const globalReactComponents: HtmdxReactComponents = {};
+const bundledDefinitions: HtmdxComponentDefinitions = [
+  ...Object.values(builtinDefinitionExports),
+  ...Object.values(shadcnDefinitionExports),
+];
+createDefinitionRegistry(bundledDefinitions);
+
+const globalDefinitions: HtmdxComponent[] = [];
 const registeredTagNames = new Set([DEFAULT_TAG_NAME]);
 const sourceCache = new WeakMap<Element, HtmdxSourceResult & { ok: true }>();
 
@@ -77,18 +77,15 @@ type HostRoot = { root: Root; renderError: { current: unknown } };
 const reactRoots = new WeakMap<Element, HostRoot>();
 const stickyObservers = new WeakMap<Element, IntersectionObserver>();
 
-function componentsFor(options: HtmdxCompileOptions): HtmdxReactComponents {
-  return {
-    ...builtInReactComponents,
-    ...shadcnComponents,
-    ...globalReactComponents,
-    ...options.components,
-  };
+function runtimeOptionsFor(options: HtmdxCompileOptions) {
+  const definitions = [...bundledDefinitions, ...globalDefinitions, ...(options.definitions || [])];
+  createDefinitionRegistry(definitions);
+  return { definitions };
 }
 
 export function compile(source: string, options: HtmdxCompileOptions = {}): HtmdxCompileResult {
   try {
-    const doc = compileDocument(source, { components: componentsFor(options) });
+    const doc = compileDocument(source, runtimeOptionsFor(options));
     return {
       ok: true,
       html: renderStaticHtml(doc.element),
@@ -126,33 +123,25 @@ function renderStaticHtml(element: ReactElement): string {
   }
 }
 
-// Extension API: register React components globally. Host-owned code only;
-// the HTMDX source itself stays declarative data.
-export function registerComponent(
-  name: string,
-  component: HtmdxReactComponent,
-  options: HtmdxExtensionOptions = {},
-) {
-  assertComponentName(name);
-  globalReactComponents[name] = component;
-  if (options.rerender !== false) {
-    return rerender();
-  }
-  return Promise.resolve();
+export function registerComponent(definition: HtmdxComponent, options: HtmdxExtensionOptions = {}) {
+  registerDefinitions([definition]);
+  return options.rerender === false ? Promise.resolve() : rerender();
 }
 
 export function registerComponents(
-  components: HtmdxReactComponents,
+  definitions: HtmdxComponentDefinitions,
   options: HtmdxExtensionOptions = {},
 ) {
-  for (const [name, component] of Object.entries(components)) {
-    assertComponentName(name);
-    globalReactComponents[name] = component;
-  }
-  if (options.rerender !== false) {
-    return rerender();
-  }
-  return Promise.resolve();
+  registerDefinitions(definitions);
+  return options.rerender === false ? Promise.resolve() : rerender();
+}
+
+function registerDefinitions(definitions: HtmdxComponentDefinitions) {
+  createDefinitionRegistry(definitions, [
+    ...bundledDefinitions.map(({ name }) => name),
+    ...globalDefinitions.map(({ name }) => name),
+  ]);
+  globalDefinitions.push(...definitions);
 }
 
 export function registerTheme(theme: HtmdxThemeDefinition, options: HtmdxExtensionOptions = {}) {
@@ -181,7 +170,7 @@ export function register(options: HtmdxRegisterOptions = {}) {
   if (!document.getElementById(STYLE_ID)) {
     const style = document.createElement('style');
     style.id = STYLE_ID;
-    style.textContent = RUNTIME_CSS + THEME_CSS;
+    style.textContent = RUNTIME_CSS + COMPONENT_CSS + THEME_CSS;
     document.head.append(style);
   }
   injectFonts();
@@ -265,7 +254,7 @@ export async function renderHost(host: Element, options: HtmdxRegisterOptions = 
   sourceCache.set(host, sourceResult);
 
   try {
-    const doc = compileDocument(sourceResult.source, { components: componentsFor(options) });
+    const doc = compileDocument(sourceResult.source, runtimeOptionsFor(options));
     let hostRoot = reactRoots.get(host);
     if (!hostRoot) {
       // The embedded source element is consumed here; the source is cached
@@ -459,16 +448,12 @@ function activateStickyHeader(root: Element) {
 }
 
 export function tokenizeBlocks(source: string, options: HtmdxCompileOptions = {}): HtmdxToken[] {
-  return tokenizeSource(source, componentsFor(options));
+  return tokenizeSource(source, runtimeOptionsFor(options).definitions);
 }
 
 export function canonicalComponentName(name: string, options: HtmdxCompileOptions = {}) {
-  for (const known of Object.keys(componentsFor(options))) {
-    if (known.toLowerCase() === name.toLowerCase()) {
-      return known;
-    }
-  }
-  return name;
+  const names = runtimeOptionsFor(options).definitions.map((definition) => definition.name);
+  return names.find((known) => known.toLowerCase() === name.toLowerCase()) || name;
 }
 
 function querySourceElement(host: Element, options: HtmdxRegisterOptions) {
@@ -509,12 +494,6 @@ function renderError(host: Element, error: string, source: string) {
     `<div class="htmdx-error">Renderer fallback: ${escapeHtml(error)}</div>`,
     `<pre class="htmdx-raw-source">${escapeHtml(source || 'No HTMDX source was available.')}</pre>`,
   ].join('');
-}
-
-function assertComponentName(name: string) {
-  if (!/^[A-Za-z][A-Za-z0-9]*$/.test(name)) {
-    throw new Error(`invalid component name "${name}"`);
-  }
 }
 
 function injectThemeStyle(theme: HtmdxThemeDefinition | undefined) {
@@ -575,6 +554,10 @@ function injectTailwindBrowser(tailwind: HtmdxRegisterOptions['tailwind'] = true
   script.defer = true;
   document.head.append(script);
 }
+
+// Presentation owned by migrated components, colocated with their
+// implementations; the runtime only injects it next to its own chrome CSS.
+const COMPONENT_CSS = `${calloutStyles}${executiveSummaryStyles}${sourceQuoteStyles}`;
 
 // Attribute selector instead of #id: slugs can start with a digit
 // (`## 1. Overview` -> id "1-overview"), which is invalid in an id selector.
@@ -946,38 +929,6 @@ const RUNTIME_CSS = `
     padding-left: 20px;
     padding-right: 20px;
   }
-  .htmdx-executive-summary .htmdx-component-body {
-    background: var(--md-sys-color-primary-container);
-    color: var(--md-sys-color-on-surface);
-    border-radius: var(--md-sys-shape-corner-extra-large);
-    padding: 22px 26px;
-    font-family: var(--md-ref-typeface-brand);
-  }
-  .htmdx-executive-summary .htmdx-component-body p {
-    margin: 0;
-    font-size: 1.0625rem;
-    line-height: 1.55;
-    color: var(--md-sys-color-on-surface);
-  }
-  .htmdx-callout .htmdx-component-body {
-    background: var(--md-sys-color-primary-container);
-    color: var(--md-sys-color-on-secondary-container);
-    border-radius: var(--md-sys-shape-corner-large);
-    padding: 18px 22px;
-    font-family: var(--md-ref-typeface-brand);
-  }
-  .htmdx-callout .htmdx-component-body p { margin: 0 0 8px; color: var(--md-sys-color-on-secondary-container); }
-  .htmdx-callout .htmdx-component-body p:last-child { margin-bottom: 0; }
-
-  .htmdx-source-quote .htmdx-component-body p {
-    font-size: 0.9375rem;
-    color: var(--md-sys-color-on-surface-variant);
-    border-left: 3px solid var(--md-sys-color-primary);
-    padding-left: 16px;
-    margin: 6px 0;
-    line-height: 1.55;
-  }
-
   .htmdx-doc-section-card table:not([data-slot]) { width: 100%; border-collapse: collapse; font-size: 0.9375rem; margin: 6px 0; }
   .htmdx-doc-section-card table:not([data-slot]) thead th {
     text-align: left;
@@ -1015,14 +966,6 @@ const RUNTIME_CSS = `
   .htmdx-doc-section-card table:not([data-slot]) tbody tr:hover th {
     background: color-mix(in srgb, var(--md-sys-color-primary) calc(var(--md-sys-state-hover-opacity) * 100%), transparent);
   }
-  /* SourceQuote (a markdown-bodied shell) sits inside a card. */
-  .htmdx-source-quote .htmdx-component-body {
-    background: var(--md-sys-color-surface-container-lowest);
-    border: 1px solid var(--md-sys-color-outline-variant);
-    border-radius: var(--md-sys-shape-corner-large);
-    padding: 16px 20px;
-  }
-
   @media (max-width: 960px) {
     .htmdx-app { grid-template-columns: minmax(0, 1fr); }
     .htmdx-toc { display: none; }

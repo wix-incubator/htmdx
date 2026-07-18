@@ -1,6 +1,6 @@
 import type { Meta } from '@storybook/web-components-vite';
 import { register } from '../index';
-import { injectShadcnTheme } from '../react/shadcn';
+import { injectShadcnTheme } from '../components/shadcn/shared/theme';
 import { createHtmdxHost } from './component-story';
 
 export type ArtifactStoryArgs = {

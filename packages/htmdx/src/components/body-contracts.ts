@@ -1,9 +1,24 @@
-import type { HtmdxBodyFormat, HtmdxParsedBody, ParsedBodyByFormat } from './types';
-
 export type LabelValue = { label: string; value: string };
 export type LabelNumber = { label: string; value: number };
 export type GfmTable = { header: string[]; rows: string[][] };
 export type MarkdownListCards = { items: string[]; lines: number[] };
+
+type HtmdxBodyFormat =
+  | 'markdown'
+  | 'label-value-list'
+  | 'label-number-list'
+  | 'gfm-table'
+  | 'markdown-list-cards';
+
+type ParsedBodyByFormat = {
+  markdown: string;
+  'label-value-list': LabelValue[];
+  'label-number-list': LabelNumber[];
+  'gfm-table': GfmTable;
+  'markdown-list-cards': MarkdownListCards;
+};
+
+type HtmdxParsedBody = ParsedBodyByFormat[HtmdxBodyFormat];
 
 export class BodyContractError extends Error {
   constructor(
@@ -97,8 +112,8 @@ export function validateGlobalBody(body: string) {
   const jsx = firstMatch(syntax, /<\/?[A-Za-z][A-Za-z0-9]*\b|<>|<\/>/);
   if (jsx) {
     throw new BodyContractError(
-      'nested JSX is not allowed',
-      'one-level HTMDX without nested JSX',
+      'nested component tags are not allowed',
+      'Markdown without nested component tags',
       jsx.line,
       jsx.column,
     );

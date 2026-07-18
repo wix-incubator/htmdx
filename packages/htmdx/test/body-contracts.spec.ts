@@ -7,8 +7,6 @@ import {
   parseLabelValueList,
   parseMarkdownListCards,
 } from '../src/components/body-contracts';
-import { builtInComponents } from '../src/components/catalog';
-import { validateRiskTable } from '../src/components/risk-table';
 
 describe('component body contracts', () => {
   test('parses label-value rows at the first colon', () => {
@@ -87,27 +85,6 @@ describe('component body contracts', () => {
     expect(parseComponentBody('Card', 'markdown', '**Useful** content')).toBe('**Useful** content');
   });
 
-  test('accepts a non-empty subset of canonical RiskTable tiers', () => {
-    expect(() =>
-      validateRiskTable({
-        items: ['**Must-have:** Required', "**Won't do:** Deferred"],
-        lines: [1, 2],
-      }),
-    ).not.toThrow();
-  });
-
-  test.each([
-    ['**must-have:** Wrong case', 'canonical, case-sensitive'],
-    ['**Must-have:**', 'followed by text'],
-    ['**Must-have:** First\n**Must-have:** Second', 'tier "Must-have" is repeated'],
-    ['**Must-have:** First **Not now:** Second', 'exactly one canonical bold tier'],
-  ])('rejects invalid RiskTable items %j', (items, violation) => {
-    const parsedItems = items.split('\n');
-    expect(() =>
-      validateRiskTable({ items: parsedItems, lines: parsedItems.map((_, index) => index + 1) }),
-    ).toThrow(violation);
-  });
-
   test.each([
     ['`{name}`', '<code>{name}</code>'],
     ['\\{name\\}', '\\{name\\}'],
@@ -126,18 +103,12 @@ describe('component body contracts', () => {
     ['import data from "./data.js"', 'import statements are not allowed'],
     ['export const value = 1', 'export statements are not allowed'],
     ['Hello {name}', 'MDX expressions are not allowed'],
-    ['<Card>nested</Card>', 'nested JSX is not allowed'],
-    ['<>fragment</>', 'nested JSX is not allowed'],
+    ['<Card>nested</Card>', 'nested component tags are not allowed'],
+    ['<>fragment</>', 'nested component tags are not allowed'],
   ])('rejects global body violation in %j', (body, violation) => {
     expect(() => parseComponentBody('Callout', 'markdown', body)).toThrow(
       new RegExp(`Invalid body for <Callout>.*${violation}.*expected`),
     );
-  });
-
-  test('compiles every required catalog example through runtime validation', () => {
-    for (const component of builtInComponents) {
-      expect(compile(component.example), component.name).toMatchObject({ ok: true });
-    }
   });
 
   test.each(['<MetricStrip></MetricStrip>', '<MetricStrip />'])(

@@ -1,7 +1,7 @@
 import type { Meta } from '@storybook/web-components-vite';
 import { register } from '../index';
-import type { HtmdxComponent } from '../components/types';
-import { injectShadcnTheme } from '../react/shadcn';
+import type { HtmdxComponent } from '../component-definition';
+import { injectShadcnTheme } from '../components/shadcn/shared/theme';
 
 export type ComponentStoryArgs = {
   body: string;

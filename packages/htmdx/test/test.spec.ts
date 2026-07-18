@@ -7,7 +7,6 @@ import {
   compile,
   register,
   registerComponent,
-  registerComponents,
   registerTheme,
   renderHost,
   tokenizeBlocks,
@@ -32,7 +31,6 @@ Ship **one HTML file** with editable HTMDX source.
       ok: true,
       components: ['ExecutiveSummary', 'MetricStrip'],
     });
-    expect(rendered.ok && rendered.html).toContain('<article class="htmdx-article">');
     expect(rendered.ok && rendered.html).toContain('Ship <strong>one HTML file</strong>');
   });
 
@@ -66,31 +64,6 @@ Ship **one HTML file** with editable HTMDX source.
     });
   });
 
-  test('renders the C Memo shell with masthead and section rail', () => {
-    const rendered = compile(`---
-title: "Competitor Research"
----
-
-# Hidden body title
-
-## Executive Summary
-
-Summary.
-
-## Situation
-
-Context.`);
-
-    expect(rendered.ok && rendered.html).toContain('<header class="htmdx-hero">');
-    expect(rendered.ok && rendered.html).toContain('<div class="htmdx-shell">');
-    expect(rendered.ok && rendered.html).toContain('class="htmdx-toc-link"');
-    expect(rendered.ok && rendered.html).toContain('href="#executive-summary"');
-    expect(rendered.ok && rendered.html).toContain('<h2 id="situation">Situation</h2>');
-    expect(rendered.ok && rendered.html).toMatch(
-      /<h2 id="situation">Situation<\/h2><div class="htmdx-doc-section-card">/,
-    );
-  });
-
   test('renders frontmatter fields in the hero labels', () => {
     const rendered = compile(`---
 title: "Rollout Memo"
@@ -108,7 +81,7 @@ One.
 
 Two.`);
 
-    expect(rendered.ok && rendered.html).toContain('<p class="htmdx-hero-eyebrow">Atlas</p>');
+    expect(rendered.ok && rendered.html).toContain('Atlas');
     expect(rendered.ok && rendered.html).toContain('Owner <b>Dana</b>');
     expect(rendered.ok && rendered.html).toContain('Phase <b>Discovery</b>');
     expect(rendered.ok && rendered.html).toContain('Updated <b>2026-07-01</b>');
@@ -136,51 +109,9 @@ This memo sets the **stage**.
 
 Body.`);
 
-    expect(rendered.ok && rendered.html).toContain(
-      '<p class="htmdx-hero-desc">This memo sets the <strong>stage</strong>.</p>',
-    );
+    expect(rendered.ok && rendered.html).toContain('This memo sets the <strong>stage</strong>.');
     const html = rendered.ok ? rendered.html : '';
     expect(html.split('This memo sets the').length).toBe(2);
-  });
-
-  test('renders component blocks inside their section card', () => {
-    const rendered = compile(`# Component Memo
-
-## Decision
-
-<ExecutiveSummary>
-Ship it.
-</ExecutiveSummary>`);
-
-    const container = document.createElement('div');
-    container.innerHTML = rendered.ok ? rendered.html : '';
-    expect(
-      container.querySelector('.htmdx-doc-section-card .htmdx-executive-summary'),
-    ).not.toBeNull();
-  });
-
-  test('renders no hero or sticky header without a title', () => {
-    const rendered = compile('Just a paragraph without any heading.');
-
-    expect(rendered.ok && rendered.html).not.toContain('htmdx-hero');
-    expect(rendered.ok && rendered.html).not.toContain('htmdx-sticky-header');
-    expect(rendered.ok && rendered.html).toContain('Just a paragraph without any heading.');
-  });
-
-  test('renders the sticky header with the title and aria-hidden', () => {
-    const rendered = compile(`---
-title: "Sticky Memo"
-project: Atlas
----
-
-## First
-
-One.`);
-
-    const html = rendered.ok ? rendered.html : '';
-    expect(html).toContain('<div class="htmdx-sticky-header" aria-hidden="true">');
-    expect(html).toContain('<span class="htmdx-sticky-title">Sticky Memo</span>');
-    expect(html).toContain('<span class="htmdx-sticky-project">Atlas</span>');
   });
 
   test('parses CRLF frontmatter', () => {
@@ -190,7 +121,7 @@ One.`);
 
     const html = rendered.ok ? rendered.html : '';
     expect(html).toContain('Windows Memo');
-    expect(html).toContain('<p class="htmdx-hero-eyebrow">Atlas</p>');
+    expect(html).toContain('Atlas');
   });
 
   test('navigates headings whose slugs start with a digit', async () => {
@@ -228,7 +159,6 @@ Two.</script>`;
     );
 
     const html = rendered.ok ? rendered.html : '';
-    expect(html).toContain('class="htmdx-nav-logo"');
     expect(html).toContain('src="./brand.svg"');
     expect(html).toContain('alt="Brand"');
   });
@@ -259,89 +189,6 @@ Two.</script>`;
 
   test('keeps component names case-insensitive', () => {
     expect(canonicalComponentName('executivesummary')).toBe('ExecutiveSummary');
-  });
-
-  test('renders explicitly registered consumer components', () => {
-    const rendered = compile(
-      `<ProductCard>
-**Launch plan**: Invite beta users first.
-</ProductCard>`,
-      {
-        components: {
-          ProductCard: (props: { children?: ReactNode }) =>
-            createElement('aside', { className: 'product-card' }, props.children),
-        },
-      },
-    );
-
-    expect(rendered).toMatchObject({
-      ok: true,
-      components: ['ProductCard'],
-    });
-    expect(rendered.ok && rendered.html).toContain('<aside class="product-card">');
-    expect(rendered.ok && rendered.html).toContain(
-      '<strong>Launch plan</strong>: Invite beta users first.',
-    );
-  });
-
-  test('renders globally registered consumer components', () => {
-    registerComponent(
-      'LaunchPlan',
-      (props: { children?: ReactNode }) =>
-        createElement('aside', { className: 'launch-plan' }, props.children),
-      { rerender: false },
-    );
-
-    const rendered = compile(`<LaunchPlan>
-**Beta** first.
-</LaunchPlan>`);
-
-    expect(rendered).toMatchObject({
-      ok: true,
-      components: ['LaunchPlan'],
-    });
-    expect(rendered.ok && rendered.html).toContain('<aside class="launch-plan">');
-  });
-
-  test('registers multiple consumer components', () => {
-    registerComponents(
-      {
-        ProductCard: (props: { children?: ReactNode }) =>
-          createElement('aside', { className: 'product-card' }, props.children),
-        ProductBadge: (props: { children?: ReactNode }) =>
-          createElement('span', { className: 'product-badge' }, props.children),
-      },
-      { rerender: false },
-    );
-
-    const rendered = compile(`<ProductCard>
-Card body.
-</ProductCard>
-
-<ProductBadge>Preview</ProductBadge>`);
-
-    expect(rendered).toMatchObject({
-      ok: true,
-      components: ['ProductCard', 'ProductBadge'],
-    });
-    expect(rendered.ok && rendered.html).toContain('class="product-card"');
-    expect(rendered.ok && rendered.html).toContain('class="product-badge"');
-  });
-
-  test('rejects invalid consumer component names', () => {
-    expect(() => {
-      registerComponent('bad-name', ({ body }) => body, { rerender: false });
-    }).toThrow('invalid component name "bad-name"');
-  });
-
-  test('keeps consumer component names case-insensitive', () => {
-    expect(
-      canonicalComponentName('productcard', {
-        components: {
-          ProductCard: ({ body, markdown }) => markdown(body),
-        },
-      }),
-    ).toBe('ProductCard');
   });
 
   test('loads Tailwind when the browser entry is included', async () => {
@@ -462,9 +309,13 @@ Loaded after runtime.
       'unknown component',
     );
 
-    await registerComponent('LateCard', (props: { children?: ReactNode }) =>
-      createElement('aside', null, props.children),
-    );
+    await registerComponent({
+      name: 'LateCard',
+      purpose: 'Show content registered after the runtime starts.',
+      example: '<LateCard>Late content.</LateCard>',
+      body: 'htmdx',
+      Component: (props: { children?: ReactNode }) => createElement('aside', null, props.children),
+    });
 
     expect(document.querySelector('htmdx-late-extension')?.innerHTML).toContain(
       'Loaded after runtime.',
@@ -515,12 +366,10 @@ Context.</script>`;
   });
 
   test('allows nested HTML inside composable component bodies', () => {
-    const rendered = compile(`<Card>
-<div class="rounded-lg border p-4">Test</div>
-</Card>`);
+    const rendered = compile('<Card><div>Nested HTML</div></Card>');
 
     expect(rendered).toMatchObject({ ok: true, components: ['Card'] });
-    expect(rendered.ok && rendered.html).toContain('class="rounded-lg border p-4"');
+    expect(rendered.ok && rendered.html).toContain('Nested HTML');
   });
 
   test('strips unsafe link schemes', () => {

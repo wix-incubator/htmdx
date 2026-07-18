@@ -1,6 +1,6 @@
 # @wix/htmdx
 
-Render editable MDX-like source inside a plain HTML file. HTMDX is built for artifacts that should be easy for people to view and easy for agents to edit.
+Render editable MDX-like source inside a plain HTML file. `@wix/htmdx@4.0.0` uses one component definition model for Built-ins, shadcn, and host extensions. HTMDX is built for artifacts that should be easy for people to view and easy for agents to edit.
 
 **Live examples:** [examples index](https://wix-incubator.github.io/htmdx/) · [decision brief](https://wix-incubator.github.io/htmdx/decision-brief.html) · [component tour](https://wix-incubator.github.io/htmdx/component-tour.html) · [Storybook](https://wix-incubator.github.io/htmdx/storybook/) — every page is itself an htmdx artifact; view source to see what an agent edits.
 
@@ -11,10 +11,7 @@ Start with one HTML file:
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <script
-      src="https://cdn.jsdelivr.net/npm/@wix/htmdx@<exact-version>/dist/browser.js"
-      defer
-    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@4.0.0/dist/browser.js" defer></script>
   </head>
   <body>
     <!-- prettier-ignore -->
@@ -50,20 +47,25 @@ CDN caveats:
 Every release includes its machine-readable component contract at:
 
 ```text
-https://cdn.jsdelivr.net/npm/@wix/htmdx@<exact-version>/dist/components.json
+https://cdn.jsdelivr.net/npm/@wix/htmdx@4.0.0/dist/components.json
 ```
 
-Use the same exact version as the artifact's runtime URL. The manifest lists
-the full runtime catalog — built-ins plus the shadcn/ui pack, each entry
-tagged with its `source`, props (with allowed values), and an example.
+Use the same exact version as the artifact's runtime URL. The `htmdx@2`
+manifest lists the full runtime catalog — Built-ins plus the shadcn/ui pack,
+each entry tagged with its `source`, body mode, prop schema, and canonical
+example. It projects this data from the same definitions used by the runtime;
+the executable `Component` field does not appear in JSON.
 
-Composable components (shadcn and markdown-bodied built-ins) accept markdown
-bodies and nested components. Structured built-ins declare an enforced body
-format: `label-value-list`, `label-number-list`, `gfm-table`, or
-`markdown-list-cards`; a body that does not match fails compilation of the
-whole artifact and browser hosts display the error fallback with the raw
-source. Imports, MDX `{expressions}`, and function-valued props cannot be
-expressed — the source is data, not code.
+Each manifest entry declares `body: "markdown" | "htmdx" | "none"`.
+`markdown` passes raw Markdown to the component and rejects nested tags;
+Built-ins use this mode. `htmdx` accepts Markdown, HTML, and nested registered
+component tags; shadcn and external definitions use it when they support
+composition. `none` accepts only an empty or self-closing tag. A Built-in's
+`purpose` and `example`
+describe any stricter list or table grammar it checks. Invalid bodies fail the
+whole compile, and browser hosts show the error with the raw source. Imports,
+exports, brace expressions, event handlers, and function-valued props cannot
+be expressed — the source is data, not code.
 
 Use `src` when the source should live next to the HTML, in either form:
 
@@ -93,9 +95,13 @@ CSS from an inline or external script:
   window.addEventListener('htmdx:ready', () => {
     const { createElement } = window.Htmdx.React;
 
-    window.Htmdx.registerComponent('ProductCard', (props) =>
-      createElement('aside', { className: 'product-card' }, props.children),
-    );
+    window.Htmdx.registerComponent({
+      name: 'ProductCard',
+      purpose: 'Group product details in a card.',
+      example: '<ProductCard>Product details.</ProductCard>',
+      body: 'htmdx',
+      Component: (props) => createElement('aside', { className: 'product-card' }, props.children),
+    });
 
     window.Htmdx.registerTheme({
       id: 'product',
@@ -128,11 +134,12 @@ Use the browser compiler for portable artifacts and prototypes. Production hosts
 
 ## React runtime (MDX minus JavaScript)
 
-htmdx renders through React everywhere: built-ins are React components, the
-shadcn/ui pack is bundled, and the components map accepts any React
-component. The source stays declarative data: component tags, nested
-composition, and attribute props work; imports, `{expressions}`, and function
-props are rejected by design.
+htmdx renders through React everywhere: Built-ins and the shadcn/ui pack are
+bundled as complete component definitions. Global registration and per-render
+extensions accept the same definitions, and names cannot replace bundled or
+registered definitions. The source stays declarative data: component tags,
+nested composition, and declared attribute props work; imports, exports,
+brace expressions, event handlers, and function props are rejected by design.
 
 The standard runtime script gives an artifact the full catalog:
 
@@ -173,7 +180,7 @@ Accordion), and the shadcn theme (~147KB gzip, including the static-render
 path that powers `compile()`).
 
 Authoring htmdx source instead of rendered markup is measurably cheaper for
-agents: the full single-file artifact is 2.9-4.5x smaller in tokens than the
+agents: the full single-file artifact is about 4.3x smaller in tokens than the
 same artifact as compiled HTML, and 2-3x smaller than hand-written
 HTML+Tailwind, with edits cheaper in the same range. Reproducible benchmark in
 [`bench/RESULTS.md`](https://github.com/wix-incubator/htmdx/blob/master/packages/htmdx/bench/RESULTS.md)
@@ -183,20 +190,32 @@ React host apps use the module entries instead (react/react-dom are optional
 peer dependencies):
 
 ```tsx
-import { Htmdx, builtInReactComponents } from '@wix/htmdx/react';
-import { shadcnComponents, injectShadcnTheme } from '@wix/htmdx/react/shadcn';
+import { Htmdx } from '@wix/htmdx/react';
+import type { HtmdxComponent } from '@wix/htmdx/components';
+import * as builtins from '@wix/htmdx/components/builtins';
+import * as shadcn from '@wix/htmdx/components/shadcn';
 
-injectShadcnTheme();
+const MyChart = {
+  name: 'MyChart',
+  purpose: 'Show a custom chart.',
+  example: '<MyChart>Quarterly results.</MyChart>',
+  body: 'htmdx',
+  Component: MyChartView,
+} satisfies HtmdxComponent;
+
 <Htmdx
   source={artifactSource}
-  components={{ ...builtInReactComponents, ...shadcnComponents, MyChart }}
+  definitions={[...Object.values(builtins), ...Object.values(shadcn), MyChart]}
 />;
 ```
 
-Attribute conventions: `class` -> `className`, kebab-case -> camelCase, and
-values parse as booleans/numbers/JSON when they look like data. Well-formed
-bodies are parsed as XML, so camelCase attributes like `defaultValue` survive
-verbatim; malformed bodies fall back to forgiving HTML parsing.
+Definitions are available from `@wix/htmdx/components`,
+`@wix/htmdx/components/builtins`, and `@wix/htmdx/components/shadcn`.
+Component-specific attributes form an allowlist and parse by their declared
+`string`, `number`, `boolean`, or `json` type. Every component also accepts
+`class`, `id`, `aria-*`, and `data-*`. Well-formed HTMDX bodies are parsed as
+XML, so camelCase names such as `defaultValue` stay intact; malformed bodies
+fall back to HTML parsing.
 
 Security note: the React runtime runs the registered component code with
 agent-authored props (`compile()` can still emit a static HTML snapshot of the

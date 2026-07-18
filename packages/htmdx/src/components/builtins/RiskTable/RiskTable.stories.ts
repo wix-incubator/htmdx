@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { createComponentStory, type ComponentStoryArgs } from '../storybook/component-story';
-import { timeline } from './timeline';
+import { createComponentStory, type ComponentStoryArgs } from '../../../storybook/component-story';
+import { RiskTable } from './index';
 
 const meta = {
-  title: 'Components/default/Timeline',
-  ...createComponentStory(timeline),
+  title: 'Components/Built-ins/RiskTable',
+  ...createComponentStory(RiskTable),
 } satisfies Meta<ComponentStoryArgs>;
 
 export default meta;

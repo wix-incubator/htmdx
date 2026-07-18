@@ -37,6 +37,11 @@ describe('component definition catalogs', () => {
         'ChartArea',
         'ChartLine',
         'ChartPie',
+        'DataTable',
+        'DecisionTable',
+        'DecisionMatrix',
+        'RiskTable',
+        'Timeline',
       ]),
     );
     expect(Object.keys(shadcnDefinitions)).toContain('Badge');
@@ -170,6 +175,48 @@ describe('metric and chart Built-ins through the definition catalog', () => {
     ['ChartArea', '- Signups: -1', 'not a non-negative decimal'],
     ['ChartLine', '- Signups: Infinity', 'not a non-negative decimal'],
     ['ChartPie', '- : 12', 'non-empty label'],
+  ])('keeps <%s> validation actionable', (name, body, error) => {
+    expect(compile(`<${name}>\n${body}\n</${name}>`)).toMatchObject({
+      ok: false,
+      error: expect.stringContaining(error),
+    });
+  });
+});
+
+describe('tabular and decision Built-ins through the definition catalog', () => {
+  test.each([
+    ['DataTable', '| Plan | Users |\n| --- | ---: |\n| Free | 48 |', ['Plan', 'Free', '48']],
+    ['DecisionTable', '- Scope: Built-in components only', ['Scope', 'Built-in components only']],
+    [
+      'DecisionMatrix',
+      '| Criterion | A | B ✓ |\n| --- | --- | --- |\n| Fit | Partial | [green] Strong |',
+      ['Criterion', 'B', 'Chosen', 'Strong'],
+    ],
+    ['RiskTable', '- **Must-have:** Publish exact-version metadata.', ['Must-have', 'Publish']],
+    ['Timeline', '- July: Publish the manifest', ['July', 'Publish the manifest']],
+  ])('parses and renders <%s> structured Markdown', (name, body, output) => {
+    const rendered = compile(`<${name}>\n${body}\n</${name}>`);
+
+    expect(rendered).toMatchObject({ ok: true, components: [name] });
+    expect(rendered.ok && rendered.html).toContain(`data-htmdx-component="${name}"`);
+    for (const text of output) {
+      expect(rendered.ok && rendered.html).toContain(text);
+    }
+  });
+
+  test.each([
+    ['DataTable', '| Plan |\n| --- |', 'header, separator, and at least one data row'],
+    ['DecisionTable', '- Missing separator', "one or more '- label: value' rows"],
+    ['DecisionMatrix', '| A | B |\n| --- | nope |\n| x | y |', 'separator'],
+    ['Timeline', '- July:', 'non-empty label and value'],
+    ['RiskTable', '- **must-have:** Wrong case', 'canonical, case-sensitive'],
+    ['RiskTable', '- **Must-have:**', 'followed by text'],
+    ['RiskTable', '- **Must-have:** First **Not now:** Second', 'exactly one canonical bold tier'],
+    [
+      'RiskTable',
+      '- **Must-have:** First\n- **Must-have:** Second',
+      'tier "Must-have" is repeated',
+    ],
   ])('keeps <%s> validation actionable', (name, body, error) => {
     expect(compile(`<${name}>\n${body}\n</${name}>`)).toMatchObject({
       ok: false,

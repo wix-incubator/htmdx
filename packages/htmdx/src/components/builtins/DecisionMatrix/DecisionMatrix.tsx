@@ -1,13 +1,8 @@
-import { parseComponentBody } from '../../components/body-contracts';
-import { cn } from '../shadcn/utils';
-import { Block, Inline, rawBody, type RawBodyProps } from './shell';
-import { toneChip, TONE_DOT, TONE_SURFACE, type Tone } from './tones';
+import { parseComponentBody } from '../../body-contracts';
+import { cn } from '../../../react/shadcn/utils';
+import { toneChip, TONE_DOT, TONE_SURFACE, type Tone } from '../../../react/builtins/tones';
+import { InlineMarkdown, StructuredBlock, type StructuredBodyProps } from '../shared/structured';
 
-// Options-as-columns decision matrix. The gfm-table header lists the options
-// (first cell is the criteria corner); mark the chosen option by putting a ✓
-// in its header cell — that column is highlighted and gets a "Chosen" badge.
-// Any cell may lead with a `[green]` / `[amber]` / `[red]` marker to show a
-// colored effort dot (e.g. Build Effort: easy → hard).
 function splitDot(cell: string): { tone?: Tone; text: string } {
   const match = cell.match(/^\s*\[(blue|green|amber|red|gray|purple)\]\s*([\s\S]*)$/i);
   if (!match) return { text: cell };
@@ -28,25 +23,25 @@ function Cell({ raw }: { raw: string }) {
         </span>
       ) : null}
       <span>
-        <Inline text={text} />
+        <InlineMarkdown text={text} />
       </span>
     </span>
   );
 }
 
-export const DecisionMatrix = rawBody(({ body = '' }: RawBodyProps) => {
+export function DecisionMatrix({ body = '', className, ...attributes }: StructuredBodyProps) {
   const table = parseComponentBody('DecisionMatrix', 'gfm-table', body);
   const [corner = '', ...optionHeaders] = table.header;
   const chosenCol = optionHeaders.findIndex(isChosen);
 
   return (
-    <Block name="DecisionMatrix">
+    <StructuredBlock name="DecisionMatrix" className={className} {...attributes}>
       <div className="overflow-hidden rounded-lg border">
         <table className="w-full border-collapse text-sm" style={{ margin: 0 }}>
           <thead>
             <tr className="border-b bg-muted/40">
               <th className="p-3 text-left align-top font-medium text-muted-foreground">
-                <Inline text={corner} />
+                <InlineMarkdown text={corner} />
               </th>
               {optionHeaders.map((header, index) => {
                 const chosen = index === chosenCol;
@@ -59,7 +54,7 @@ export const DecisionMatrix = rawBody(({ body = '' }: RawBodyProps) => {
                     )}
                   >
                     <div>
-                      <Inline text={header.replace('✓', '').trim()} />
+                      <InlineMarkdown text={header.replace('✓', '').trim()} />
                     </div>
                     {chosen ? (
                       <span
@@ -82,7 +77,7 @@ export const DecisionMatrix = rawBody(({ body = '' }: RawBodyProps) => {
               return (
                 <tr key={rowIndex} className="border-b last:border-0">
                   <th className="p-3 text-left align-top font-semibold text-foreground">
-                    <Inline text={label} />
+                    <InlineMarkdown text={label} />
                   </th>
                   {cells.map((cell, cellIndex) => (
                     <td
@@ -101,6 +96,6 @@ export const DecisionMatrix = rawBody(({ body = '' }: RawBodyProps) => {
           </tbody>
         </table>
       </div>
-    </Block>
+    </StructuredBlock>
   );
-}, 'DecisionMatrix');
+}

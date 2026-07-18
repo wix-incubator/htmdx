@@ -35,3 +35,8 @@ export function InlineMarkdown({ text }: { text: string }) {
 export function stripWrappingBold(value: string) {
   return value.replace(/^\*\*(.*)\*\*$/, '$1');
 }
+
+export function splitFeature(item: string): { title?: string; text: string } {
+  const match = item.match(/^\*\*([^*]+)\*\*:?\s*(.*)$/);
+  return match ? { title: match[1].replace(/:$/, ''), text: match[2] } : { text: item };
+}

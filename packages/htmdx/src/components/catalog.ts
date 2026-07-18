@@ -1,21 +1,15 @@
 import { parseComponentBody } from './body-contracts';
 import { audience } from './audience';
 import { compare } from './compare';
-import { dataTable } from './data-table';
-import { decisionMatrix } from './decision-matrix';
-import { decisionTable } from './decision-table';
 import { evidence } from './evidence';
 import { finding } from './finding';
 import { intentList } from './intent-list';
 import { openQuestions } from './open-questions';
-import { riskTable } from './risk-table';
 import { signalGrid } from './signal-grid';
 import { sources } from './sources';
-import { timeline } from './timeline';
 import type { HtmdxComponent } from './types';
 
 export const builtInComponents = [
-  dataTable,
   compare,
   finding,
   evidence,
@@ -23,11 +17,7 @@ export const builtInComponents = [
   audience,
   intentList,
   signalGrid,
-  decisionMatrix,
   openQuestions,
-  riskTable,
-  decisionTable,
-  timeline,
 ] as const satisfies readonly HtmdxComponent[];
 
 const names = new Set<string>();

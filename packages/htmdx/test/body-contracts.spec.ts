@@ -8,7 +8,6 @@ import {
   parseMarkdownListCards,
 } from '../src/components/body-contracts';
 import { builtInComponents } from '../src/components/catalog';
-import { validateRiskTable } from '../src/components/risk-table';
 
 describe('component body contracts', () => {
   test('parses label-value rows at the first colon', () => {
@@ -85,27 +84,6 @@ describe('component body contracts', () => {
 
   test('accepts non-empty Markdown', () => {
     expect(parseComponentBody('Card', 'markdown', '**Useful** content')).toBe('**Useful** content');
-  });
-
-  test('accepts a non-empty subset of canonical RiskTable tiers', () => {
-    expect(() =>
-      validateRiskTable({
-        items: ['**Must-have:** Required', "**Won't do:** Deferred"],
-        lines: [1, 2],
-      }),
-    ).not.toThrow();
-  });
-
-  test.each([
-    ['**must-have:** Wrong case', 'canonical, case-sensitive'],
-    ['**Must-have:**', 'followed by text'],
-    ['**Must-have:** First\n**Must-have:** Second', 'tier "Must-have" is repeated'],
-    ['**Must-have:** First **Not now:** Second', 'exactly one canonical bold tier'],
-  ])('rejects invalid RiskTable items %j', (items, violation) => {
-    const parsedItems = items.split('\n');
-    expect(() =>
-      validateRiskTable({ items: parsedItems, lines: parsedItems.map((_, index) => index + 1) }),
-    ).toThrow(violation);
   });
 
   test.each([

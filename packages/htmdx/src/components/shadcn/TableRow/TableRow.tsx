@@ -1,9 +1,10 @@
 // Vendored shadcn/ui table row (new-york), split into its own component file.
 import * as React from 'react';
 
+import { withoutTableFormattingWhitespace } from '../shared/table';
 import { cn } from '../shared/utils';
 
-function TableRow({ className, ...props }: React.ComponentProps<'tr'>) {
+function TableRow({ className, children, ...props }: React.ComponentProps<'tr'>) {
   return (
     <tr
       data-slot="table-row"
@@ -12,7 +13,9 @@ function TableRow({ className, ...props }: React.ComponentProps<'tr'>) {
         className,
       )}
       {...props}
-    />
+    >
+      {withoutTableFormattingWhitespace(children)}
+    </tr>
   );
 }
 

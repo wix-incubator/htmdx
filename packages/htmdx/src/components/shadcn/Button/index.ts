@@ -8,6 +8,12 @@ export const Button = {
   body: 'htmdx',
   props: [
     {
+      name: 'asChild',
+      type: 'boolean',
+      default: false,
+      description: 'Use the single child element as the button-styled control.',
+    },
+    {
       name: 'variant',
       type: 'string',
       values: ['default', 'destructive', 'outline', 'secondary', 'ghost', 'link'],

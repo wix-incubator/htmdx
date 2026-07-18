@@ -430,6 +430,8 @@ function renderDefinition(
   );
 }
 
+const tableHtmlContainers = new Set(['table', 'thead', 'tbody', 'tfoot', 'tr']);
+
 function htmdxBodyToChildren(body: string, catalog: RuntimeCatalog, keyPrefix: string): ReactNode {
   const trimmed = body.trim();
   if (!trimmed) {
@@ -478,10 +480,16 @@ function nodeToReact(
   key: string,
   sourceAttributes: WeakMap<Element, SourceAttribute[]> = new WeakMap(),
   renderBlockMarkdownText = true,
+  discardWhitespaceText = false,
 ): ReactNode | null {
   if (node.nodeType === Node.TEXT_NODE) {
     const text = node.textContent || '';
     if (!text) {
+      return null;
+    }
+    // HTML forbids text directly inside table structure containers. Treat
+    // their whitespace as source formatting while keeping spaces elsewhere.
+    if (discardWhitespaceText && !text.trim()) {
       return null;
     }
     if (renderBlockMarkdownText && text.trim() && isBlockMarkdown(text)) {
@@ -529,7 +537,16 @@ function nodeToReact(
   }
 
   const children = Array.from(element.childNodes)
-    .map((child, index) => nodeToReact(child, catalog, `${key}-${index}`, sourceAttributes, false))
+    .map((child, index) =>
+      nodeToReact(
+        child,
+        catalog,
+        `${key}-${index}`,
+        sourceAttributes,
+        false,
+        tableHtmlContainers.has(target),
+      ),
+    )
     .filter((child) => child !== null);
 
   return createElement(target, props, ...children);

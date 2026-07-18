@@ -384,6 +384,12 @@
       "body": "htmdx",
       "props": [
         {
+          "name": "asChild",
+          "type": "boolean",
+          "default": false,
+          "description": "Use the single child element as the button-styled control."
+        },
+        {
           "name": "variant",
           "type": "string",
           "values": [
@@ -488,6 +494,14 @@
       "purpose": "Control that opens or closes the related CollapsibleContent.",
       "example": "<Collapsible>\n  <CollapsibleTrigger>Toggle details</CollapsibleTrigger>\n  <CollapsibleContent>Supporting details.</CollapsibleContent>\n</Collapsible>",
       "body": "htmdx",
+      "props": [
+        {
+          "name": "asChild",
+          "type": "boolean",
+          "default": false,
+          "description": "Use the single child element as the trigger instead of rendering a button."
+        }
+      ],
       "source": "shadcn"
     },
     {

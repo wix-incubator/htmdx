@@ -1,17 +1,23 @@
-import { parseComponentBody } from '../../components/body-contracts';
-import { cn } from '../shadcn/utils';
-import { Block, Inline, rawBody, splitFeature, type RawBodyProps } from './shell';
-import { toneChip, TONE_SURFACE, type Tone } from './tones';
+import { parseComponentBody } from '../../body-contracts';
+import { cn } from '../../../react/shadcn/utils';
+import { toneChip, TONE_SURFACE, type Tone } from '../../../react/builtins/tones';
+import {
+  InlineMarkdown,
+  splitFeature,
+  StructuredBlock,
+  type StructuredBodyProps,
+} from '../shared/structured';
 
-// Audience segments. The first Primary segment renders as a wide tinted hero
-// card with an optional metric row; the rest render in a secondary grid.
-//
-// Item: **Persona — Type:** Description · metrics: A; B; C · priority: High
-//   - Type: Primary | Secondary | Secondary · Risk  -> the top badge
-//   - metrics: `;`-separated `value — caption` stats (optional)
-//   - priority: High | Medium | Unmeasured  -> the footer status badge
 type AudienceType = { label: string; tone: Tone; primary: boolean };
 type Priority = { label: string; tone: Tone; warn?: boolean };
+
+type Segment = {
+  persona: string;
+  type: AudienceType;
+  description: string;
+  metrics: { value: string; caption?: string }[];
+  priority?: Priority;
+};
 
 function typeOf(raw: string): AudienceType {
   const value = raw.toLowerCase();
@@ -29,14 +35,6 @@ function priorityOf(raw: string): Priority | undefined {
     return { label: 'Unmeasured risk', tone: 'red', warn: true };
   return { label: raw, tone: 'gray' };
 }
-
-type Segment = {
-  persona: string;
-  type: AudienceType;
-  description: string;
-  metrics: { value: string; caption?: string }[];
-  priority?: Priority;
-};
 
 function parseSegment(item: string): Segment {
   const { title, text } = splitFeature(item);
@@ -82,11 +80,11 @@ function Metrics({ metrics }: { metrics: Segment['metrics'] }) {
       {metrics.map((metric, index) => (
         <div key={index}>
           <div className="text-2xl font-bold text-foreground">
-            <Inline text={metric.value} />
+            <InlineMarkdown text={metric.value} />
           </div>
           {metric.caption ? (
             <div className="text-sm text-muted-foreground">
-              <Inline text={metric.caption} />
+              <InlineMarkdown text={metric.caption} />
             </div>
           ) : null}
         </div>
@@ -107,10 +105,10 @@ function SegmentCard({ segment, hero }: { segment: Segment; hero: boolean }) {
         {segment.type.label.toUpperCase()}
       </span>
       <h3 className="mt-3 text-lg font-bold text-foreground">
-        <Inline text={segment.persona} />
+        <InlineMarkdown text={segment.persona} />
       </h3>
       <p className="mt-2 text-sm text-muted-foreground">
-        <Inline text={segment.description} />
+        <InlineMarkdown text={segment.description} />
       </p>
       {hero && segment.metrics.length ? <Metrics metrics={segment.metrics} /> : null}
       {segment.priority ? (
@@ -122,14 +120,14 @@ function SegmentCard({ segment, hero }: { segment: Segment; hero: boolean }) {
   );
 }
 
-export const Audience = rawBody(({ body = '' }: RawBodyProps) => {
-  const parsed = parseComponentBody('Audience', 'markdown-list-cards', body);
-  const segments = parsed.items.map(parseSegment);
+export function Audience({ body = '', className, ...attributes }: StructuredBodyProps) {
+  const { items } = parseComponentBody('Audience', 'markdown-list-cards', body);
+  const segments = items.map(parseSegment);
   const heroIndex = segments.findIndex((segment) => segment.type.primary);
   const hero = heroIndex >= 0 ? segments[heroIndex] : undefined;
   const rest = segments.filter((_, index) => index !== heroIndex);
   return (
-    <Block name="Audience">
+    <StructuredBlock name="Audience" className={className} {...attributes}>
       <div className="flex flex-col gap-4">
         {hero ? <SegmentCard segment={hero} hero /> : null}
         {rest.length ? (
@@ -140,6 +138,6 @@ export const Audience = rawBody(({ body = '' }: RawBodyProps) => {
           </div>
         ) : null}
       </div>
-    </Block>
+    </StructuredBlock>
   );
-}, 'Audience');
+}

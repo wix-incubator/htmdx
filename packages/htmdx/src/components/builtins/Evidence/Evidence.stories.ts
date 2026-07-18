@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { createComponentStory, type ComponentStoryArgs } from '../storybook/component-story';
-import { audience } from './audience';
+import { createComponentStory, type ComponentStoryArgs } from '../../../storybook/component-story';
+import { Evidence } from './index';
 
 const meta = {
-  title: 'Components/default/Audience',
-  ...createComponentStory(audience),
+  title: 'Components/Built-ins/Evidence',
+  ...createComponentStory(Evidence),
 } satisfies Meta<ComponentStoryArgs>;
 
 export default meta;

@@ -1,20 +1,10 @@
 import { parseComponentBody } from './body-contracts';
-import { audience } from './audience';
-import { compare } from './compare';
-import { evidence } from './evidence';
-import { finding } from './finding';
 import { intentList } from './intent-list';
 import { openQuestions } from './open-questions';
 import { signalGrid } from './signal-grid';
-import { sources } from './sources';
 import type { HtmdxComponent } from './types';
 
 export const builtInComponents = [
-  compare,
-  finding,
-  evidence,
-  sources,
-  audience,
   intentList,
   signalGrid,
   openQuestions,

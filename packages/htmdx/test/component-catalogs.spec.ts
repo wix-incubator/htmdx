@@ -29,6 +29,11 @@ describe('component definition catalogs', () => {
     expect(Object.keys(builtinDefinitions)).toEqual(
       expect.arrayContaining([
         'ExecutiveSummary',
+        'Compare',
+        'Finding',
+        'Evidence',
+        'Sources',
+        'Audience',
         'Callout',
         'SourceQuote',
         'MetricStrip',
@@ -130,6 +135,39 @@ Ship **one HTML file** with editable HTMDX source.
 
     expect(rendered.ok && rendered.html).toContain('id="summary"');
     expect(rendered.ok && rendered.html).toContain('data-state="final"');
+  });
+});
+
+describe('insight and evidence Built-ins through the definition catalog', () => {
+  test.each([
+    ['Compare', '- **Current:** Manual review', 'Current'],
+    ['Finding', '- **Drift:** Runtime support was split across catalogs.', 'Drift'],
+    ['Evidence', '- **Runtime:** The exported definition drives registration.', 'Runtime'],
+    ['Sources', '- **Product Strategy**', 'Product Strategy'],
+    [
+      'Audience',
+      '- **Store owner — Primary:** Needs clear product data. · metrics: 72% — adoption · priority: High',
+      'Store owner',
+    ],
+  ])('parses and renders <%s> card-list Markdown', (name, body, output) => {
+    const rendered = compile(`<${name}>\n${body}\n</${name}>`);
+
+    expect(rendered).toMatchObject({ ok: true, components: [name] });
+    expect(rendered.ok && rendered.html).toContain(`data-htmdx-component="${name}"`);
+    expect(rendered.ok && rendered.html).toContain(output);
+  });
+
+  test.each([
+    ['Compare', 'Current: Manual review'],
+    ['Finding', 'Drift: Split catalogs'],
+    ['Evidence', 'Runtime: Exported definitions'],
+    ['Sources', 'Product Strategy'],
+    ['Audience', 'Store owner — Primary'],
+  ])('keeps <%s> card-list validation actionable', (name, body) => {
+    expect(compile(`<${name}>\n${body}\n</${name}>`)).toMatchObject({
+      ok: false,
+      error: expect.stringContaining("one or more non-empty '- item' rows"),
+    });
   });
 });
 

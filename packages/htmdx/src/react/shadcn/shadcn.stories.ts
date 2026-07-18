@@ -39,12 +39,6 @@ export const CardWithRegularText: Story = {
       '<Card>\n  <CardContent>Regular text is padded inside the card content.</CardContent>\n</Card>',
   },
 };
-export const Badge: Story = {
-  args: {
-    htmdx:
-      '<Card>\n  <CardHeader>\n    <CardTitle>Badge variants</CardTitle>\n    <CardDescription>Status and label treatments.</CardDescription>\n  </CardHeader>\n  <CardContent class="flex flex-wrap gap-2">\n    <Badge>Default</Badge>\n    <Badge variant="secondary">Secondary</Badge>\n    <Badge variant="destructive">Destructive</Badge>\n    <Badge variant="outline">Outline</Badge>\n  </CardContent>\n</Card>',
-  },
-};
 export const Button: Story = {
   args: {
     htmdx:

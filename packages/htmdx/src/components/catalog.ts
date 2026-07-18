@@ -10,7 +10,6 @@ import { dataTable } from './data-table';
 import { decisionMatrix } from './decision-matrix';
 import { decisionTable } from './decision-table';
 import { evidence } from './evidence';
-import { executiveSummary } from './executive-summary';
 import { finding } from './finding';
 import { intentList } from './intent-list';
 import { metricStrip } from './metric-strip';
@@ -24,7 +23,6 @@ import { timeline } from './timeline';
 import type { HtmdxComponent } from './types';
 
 export const builtInComponents = [
-  executiveSummary,
   callout,
   sourceQuote,
   metricStrip,

@@ -15,11 +15,13 @@ describe('component manifest', () => {
     expect(builtinEntries.map(({ name }) => name)).toEqual(
       builtInComponents.map(({ name }) => name),
     );
+    expect(manifest.components.some((entry) => entry.source === 'built-in')).toBe(true);
     expect(manifest.components.some((entry) => entry.source === 'shadcn')).toBe(true);
     for (const component of manifest.components) {
       expect(component.name).toBeTruthy();
       expect(component.purpose).toBeTruthy();
       expect('renderer' in component).toBe(false);
+      expect('Component' in component).toBe(false);
     }
   });
 

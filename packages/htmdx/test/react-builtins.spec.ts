@@ -1,10 +1,13 @@
 import { describe, expect, test } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
+import * as builtinDefinitions from '../src/components/builtins';
+import * as shadcnDefinitions from '../src/components/shadcn';
 import { builtInReactComponents, compileToReact } from '../src/react';
 import { createReactComponentManifest } from '../src/react/component-manifest';
 import { shadcnComponents } from '../src/react/shadcn';
 
 const merged = { ...builtInReactComponents, ...shadcnComponents };
+const definitions = [...Object.values(builtinDefinitions), ...Object.values(shadcnDefinitions)];
 
 describe('built-ins in the React path', () => {
   test('renders the ExecutiveSummary shell and MetricStrip as native JSX', () => {
@@ -18,11 +21,11 @@ Ship **one HTML file** with editable HTMDX source.
 - Format: **HTML**
 - Source: **HTMDX**
 </MetricStrip>`,
-        { components: merged },
+        { components: merged, definitions },
       ),
     );
 
-    expect(html).toContain('htmdx-executive-summary');
+    expect(html).toContain('data-htmdx-component="ExecutiveSummary"');
     expect(html).toContain('<strong>one HTML file</strong>');
     expect(html).toContain('data-htmdx-component="MetricStrip"');
     expect(html).toContain('HTMDX');
@@ -74,11 +77,14 @@ Artifacts should remain editable.
     expect(html).toContain('Artifacts should remain editable.');
   });
 
-  test('react manifest covers exactly the merged component map', () => {
+  test('react manifest covers exactly the merged runtime catalog', () => {
     const manifest = createReactComponentManifest();
     const manifestNames = manifest.components.map((component) => component.name).toSorted();
-    const mapNames = Object.keys(merged).toSorted();
-    expect(manifestNames).toEqual(mapNames);
+    const catalogNames = [
+      ...Object.keys(merged),
+      ...definitions.map((definition) => definition.name),
+    ].toSorted();
+    expect(manifestNames).toEqual(catalogNames);
     expect(manifest.format).toBe('htmdx-react@1');
   });
 });

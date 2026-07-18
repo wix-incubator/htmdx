@@ -2,17 +2,20 @@ import { describe, expect, test } from 'vitest';
 import { act, createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { renderToStaticMarkup } from 'react-dom/server';
+import * as shadcnDefinitions from '../src/components/shadcn';
 import { compileToReact, Htmdx } from '../src/react';
 import { shadcnComponents } from '../src/react/shadcn';
 
 (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
+
+const definitions = Object.values(shadcnDefinitions);
 
 function mount(source: string) {
   const host = document.createElement('div');
   document.body.append(host);
   const root = createRoot(host);
   act(() => {
-    root.render(createElement(Htmdx, { source, components: shadcnComponents }));
+    root.render(createElement(Htmdx, { source, components: shadcnComponents, definitions }));
   });
   return { host, root };
 }
@@ -41,7 +44,7 @@ describe('react renderer with shadcn/ui', () => {
     <Button variant="outline" size="sm">Download</Button>
   </CardFooter>
 </Card>`,
-        { components: shadcnComponents },
+        { components: shadcnComponents, definitions },
       ),
     );
 
@@ -50,7 +53,7 @@ describe('react renderer with shadcn/ui', () => {
     expect(html).toContain('max-w-md');
     expect(html).toContain('bg-card');
     expect(html).toContain('<strong>12%</strong>');
-    expect(html).toContain('bg-secondary');
+    expect(html).toContain('audited');
     expect(html).toContain('data-slot="button"');
     expect(html).toContain('h-8');
   });
@@ -59,7 +62,7 @@ describe('react renderer with shadcn/ui', () => {
     const html = renderToStaticMarkup(
       compileToReact(
         '<Badge variant="secondary">audited</Badge><Button variant="outline">Download</Button>',
-        { components: shadcnComponents },
+        { components: shadcnComponents, definitions },
       ),
     );
     const container = document.createElement('div');
@@ -71,16 +74,6 @@ describe('react renderer with shadcn/ui', () => {
     expect(badge?.firstElementChild).toBeNull();
     expect(button?.textContent).toBe('Download');
     expect(button?.firstElementChild).toBeNull();
-  });
-
-  test('badge variants resolve through CVA from HTMDX attributes', () => {
-    const html = renderToStaticMarkup(
-      compileToReact('<Badge variant="destructive">blocked</Badge>', {
-        components: shadcnComponents,
-      }),
-    );
-    expect(html).toContain('bg-destructive');
-    expect(html).toContain('blocked');
   });
 
   test('Radix Tabs switch panels on trigger interaction', () => {

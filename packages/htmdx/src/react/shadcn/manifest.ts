@@ -30,12 +30,6 @@ export const shadcnManifestComponents: readonly HtmdxReactManifestComponent[] = 
   { name: 'CardContent', purpose: 'Main body of a Card; markdown and components allowed.' },
   { name: 'CardFooter', purpose: 'Footer row of a Card, usually Buttons or Badges.' },
   {
-    name: 'Badge',
-    purpose: 'Small status or label chip.',
-    props: [{ name: 'variant', values: ['default', 'secondary', 'destructive', 'outline'] }],
-    example: '<Badge variant="secondary">audited</Badge>',
-  },
-  {
     name: 'Button',
     purpose: 'Button-styled element. Inert in artifacts: function props cannot be expressed.',
     props: [

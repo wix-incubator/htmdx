@@ -6,7 +6,6 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './
 import { Alert, AlertDescription, AlertTitle } from './alert';
 import { AspectRatio } from './aspect-ratio';
 import { Avatar, AvatarFallback, AvatarImage } from './avatar';
-import { Badge } from './badge';
 import {
   Breadcrumb,
   BreadcrumbEllipsis,
@@ -72,7 +71,6 @@ export const shadcnComponents = {
   Avatar,
   AvatarFallback,
   AvatarImage,
-  Badge: inlineBody(Badge),
   Breadcrumb,
   BreadcrumbEllipsis,
   BreadcrumbItem,

@@ -1,6 +1,3 @@
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+// cn moved to the shadcn category's shared area with the Badge migration;
+// unmigrated shadcn implementations keep importing it from here.
+export { cn } from '../../components/shadcn/shared/utils';

@@ -9,6 +9,9 @@ import {
 } from './component-definition';
 import { flushSync } from 'react-dom';
 import { createRoot, type Root } from 'react-dom/client';
+import * as builtinDefinitionExports from './components/builtins';
+import { executiveSummaryStyles } from './components/builtins/ExecutiveSummary/ExecutiveSummary';
+import * as shadcnDefinitionExports from './components/shadcn';
 import { escapeHtml } from './components/rendering';
 import {
   builtInReactComponents,
@@ -86,9 +89,18 @@ export const DEFAULT_TAG_NAME = 'htmdx-code';
 export const DEFAULT_TAILWIND_BROWSER_SRC = 'https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4';
 const DEFAULT_SOURCE_SELECTOR = 'script[type="text/htmdx"], template[type="text/htmdx"]';
 
+// Definitions exported from the category barrels are the contract-driven
+// bundled catalog. The legacy component maps remain as temporary
+// compatibility adapters for the components that have not migrated yet.
+const bundledDefinitions: HtmdxComponentDefinitions = [
+  ...Object.values(builtinDefinitionExports),
+  ...Object.values(shadcnDefinitionExports),
+];
+
 const bundledComponentNames = [
   ...Object.keys(builtInReactComponents),
   ...Object.keys(shadcnComponents),
+  ...bundledDefinitions.map((definition) => definition.name),
 ];
 assertUniqueComponentNames(bundledComponentNames);
 
@@ -110,6 +122,9 @@ function runtimeOptionsFor(options: HtmdxCompileOptions) {
   };
   const componentNames = new Set(Object.keys(components).map((name) => name.toLowerCase()));
   const definitions = [
+    ...bundledDefinitions.filter(
+      (definition) => !componentNames.has(definition.name.toLowerCase()),
+    ),
     ...globalDefinitions.filter((definition) => !componentNames.has(definition.name.toLowerCase())),
     ...(options.definitions || []),
   ];
@@ -251,7 +266,7 @@ export function register(options: HtmdxRegisterOptions = {}) {
   if (!document.getElementById(STYLE_ID)) {
     const style = document.createElement('style');
     style.id = STYLE_ID;
-    style.textContent = RUNTIME_CSS + THEME_CSS;
+    style.textContent = RUNTIME_CSS + COMPONENT_CSS + THEME_CSS;
     document.head.append(style);
   }
   injectFonts();
@@ -671,6 +686,10 @@ function injectTailwindBrowser(tailwind: HtmdxRegisterOptions['tailwind'] = true
   document.head.append(script);
 }
 
+// Presentation owned by migrated components, colocated with their
+// implementations; the runtime only injects it next to its own chrome CSS.
+const COMPONENT_CSS = executiveSummaryStyles;
+
 // Attribute selector instead of #id: slugs can start with a digit
 // (`## 1. Overview` -> id "1-overview"), which is invalid in an id selector.
 function idSelector(id: string) {
@@ -1040,19 +1059,6 @@ const RUNTIME_CSS = `
   .htmdx-doc-section-card [data-slot="card"] > div:not([data-slot]) {
     padding-left: 20px;
     padding-right: 20px;
-  }
-  .htmdx-executive-summary .htmdx-component-body {
-    background: var(--md-sys-color-primary-container);
-    color: var(--md-sys-color-on-surface);
-    border-radius: var(--md-sys-shape-corner-extra-large);
-    padding: 22px 26px;
-    font-family: var(--md-ref-typeface-brand);
-  }
-  .htmdx-executive-summary .htmdx-component-body p {
-    margin: 0;
-    font-size: 1.0625rem;
-    line-height: 1.55;
-    color: var(--md-sys-color-on-surface);
   }
   .htmdx-callout .htmdx-component-body {
     background: var(--md-sys-color-primary-container);

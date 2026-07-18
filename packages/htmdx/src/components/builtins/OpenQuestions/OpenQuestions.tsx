@@ -1,5 +1,5 @@
 import { parseComponentBody } from '../../body-contracts';
-import { cn } from '../../../react/shadcn/utils';
+import { cn } from '../../shadcn/shared/utils';
 import {
   InlineMarkdown,
   splitFeature,

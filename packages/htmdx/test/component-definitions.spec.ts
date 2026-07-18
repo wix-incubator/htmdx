@@ -1,6 +1,7 @@
 import { createElement, forwardRef, memo, type ReactNode } from 'react';
 import { describe, expect, test } from 'vitest';
-import { compile, registerComponent, registerComponents, type HtmdxComponent } from '../src';
+import { compile, registerComponent, registerComponents } from '../src';
+import type { HtmdxComponent } from '../src/components';
 
 const definition = (
   value: Pick<HtmdxComponent, 'name' | 'body' | 'Component'> &
@@ -335,7 +336,7 @@ friend
     ).toMatchObject({ ok: true });
   });
 
-  test('supports definition-based per-render and global registration alongside legacy APIs', () => {
+  test('supports definition-based per-render and global registration', () => {
     const PerRender = definition({
       name: 'DefinitionPerRender',
       body: 'htmdx',
@@ -370,39 +371,6 @@ friend
     ).toMatchObject({ ok: true });
   });
 
-  test('preserves legacy component override semantics during expansion', () => {
-    const perRender = compile('<ExecutiveSummary>legacy override</ExecutiveSummary>', {
-      components: {
-        ExecutiveSummary: ({ children }: { children?: ReactNode }) =>
-          createElement('output', null, 'per-render:', children),
-      },
-    });
-    expect(perRender.ok && perRender.html).toContain(
-      '<output>per-render:<div><p>legacy override</p></div></output>',
-    );
-
-    registerComponent('LegacyReregistrationFixture', () => createElement('output', null, 'first'), {
-      rerender: false,
-    });
-    registerComponent(
-      'LegacyReregistrationFixture',
-      () => createElement('output', null, 'second'),
-      { rerender: false },
-    );
-    const global = compile('<LegacyReregistrationFixture />');
-    expect(global.ok && global.html).toContain('<output>second</output>');
-
-    registerComponent(
-      'DefinitionGlobalOne',
-      () => createElement('output', null, 'legacy-over-definition'),
-      { rerender: false },
-    );
-    const definitionOverride = compile('<DefinitionGlobalOne />');
-    expect(definitionOverride.ok && definitionOverride.html).toContain(
-      '<output>legacy-over-definition</output>',
-    );
-  });
-
   test('rejects definition name collisions case-insensitively', () => {
     const BundledCollision = definition({
       name: 'executivesummary',
@@ -422,6 +390,15 @@ friend
     });
     expect(() => registerComponent(BundledCollision, { rerender: false })).toThrow(
       'collides with <ExecutiveSummary>',
+    );
+
+    const GlobalCollision = definition({
+      name: 'definitionglobalone',
+      body: 'none',
+      Component: () => null,
+    });
+    expect(() => registerComponent(GlobalCollision, { rerender: false })).toThrow(
+      'collides with <DefinitionGlobalOne>',
     );
   });
 });

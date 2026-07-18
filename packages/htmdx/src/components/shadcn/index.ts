@@ -1,7 +1,5 @@
-// shadcn category barrel: the only bundled inclusion point for migrated
-// shadcn definitions. The runtime registry and the manifest derive from the
-// definitions exported here; unmigrated shadcn components still flow through
-// the legacy react/shadcn map until their migration lands.
+// shadcn category barrel: the sole bundled inclusion point. The runtime
+// registry and manifest derive from these definitions.
 export { Accordion } from './Accordion';
 export { AccordionContent } from './AccordionContent';
 export { AccordionItem } from './AccordionItem';

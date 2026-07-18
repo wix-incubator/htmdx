@@ -183,13 +183,22 @@ React host apps use the module entries instead (react/react-dom are optional
 peer dependencies):
 
 ```tsx
-import { Htmdx, builtInReactComponents } from '@wix/htmdx/react';
-import { shadcnComponents, injectShadcnTheme } from '@wix/htmdx/react/shadcn';
+import { Htmdx } from '@wix/htmdx/react';
+import type { HtmdxComponent } from '@wix/htmdx/components';
+import * as builtins from '@wix/htmdx/components/builtins';
+import * as shadcn from '@wix/htmdx/components/shadcn';
 
-injectShadcnTheme();
+const MyChart = {
+  name: 'MyChart',
+  purpose: 'Show a custom chart.',
+  example: '<MyChart>Quarterly results.</MyChart>',
+  body: 'htmdx',
+  Component: MyChartView,
+} satisfies HtmdxComponent;
+
 <Htmdx
   source={artifactSource}
-  components={{ ...builtInReactComponents, ...shadcnComponents, MyChart }}
+  definitions={[...Object.values(builtins), ...Object.values(shadcn), MyChart]}
 />;
 ```
 

@@ -1,6 +1,6 @@
 import type { HTMLAttributes, ReactNode } from 'react';
 import { renderInline } from '../../../react/markdown';
-import { cn } from '../../../react/shadcn/utils';
+import { cn } from '../../shadcn/shared/utils';
 
 export type StructuredBodyProps = {
   body?: string;

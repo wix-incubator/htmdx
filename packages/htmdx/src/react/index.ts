@@ -6,13 +6,7 @@
 // parsed as XML first (preserves tag/attribute case), falling back to HTML
 // parsing when the body is not well-formed.
 
-import {
-  createElement,
-  Fragment,
-  type ComponentType,
-  type ReactElement,
-  type ReactNode,
-} from 'react';
+import { createElement, Fragment, type ReactElement, type ReactNode } from 'react';
 import { markdownSyntaxSource } from '../components/body-contracts';
 import {
   createDefinitionRegistry,
@@ -26,18 +20,11 @@ import { BUILT_IN_LOGOS } from '../logos';
 import { renderInline, renderMarkdown } from './markdown';
 import { THEME_IDS } from '../themes';
 
-// oxlint-disable-next-line no-explicit-any -- component prop shapes are caller-defined
-export type HtmdxReactComponent = ComponentType<any>;
-
-export type HtmdxReactComponents = Record<string, HtmdxReactComponent>;
-
 export type HtmdxReactOptions = {
-  components?: HtmdxReactComponents;
   definitions?: HtmdxComponentDefinitions;
 };
 
 type RuntimeCatalog = {
-  components: HtmdxReactComponents;
   definitions: Map<string, HtmdxComponent>;
   names: Map<string, string>;
 };
@@ -47,13 +34,14 @@ type Block =
   | { type: 'component'; name: string; attrs: string; body: string };
 
 function createRuntimeCatalog(options: HtmdxReactOptions): RuntimeCatalog {
-  const components = options.components || {};
-  const definitions = createDefinitionRegistry(options.definitions, Object.keys(components));
-  const names = new Map(Object.keys(components).map((name) => [name.toLowerCase(), name]));
-  for (const definition of definitions.values()) {
-    names.set(definition.name.toLowerCase(), definition.name);
-  }
-  return { components, definitions, names };
+  const definitions = createDefinitionRegistry(options.definitions);
+  const names = new Map(
+    Array.from(definitions.values(), (definition) => [
+      definition.name.toLowerCase(),
+      definition.name,
+    ]),
+  );
+  return { definitions, names };
 }
 
 export function compileToReact(source: string, options: HtmdxReactOptions = {}): ReactElement {
@@ -73,10 +61,7 @@ export function compileToReact(source: string, options: HtmdxReactOptions = {}):
 }
 
 export function Htmdx(props: { source: string } & HtmdxReactOptions): ReactElement {
-  return compileToReact(props.source, {
-    components: props.components,
-    definitions: props.definitions,
-  });
+  return compileToReact(props.source, { definitions: props.definitions });
 }
 
 export type HtmdxDocument = {
@@ -366,21 +351,13 @@ function titleFromSource(source: string, meta: Record<string, string>) {
   return markdownTitle ? markdownTitle[1].trim() : '';
 }
 
-export { builtInReactComponents } from './builtins';
-export type {
-  HtmdxBooleanProp,
-  HtmdxComponent,
-  HtmdxComponentDefinitions,
-  HtmdxJsonProp,
-  HtmdxJsonValue,
-  HtmdxNumberProp,
-  HtmdxProp,
-  HtmdxPropType,
-  HtmdxStringProp,
-} from '../component-definition';
-
-export function listComponents(source: string, components: HtmdxReactComponents = {}): string[] {
-  const registry = new Map(Object.keys(components).map((name) => [name.toLowerCase(), name]));
+export function listComponents(
+  source: string,
+  definitions: HtmdxComponentDefinitions = [],
+): string[] {
+  const registry = new Map(
+    definitions.map((definition) => [definition.name.toLowerCase(), definition.name]),
+  );
   return tokenize(stripFrontmatterAndComments(source), registry)
     .filter((block) => block.type === 'component')
     .map((block) => block.name);
@@ -392,9 +369,11 @@ export type HtmdxSourceToken =
 
 export function tokenizeSource(
   source: string,
-  components: HtmdxReactComponents = {},
+  definitions: HtmdxComponentDefinitions = [],
 ): HtmdxSourceToken[] {
-  const registry = new Map(Object.keys(components).map((name) => [name.toLowerCase(), name]));
+  const registry = new Map(
+    definitions.map((definition) => [definition.name.toLowerCase(), definition.name]),
+  );
   return tokenize(stripFrontmatterAndComments(source), registry).map((block) =>
     block.type === 'markdown'
       ? { type: 'markdown' as const, value: block.value }
@@ -408,33 +387,16 @@ function renderComponentBlock(
   key: string,
 ): ReactNode {
   const definition = catalog.definitions.get(block.name.toLowerCase());
-  if (definition) {
-    return renderDefinition(
-      definition,
-      definitionPropsFromAttributes(definition, parseAttributes(block.attrs)),
-      block.body,
-      catalog,
-      key,
-    );
+  if (!definition) {
+    throw new Error(`unknown component <${block.name}>`);
   }
-
-  const component = catalog.components[block.name];
-  const props = { ...attrsToProps(block.attrs), key };
-
-  // Raw-body built-ins (structured JSX components) parse and validate their
-  // own HTMDX body through the body contracts instead of taking children.
-  if ((component as { htmdxRawBody?: boolean }).htmdxRawBody) {
-    return createElement(component, { ...props, body: block.body });
-  }
-
-  if (
-    (component as { htmdxInlineBody?: boolean }).htmdxInlineBody &&
-    !hasBodyElements(block.body)
-  ) {
-    return createElement(component, props, renderInline(block.body.trim()));
-  }
-
-  return createElement(component, props, bodyToChildren(block.body, catalog, key));
+  return renderDefinition(
+    definition,
+    definitionPropsFromAttributes(definition, parseAttributes(block.attrs)),
+    block.body,
+    catalog,
+    key,
+  );
 }
 
 function renderDefinition(
@@ -476,19 +438,14 @@ function htmdxBodyToChildren(body: string, catalog: RuntimeCatalog, keyPrefix: s
   if (!hasBodyElements(body) && !isBlockMarkdown(trimmed)) {
     return renderInline(trimmed);
   }
-  return bodyToChildren(body, catalog, keyPrefix, true);
+  return bodyToChildren(body, catalog, keyPrefix);
 }
 
 function isBlockMarkdown(body: string): boolean {
   return /\r?\n/.test(body) || /^(?:#{1,6}\s|[-*+]\s|\d+\.\s|>\s|```|~~~|---$)/.test(body);
 }
 
-function bodyToChildren(
-  body: string,
-  catalog: RuntimeCatalog,
-  keyPrefix: string,
-  contractDriven = false,
-): ReactNode {
+function bodyToChildren(body: string, catalog: RuntimeCatalog, keyPrefix: string): ReactNode {
   if (!body) {
     return null;
   }
@@ -506,9 +463,7 @@ function bodyToChildren(
   const { nodes, sourceAttributes } = parseBodyNodes(body);
 
   const children = nodes
-    .map((node, index) =>
-      nodeToReact(node, catalog, `${keyPrefix}-${index}`, contractDriven, sourceAttributes),
-    )
+    .map((node, index) => nodeToReact(node, catalog, `${keyPrefix}-${index}`, sourceAttributes))
     .filter((child) => child !== null);
   return children.length === 1 ? children[0] : children;
 }
@@ -521,9 +476,8 @@ function nodeToReact(
   node: Node,
   catalog: RuntimeCatalog,
   key: string,
-  contractDriven = false,
   sourceAttributes: WeakMap<Element, SourceAttribute[]> = new WeakMap(),
-  renderBlockMarkdownText = contractDriven,
+  renderBlockMarkdownText = true,
 ): ReactNode | null {
   if (node.nodeType === Node.TEXT_NODE) {
     const text = node.textContent || '';
@@ -543,7 +497,7 @@ function nodeToReact(
   const element = node as Element;
   const lower = element.tagName.toLowerCase();
   const canonical = catalog.names.get(lower);
-  if (contractDriven && !canonical && /^[A-Z]/.test(element.tagName)) {
+  if (!canonical && /^[A-Z]/.test(element.tagName)) {
     throw new Error(`unknown component <${element.tagName}>`);
   }
   const definition = canonical ? catalog.definitions.get(lower) : undefined;
@@ -565,23 +519,17 @@ function nodeToReact(
     );
   }
 
-  const target: HtmdxReactComponent | string = canonical ? catalog.components[canonical] : lower;
+  const target = lower;
   const props: Record<string, unknown> = { key };
   for (const attr of element.getAttributeNames()) {
-    if (contractDriven && /^on/i.test(attr)) {
+    if (/^on/i.test(attr)) {
       throw new Error(`event handler attribute "${attr}" is not allowed`);
     }
     props[normalizePropName(attr)] = parseAttrValue(element.getAttribute(attr) || '');
   }
 
-  if ((target as { htmdxRawBody?: boolean }).htmdxRawBody) {
-    return createElement(target, { ...props, body: element.innerHTML.trim() });
-  }
-
   const children = Array.from(element.childNodes)
-    .map((child, index) =>
-      nodeToReact(child, catalog, `${key}-${index}`, contractDriven, sourceAttributes, false),
-    )
+    .map((child, index) => nodeToReact(child, catalog, `${key}-${index}`, sourceAttributes, false))
     .filter((child) => child !== null);
 
   return createElement(target, props, ...children);
@@ -846,16 +794,6 @@ function assertDeclarativeBody(componentName: string, body: string, allowTags = 
   if (/[{}]/.test(syntax)) {
     throw new Error(`component <${componentName}> body does not allow brace expressions`);
   }
-}
-
-function attrsToProps(attrs: string): Record<string, unknown> {
-  const props: Record<string, unknown> = {};
-  for (const attribute of parseAttributes(attrs)) {
-    props[normalizePropName(attribute.name)] = attribute.bare
-      ? true
-      : parseAttrValue(attribute.value ?? '');
-  }
-  return props;
 }
 
 function normalizePropName(name: string) {

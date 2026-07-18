@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { register } from '../../../index';
-import { injectShadcnTheme } from '../../../react/shadcn';
+import { injectShadcnTheme } from '../shared/theme';
 import { createHtmdxHost } from '../../../storybook/component-story';
 import { Badge as BadgeDefinition } from './index';
 

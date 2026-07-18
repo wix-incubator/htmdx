@@ -1,7 +1,5 @@
-// Built-in category barrel: the only bundled inclusion point for migrated
-// Built-in definitions. The runtime registry and the manifest derive from the
-// definitions exported here; unmigrated Built-ins still flow through the
-// legacy catalog until their migration lands.
+// Built-in category barrel: the sole bundled inclusion point. The runtime
+// registry and manifest derive from these definitions.
 export { Audience } from './Audience';
 export { Callout } from './Callout';
 export { ChartArea } from './ChartArea';

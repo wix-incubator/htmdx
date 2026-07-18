@@ -21,7 +21,9 @@ const moduleConfig = {
   input: {
     index: './src/index.ts',
     react: './src/react/index.ts',
-    'react-shadcn': './src/react/shadcn/index.ts',
+    components: './src/components/index.ts',
+    'components-builtins': './src/components/builtins/index.ts',
+    'components-shadcn': './src/components/shadcn/index.ts',
   },
   external: externalDependencies,
   output: {

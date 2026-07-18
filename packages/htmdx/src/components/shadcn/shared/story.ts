@@ -1,6 +1,6 @@
 import type { HtmdxComponent } from '../../../component-definition';
 import { register } from '../../../index';
-import { injectShadcnTheme } from '../../../react/shadcn';
+import { injectShadcnTheme } from '../shared/theme';
 import { createHtmdxHost } from '../../../storybook/component-story';
 
 injectShadcnTheme();

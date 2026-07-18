@@ -1,6 +1,6 @@
 {
   "name": "@wix/htmdx",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "Render editable HTMDX source inside plain HTML artifacts.",
   "keywords": [
     "agents",
@@ -46,9 +46,17 @@
       "types": "./dist/src/react/index.d.ts",
       "default": "./dist/react.js"
     },
-    "./react/shadcn": {
-      "types": "./dist/src/react/shadcn/index.d.ts",
-      "default": "./dist/react-shadcn.js"
+    "./components": {
+      "types": "./dist/src/components/index.d.ts",
+      "default": "./dist/components.js"
+    },
+    "./components/builtins": {
+      "types": "./dist/src/components/builtins/index.d.ts",
+      "default": "./dist/components-builtins.js"
+    },
+    "./components/shadcn": {
+      "types": "./dist/src/components/shadcn/index.d.ts",
+      "default": "./dist/components-shadcn.js"
     }
   },
   "publishConfig": {
@@ -61,7 +69,7 @@
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
     "build": "yarn build:library && yarn build-storybook",
-    "build:library": "yarn typecheck && rollup -c && yarn build:browser",
+    "build:library": "rm -rf dist && yarn typecheck && rollup -c && yarn build:browser",
     "build:browser": "vite build -c vite.browser.config.ts",
     "build:react-demo": "vite build -c vite.demo.config.ts && cp src/react/demo/index.html dist/react-demo/ && cp src/react/demo/artifact.html dist/",
     "build-storybook": "../../node_modules/.bin/storybook build",

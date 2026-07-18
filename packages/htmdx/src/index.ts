@@ -15,41 +15,14 @@ import { executiveSummaryStyles } from './components/builtins/ExecutiveSummary/E
 import { sourceQuoteStyles } from './components/builtins/SourceQuote/SourceQuote';
 import * as shadcnDefinitionExports from './components/shadcn';
 import { escapeHtml } from './components/rendering';
-import {
-  builtInReactComponents,
-  compileDocument,
-  tokenizeSource,
-  type HtmdxReactComponent,
-  type HtmdxReactComponents,
-} from './react';
-import { shadcnComponents } from './react/shadcn';
+import { compileDocument, tokenizeSource } from './react';
 import { THEME_CSS } from './themes';
 import { VERSION } from './version';
 
 export { THEME_IDS, type HtmdxThemeId } from './themes';
 export { VERSION } from './version';
-export { injectShadcnTheme, shadcnComponents } from './react/shadcn';
-export {
-  builtInReactComponents,
-  compileDocument,
-  compileToReact,
-  Htmdx,
-  listComponents,
-  type HtmdxReactComponent,
-  type HtmdxReactComponents,
-} from './react';
-export type {
-  HtmdxBooleanProp,
-  HtmdxComponent,
-  HtmdxComponentDefinitions,
-  HtmdxJsonProp,
-  HtmdxJsonValue,
-  HtmdxNumberProp,
-  HtmdxProp,
-  HtmdxPropType,
-  HtmdxStringProp,
-} from './component-definition';
-
+export { injectShadcnTheme } from './components/shadcn/shared/theme';
+export { compileDocument, compileToReact, Htmdx, listComponents } from './react';
 export type HtmdxToken =
   | { type: 'markdown'; value: string }
   | { type: 'component'; name: string; body: string };
@@ -64,7 +37,6 @@ export type HtmdxThemeDefinition = {
 };
 
 export type HtmdxCompileOptions = {
-  components?: HtmdxReactComponents;
   definitions?: HtmdxComponentDefinitions;
 };
 
@@ -91,22 +63,12 @@ export const DEFAULT_TAG_NAME = 'htmdx-code';
 export const DEFAULT_TAILWIND_BROWSER_SRC = 'https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4';
 const DEFAULT_SOURCE_SELECTOR = 'script[type="text/htmdx"], template[type="text/htmdx"]';
 
-// Definitions exported from the category barrels are the contract-driven
-// bundled catalog. The legacy component maps remain as temporary
-// compatibility adapters for the components that have not migrated yet.
 const bundledDefinitions: HtmdxComponentDefinitions = [
   ...Object.values(builtinDefinitionExports),
   ...Object.values(shadcnDefinitionExports),
 ];
+createDefinitionRegistry(bundledDefinitions);
 
-const bundledComponentNames = [
-  ...Object.keys(builtInReactComponents),
-  ...Object.keys(shadcnComponents),
-  ...bundledDefinitions.map((definition) => definition.name),
-];
-assertUniqueComponentNames(bundledComponentNames);
-
-const globalReactComponents: HtmdxReactComponents = {};
 const globalDefinitions: HtmdxComponent[] = [];
 const registeredTagNames = new Set([DEFAULT_TAG_NAME]);
 const sourceCache = new WeakMap<Element, HtmdxSourceResult & { ok: true }>();
@@ -116,32 +78,9 @@ const reactRoots = new WeakMap<Element, HostRoot>();
 const stickyObservers = new WeakMap<Element, IntersectionObserver>();
 
 function runtimeOptionsFor(options: HtmdxCompileOptions) {
-  const components = {
-    ...builtInReactComponents,
-    ...shadcnComponents,
-    ...globalReactComponents,
-    ...options.components,
-  };
-  const componentNames = new Set(Object.keys(components).map((name) => name.toLowerCase()));
-  const definitions = [
-    ...bundledDefinitions.filter(
-      (definition) => !componentNames.has(definition.name.toLowerCase()),
-    ),
-    ...globalDefinitions.filter((definition) => !componentNames.has(definition.name.toLowerCase())),
-    ...(options.definitions || []),
-  ];
-  createDefinitionRegistry(definitions, Object.keys(components));
-  return { components, definitions };
-}
-
-function componentsFor(options: HtmdxCompileOptions): HtmdxReactComponents {
-  const runtime = runtimeOptionsFor(options);
-  return {
-    ...runtime.components,
-    ...Object.fromEntries(
-      runtime.definitions.map((definition) => [definition.name, definition.Component]),
-    ),
-  };
+  const definitions = [...bundledDefinitions, ...globalDefinitions, ...(options.definitions || [])];
+  createDefinitionRegistry(definitions);
+  return { definitions };
 }
 
 export function compile(source: string, options: HtmdxCompileOptions = {}): HtmdxCompileResult {
@@ -184,61 +123,24 @@ function renderStaticHtml(element: ReactElement): string {
   }
 }
 
-// Extension API: complete definitions are the additive contract-driven path.
-// The name + React component signatures remain available during expansion.
-export function registerComponent(
-  definition: HtmdxComponent,
-  options?: HtmdxExtensionOptions,
-): Promise<unknown>;
-export function registerComponent(
-  name: string,
-  component: HtmdxReactComponent,
-  options?: HtmdxExtensionOptions,
-): Promise<unknown>;
-export function registerComponent(
-  nameOrDefinition: string | HtmdxComponent,
-  componentOrOptions: HtmdxReactComponent | HtmdxExtensionOptions = {},
-  legacyOptions: HtmdxExtensionOptions = {},
-) {
-  if (typeof nameOrDefinition === 'object') {
-    registerDefinitions([nameOrDefinition]);
-    const options = componentOrOptions as HtmdxExtensionOptions;
-    return options.rerender === false ? Promise.resolve() : rerender();
-  }
-
-  assertComponentName(nameOrDefinition);
-  globalReactComponents[nameOrDefinition] = componentOrOptions as HtmdxReactComponent;
-  return legacyOptions.rerender === false ? Promise.resolve() : rerender();
+export function registerComponent(definition: HtmdxComponent, options: HtmdxExtensionOptions = {}) {
+  registerDefinitions([definition]);
+  return options.rerender === false ? Promise.resolve() : rerender();
 }
 
 export function registerComponents(
   definitions: HtmdxComponentDefinitions,
-  options?: HtmdxExtensionOptions,
-): Promise<unknown>;
-export function registerComponents(
-  components: HtmdxReactComponents,
-  options?: HtmdxExtensionOptions,
-): Promise<unknown>;
-export function registerComponents(
-  componentsOrDefinitions: HtmdxReactComponents | HtmdxComponentDefinitions,
   options: HtmdxExtensionOptions = {},
 ) {
-  if (Array.isArray(componentsOrDefinitions)) {
-    registerDefinitions(componentsOrDefinitions);
-  } else {
-    const entries = Object.entries(componentsOrDefinitions);
-    for (const [name] of entries) {
-      assertComponentName(name);
-    }
-    for (const [name, component] of entries) {
-      globalReactComponents[name] = component;
-    }
-  }
+  registerDefinitions(definitions);
   return options.rerender === false ? Promise.resolve() : rerender();
 }
 
 function registerDefinitions(definitions: HtmdxComponentDefinitions) {
-  createDefinitionRegistry(definitions, registeredComponentNames());
+  createDefinitionRegistry(definitions, [
+    ...bundledDefinitions.map(({ name }) => name),
+    ...globalDefinitions.map(({ name }) => name),
+  ]);
   globalDefinitions.push(...definitions);
 }
 
@@ -546,17 +448,11 @@ function activateStickyHeader(root: Element) {
 }
 
 export function tokenizeBlocks(source: string, options: HtmdxCompileOptions = {}): HtmdxToken[] {
-  return tokenizeSource(source, componentsFor(options));
+  return tokenizeSource(source, runtimeOptionsFor(options).definitions);
 }
 
 export function canonicalComponentName(name: string, options: HtmdxCompileOptions = {}) {
-  const names = [
-    ...bundledComponentNames,
-    ...Object.keys(globalReactComponents),
-    ...(options.components ? Object.keys(options.components) : []),
-    ...globalDefinitions.map((definition) => definition.name),
-    ...(options.definitions || []).map((definition) => definition.name),
-  ];
+  const names = runtimeOptionsFor(options).definitions.map((definition) => definition.name);
   return names.find((known) => known.toLowerCase() === name.toLowerCase()) || name;
 }
 
@@ -598,35 +494,6 @@ function renderError(host: Element, error: string, source: string) {
     `<div class="htmdx-error">Renderer fallback: ${escapeHtml(error)}</div>`,
     `<pre class="htmdx-raw-source">${escapeHtml(source || 'No HTMDX source was available.')}</pre>`,
   ].join('');
-}
-
-function assertComponentName(name: string) {
-  if (!/^[A-Za-z][A-Za-z0-9]*$/.test(name)) {
-    throw new Error(`invalid component name "${name}"`);
-  }
-}
-
-function registeredComponentNames() {
-  return [
-    ...bundledComponentNames,
-    ...Object.keys(globalReactComponents),
-    ...globalDefinitions.map(({ name }) => name),
-  ];
-}
-
-function assertUniqueComponentNames(names: Iterable<string>) {
-  assertAvailableComponentNames(names, []);
-}
-
-function assertAvailableComponentNames(names: Iterable<string>, reservedNames: Iterable<string>) {
-  const known = new Map(Array.from(reservedNames, (name) => [name.toLowerCase(), name]));
-  for (const name of names) {
-    const existing = known.get(name.toLowerCase());
-    if (existing) {
-      throw new Error(`component <${name}> collides with <${existing}>`);
-    }
-    known.set(name.toLowerCase(), name);
-  }
 }
 
 function injectThemeStyle(theme: HtmdxThemeDefinition | undefined) {

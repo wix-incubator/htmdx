@@ -6,7 +6,7 @@ import { compile } from '../src';
 import type { HtmdxComponent } from '../src/component-definition';
 import * as builtinDefinitions from '../src/components/builtins';
 import * as shadcnDefinitions from '../src/components/shadcn';
-import { createReactComponentManifest } from '../src/react/component-manifest';
+import { createComponentManifest } from '../src/component-manifest';
 
 const componentsDirectory = resolve(dirname(fileURLToPath(import.meta.url)), '../src/components');
 
@@ -156,7 +156,7 @@ describe('component definition catalogs', () => {
   );
 
   test('the manifest projects definition catalogs with generated source and no executable fields', () => {
-    const manifest = createReactComponentManifest();
+    const manifest = createComponentManifest();
 
     for (const { source, definition } of allDefinitions) {
       const entries = manifest.components.filter((candidate) => candidate.name === definition.name);

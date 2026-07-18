@@ -1,7 +1,6 @@
 import { createRoot } from 'react-dom/client';
 import * as shadcnDefinitions from '../../components/shadcn';
 import { Htmdx } from '../index';
-import { shadcnComponents } from '../shadcn';
 
 const source = `## Q3 Report
 
@@ -49,11 +48,7 @@ const root = document.getElementById('root');
 if (root) {
   createRoot(root).render(
     <div className="mx-auto flex max-w-2xl flex-col gap-6 p-8">
-      <Htmdx
-        source={source}
-        components={shadcnComponents}
-        definitions={Object.values(shadcnDefinitions)}
-      />
+      <Htmdx source={source} definitions={Object.values(shadcnDefinitions)} />
     </div>,
   );
 }

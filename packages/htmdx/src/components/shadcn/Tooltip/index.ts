@@ -18,12 +18,14 @@ export const Tooltip = {
     {
       name: 'delayDuration',
       type: 'number',
+      default: 0,
       min: 0,
       description: 'Milliseconds to wait before opening this tooltip.',
     },
     {
       name: 'disableHoverableContent',
       type: 'boolean',
+      default: false,
       description:
         'Close when the pointer leaves the trigger instead of allowing hover over content.',
     },

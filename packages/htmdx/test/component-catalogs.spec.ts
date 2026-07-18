@@ -665,6 +665,15 @@ describe('floating-content families at the HTMDX catalog boundary', () => {
       expect.objectContaining({ name: 'defaultOpen', type: 'boolean', default: false }),
       expect.objectContaining({ name: 'modal', type: 'boolean', default: false }),
     ]);
+    expect(shadcnDefinitions.Tooltip.props).toEqual([
+      expect.objectContaining({ name: 'defaultOpen', type: 'boolean', default: false }),
+      expect.objectContaining({ name: 'delayDuration', type: 'number', default: 0 }),
+      expect.objectContaining({
+        name: 'disableHoverableContent',
+        type: 'boolean',
+        default: false,
+      }),
+    ]);
     for (const trigger of [
       shadcnDefinitions.HoverCardTrigger,
       shadcnDefinitions.PopoverAnchor,

@@ -26,7 +26,9 @@ const allDefinitions = catalogs.flatMap(({ directory, source, definitions }) =>
 
 describe('component definition catalogs', () => {
   test('category barrels export each definition once under its PascalCase name', () => {
-    expect(Object.keys(builtinDefinitions)).toContain('ExecutiveSummary');
+    expect(Object.keys(builtinDefinitions)).toEqual(
+      expect.arrayContaining(['ExecutiveSummary', 'Callout', 'SourceQuote']),
+    );
     expect(Object.keys(shadcnDefinitions)).toContain('Badge');
 
     const names = new Set<string>();
@@ -73,7 +75,9 @@ describe('component definition catalogs', () => {
     const manifest = createReactComponentManifest();
 
     for (const { source, definition } of allDefinitions) {
-      const entry = manifest.components.find((candidate) => candidate.name === definition.name);
+      const entries = manifest.components.filter((candidate) => candidate.name === definition.name);
+      expect(entries).toHaveLength(1);
+      const [entry] = entries;
       expect(entry).toMatchObject({
         name: definition.name,
         purpose: definition.purpose,
@@ -111,6 +115,25 @@ Ship **one HTML file** with editable HTMDX source.
 
     expect(rendered.ok && rendered.html).toContain('id="summary"');
     expect(rendered.ok && rendered.html).toContain('data-state="final"');
+  });
+});
+
+describe('narrative Built-ins through the definition catalog', () => {
+  test.each([
+    ['Callout', '**Important:** Validate the artifact before publishing.'],
+    ['SourceQuote', '“Artifacts should remain editable.”'],
+  ])('renders <%s> Markdown in the default runtime', (name, body) => {
+    const rendered = compile(`<${name}>\n${body}\n</${name}>`);
+
+    expect(rendered).toMatchObject({ ok: true, components: [name] });
+    expect(rendered.ok && rendered.html).toContain(`data-htmdx-component="${name}"`);
+    if (name === 'Callout') {
+      expect(rendered.ok && rendered.html).toContain(
+        '<strong>Important:</strong> Validate the artifact before publishing.',
+      );
+    } else {
+      expect(rendered.ok && rendered.html).toContain('“Artifacts should remain editable.”');
+    }
   });
 });
 

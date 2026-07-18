@@ -10,7 +10,9 @@ import {
 import { flushSync } from 'react-dom';
 import { createRoot, type Root } from 'react-dom/client';
 import * as builtinDefinitionExports from './components/builtins';
+import { calloutStyles } from './components/builtins/Callout/Callout';
 import { executiveSummaryStyles } from './components/builtins/ExecutiveSummary/ExecutiveSummary';
+import { sourceQuoteStyles } from './components/builtins/SourceQuote/SourceQuote';
 import * as shadcnDefinitionExports from './components/shadcn';
 import { escapeHtml } from './components/rendering';
 import {
@@ -688,7 +690,7 @@ function injectTailwindBrowser(tailwind: HtmdxRegisterOptions['tailwind'] = true
 
 // Presentation owned by migrated components, colocated with their
 // implementations; the runtime only injects it next to its own chrome CSS.
-const COMPONENT_CSS = executiveSummaryStyles;
+const COMPONENT_CSS = `${calloutStyles}${executiveSummaryStyles}${sourceQuoteStyles}`;
 
 // Attribute selector instead of #id: slugs can start with a digit
 // (`## 1. Overview` -> id "1-overview"), which is invalid in an id selector.
@@ -1060,25 +1062,6 @@ const RUNTIME_CSS = `
     padding-left: 20px;
     padding-right: 20px;
   }
-  .htmdx-callout .htmdx-component-body {
-    background: var(--md-sys-color-primary-container);
-    color: var(--md-sys-color-on-secondary-container);
-    border-radius: var(--md-sys-shape-corner-large);
-    padding: 18px 22px;
-    font-family: var(--md-ref-typeface-brand);
-  }
-  .htmdx-callout .htmdx-component-body p { margin: 0 0 8px; color: var(--md-sys-color-on-secondary-container); }
-  .htmdx-callout .htmdx-component-body p:last-child { margin-bottom: 0; }
-
-  .htmdx-source-quote .htmdx-component-body p {
-    font-size: 0.9375rem;
-    color: var(--md-sys-color-on-surface-variant);
-    border-left: 3px solid var(--md-sys-color-primary);
-    padding-left: 16px;
-    margin: 6px 0;
-    line-height: 1.55;
-  }
-
   .htmdx-doc-section-card table:not([data-slot]) { width: 100%; border-collapse: collapse; font-size: 0.9375rem; margin: 6px 0; }
   .htmdx-doc-section-card table:not([data-slot]) thead th {
     text-align: left;
@@ -1116,14 +1099,6 @@ const RUNTIME_CSS = `
   .htmdx-doc-section-card table:not([data-slot]) tbody tr:hover th {
     background: color-mix(in srgb, var(--md-sys-color-primary) calc(var(--md-sys-state-hover-opacity) * 100%), transparent);
   }
-  /* SourceQuote (a markdown-bodied shell) sits inside a card. */
-  .htmdx-source-quote .htmdx-component-body {
-    background: var(--md-sys-color-surface-container-lowest);
-    border: 1px solid var(--md-sys-color-outline-variant);
-    border-radius: var(--md-sys-shape-corner-large);
-    padding: 16px 20px;
-  }
-
   @media (max-width: 960px) {
     .htmdx-app { grid-template-columns: minmax(0, 1fr); }
     .htmdx-toc { display: none; }

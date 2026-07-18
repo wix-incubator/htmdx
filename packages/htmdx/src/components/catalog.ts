@@ -1,6 +1,5 @@
 import { parseComponentBody } from './body-contracts';
 import { audience } from './audience';
-import { callout } from './callout';
 import { chartArea } from './chart-area';
 import { chartBar } from './chart-bar';
 import { chartLine } from './chart-line';
@@ -16,15 +15,12 @@ import { metricStrip } from './metric-strip';
 import { openQuestions } from './open-questions';
 import { riskTable } from './risk-table';
 import { signalGrid } from './signal-grid';
-import { sourceQuote } from './source-quote';
 import { sources } from './sources';
 import { stat } from './stat';
 import { timeline } from './timeline';
 import type { HtmdxComponent } from './types';
 
 export const builtInComponents = [
-  callout,
-  sourceQuote,
   metricStrip,
   stat,
   chartBar,

@@ -68,7 +68,7 @@ Artifacts should remain editable.
     </SourceQuote>
   </CardContent>
 </Card>`,
-        { components: merged },
+        { components: merged, definitions },
       ),
     );
 

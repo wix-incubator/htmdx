@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { createComponentStory, type ComponentStoryArgs } from '../storybook/component-story';
-import { callout } from './callout';
+import { createComponentStory, type ComponentStoryArgs } from '../../../storybook/component-story';
+import { Callout } from './index';
 
 const meta = {
-  title: 'Components/default/Callout',
-  ...createComponentStory(callout),
+  title: 'Components/Built-ins/Callout',
+  ...createComponentStory(Callout),
 } satisfies Meta<ComponentStoryArgs>;
 
 export default meta;

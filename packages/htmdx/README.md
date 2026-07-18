@@ -179,7 +179,7 @@ Accordion), and the shadcn theme (~147KB gzip, including the static-render
 path that powers `compile()`).
 
 Authoring htmdx source instead of rendered markup is measurably cheaper for
-agents: the full single-file artifact is 2.9-4.5x smaller in tokens than the
+agents: the full single-file artifact is about 4.3x smaller in tokens than the
 same artifact as compiled HTML, and 2-3x smaller than hand-written
 HTML+Tailwind, with edits cheaper in the same range. Reproducible benchmark in
 [`bench/RESULTS.md`](https://github.com/wix-incubator/htmdx/blob/master/packages/htmdx/bench/RESULTS.md)

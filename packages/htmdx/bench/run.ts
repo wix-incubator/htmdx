@@ -185,18 +185,29 @@ function replayEdits(before: string, after: string, pairs: EditPair[], label: st
 // shadcn/ui sources are copied into a repo, not imported from npm. Measured
 // from this repo's own copies of the components the decision-brief uses.
 const STANDALONE_JSX_DEPS = [
-  'card.tsx',
-  'badge.tsx',
-  'button.tsx',
-  'tabs.tsx',
-  'accordion.tsx',
-  'utils.ts',
+  'components/shadcn/Card/Card.tsx',
+  'components/shadcn/CardAction/CardAction.tsx',
+  'components/shadcn/CardContent/CardContent.tsx',
+  'components/shadcn/CardDescription/CardDescription.tsx',
+  'components/shadcn/CardFooter/CardFooter.tsx',
+  'components/shadcn/CardHeader/CardHeader.tsx',
+  'components/shadcn/CardTitle/CardTitle.tsx',
+  'components/shadcn/Badge/Badge.tsx',
+  'components/shadcn/Button/Button.tsx',
+  'components/shadcn/Tabs/Tabs.tsx',
+  'components/shadcn/TabsContent/TabsContent.tsx',
+  'components/shadcn/TabsList/TabsList.tsx',
+  'components/shadcn/TabsTrigger/TabsTrigger.tsx',
+  'components/shadcn/Accordion/Accordion.tsx',
+  'components/shadcn/AccordionContent/AccordionContent.tsx',
+  'components/shadcn/AccordionItem/AccordionItem.tsx',
+  'components/shadcn/AccordionTrigger/AccordionTrigger.tsx',
+  'components/shadcn/shared/utils.ts',
 ];
 
 function standaloneJsxDepsTokens(): number {
   return STANDALONE_JSX_DEPS.reduce(
-    (total, file) =>
-      total + measure(readFileSync(join(process.cwd(), 'src/react/shadcn', file), 'utf8')).tokens,
+    (total, file) => total + measure(readFileSync(join(process.cwd(), 'src', file), 'utf8')).tokens,
     0,
   );
 }

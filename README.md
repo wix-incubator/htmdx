@@ -18,7 +18,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@3.0.0/dist/browser.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@4.0.0/dist/browser.js" defer></script>
   </head>
   <body>
     <!-- prettier-ignore -->
@@ -52,12 +52,12 @@ The reproducible benchmark measures complete artifact files with `gpt-tokenizer`
 | Format | Decision brief | Executive report | Size vs htmdx |
 | --- | ---: | ---: | --- |
 | htmdx | 950 | 853 | — |
-| compiled HTML (`compile()` output) | 4589 | 3612 | 4.2-4.8x larger |
+| compiled HTML (`compile()` output) | 4045 | 3686 | 4.3x larger |
 | hand-written HTML + Tailwind | 1881 | 2568 | 2.0-3.0x larger |
 | React/JSX (assumes a platform hosts the runtime) | 1263 | 1790 | 1.3-2.1x larger |
 | plain markdown (no components) | 474 | 788 | 0.5-0.9x of htmdx |
 
-Adding an accordion item takes 91 tokens in HTMDX versus 428 in compiled HTML. Plain Markdown remains valid HTMDX, so components add cost only where used. See the [methodology and limitations](./packages/htmdx/bench/RESULTS.md), or run `yarn bench`.
+Adding an accordion item takes 91 tokens in HTMDX versus 434 in compiled HTML. Plain Markdown remains valid HTMDX, so components add cost only where used. See the [methodology and limitations](./packages/htmdx/bench/RESULTS.md), or run `yarn bench`.
 
 ## Familiar syntax, no build step
 
@@ -65,15 +65,15 @@ HTMDX uses familiar MDX-style syntax, but the browser runtime renders it in plac
 
 - Markdown prose, headings, lists, tables, and links.
 - HTML-like nested component tags such as `<Card><CardHeader>...</CardHeader></Card>`.
-- Standard Tailwind classes and typed props. `class` becomes `className`, kebab-case becomes camelCase, and values parse as booleans, numbers, or JSON when applicable.
+- Standard Tailwind classes and declared props. Every component accepts `class`, `id`, `aria-*`, and `data-*`; other values parse by their declared string, number, boolean, or JSON type.
 
 The source remains declarative: imports, MDX `{expressions}`, and function-valued props are rejected. Registered React components provide interactivity. Unknown capitalized tags show an error with the raw source.
 
 ## Components
 
-The runtime ships 82 components. Its exact-version `dist/components.json` manifest documents every component, prop, allowed value, and example.
+The runtime ships 87 components. Its `htmdx@2` exact-version `dist/components.json` manifest documents every component's purpose, canonical example, body mode, props, and source.
 
-**Report built-ins** cover summaries, callouts, metrics, charts, tables, timelines, findings, evidence, and risks. Composable components accept Markdown and nested components; structured components validate their expected list or table format.
+**Report Built-ins** cover summaries, callouts, metrics, charts, tables, timelines, findings, evidence, and risks. Their `markdown` bodies reject nested tags, and each definition's purpose and example state any stricter list or table grammar. Components with `htmdx` bodies accept Markdown, HTML, and nested registered tags; components with `none` bodies accept only empty or self-closing tags.
 
 **shadcn/ui pack** provides 16 vendored families on real Radix state with a bundled Tailwind v4 theme — `Card` (with `CardHeader`, `CardTitle`, `CardContent`, …), `Badge`, `Button`, `Tabs`, `Accordion`, `Alert`, `Avatar`, `Breadcrumb`, `Dialog`, `HoverCard`, `Popover`, `Progress`, `Separator`, `Table`, `Tooltip`, and `AspectRatio`. `Card` is provided exclusively by the shadcn pack.
 
@@ -124,14 +124,19 @@ Set `theme` to `blue` (default), `purple`, `green`, `teal`, `amber`, `magenta`, 
 Host code registers standard React components and themes through `window.Htmdx`; artifact source only supplies data. The bundle exposes React, so extension scripts need no build step:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@3.0.0/dist/browser.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@4.0.0/dist/browser.js" defer></script>
 <script>
   window.addEventListener('htmdx:ready', () => {
     const { createElement } = window.Htmdx.React;
 
-    window.Htmdx.registerComponent('ProductCard', (props) =>
-      createElement('aside', { className: 'product-card' }, props.children),
-    );
+    window.Htmdx.registerComponent({
+      name: 'ProductCard',
+      purpose: 'Group product details in a card.',
+      example: '<ProductCard>Product details.</ProductCard>',
+      body: 'htmdx',
+      Component: (props) =>
+        createElement('aside', { className: 'product-card' }, props.children),
+    });
 
     window.Htmdx.registerTheme({
       id: 'product',
@@ -148,13 +153,22 @@ Artifacts then use `<ProductCard>` declaratively. Tailwind classes compile on th
 React hosts use the module entries; `react` and `react-dom` are optional peer dependencies:
 
 ```tsx
-import { Htmdx, builtInReactComponents } from '@wix/htmdx/react';
-import { shadcnComponents, injectShadcnTheme } from '@wix/htmdx/react/shadcn';
+import { Htmdx } from '@wix/htmdx/react';
+import type { HtmdxComponent } from '@wix/htmdx/components';
+import * as builtins from '@wix/htmdx/components/builtins';
+import * as shadcn from '@wix/htmdx/components/shadcn';
 
-injectShadcnTheme();
+const MyChart = {
+  name: 'MyChart',
+  purpose: 'Show a custom chart.',
+  example: '<MyChart>Quarterly results.</MyChart>',
+  body: 'htmdx',
+  Component: MyChartView,
+} satisfies HtmdxComponent;
+
 <Htmdx
   source={artifactSource}
-  components={{ ...builtInReactComponents, ...shadcnComponents, MyChart }}
+  definitions={[...Object.values(builtins), ...Object.values(shadcn), MyChart]}
 />;
 ```
 
@@ -162,7 +176,7 @@ injectShadcnTheme();
 
 ## Package
 
-- npm: `@wix/htmdx` · CDN entry: `dist/browser.js` (~125KB gzip) · module entries: `.`, `./react`, `./react/shadcn`
+- npm: `@wix/htmdx` · CDN entry: `dist/browser.js` (~138KB gzip) · module entries: `.`, `./react`, `./components`, `./components/builtins`, `./components/shadcn`
 - custom element: `<htmdx-code>` · browser API: `window.Htmdx`
 - component contract: `dist/components.json`
 - architecture decisions: [`adr/`](./adr/)

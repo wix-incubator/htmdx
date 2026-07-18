@@ -79,6 +79,16 @@ describe('component definition catalogs', () => {
         'Collapsible',
         'CollapsibleContent',
         'CollapsibleTrigger',
+        'Dialog',
+        'DialogClose',
+        'DialogContent',
+        'DialogDescription',
+        'DialogFooter',
+        'DialogHeader',
+        'DialogOverlay',
+        'DialogPortal',
+        'DialogTitle',
+        'DialogTrigger',
         'Table',
         'TableBody',
         'TableCaption',
@@ -527,6 +537,77 @@ describe('disclosure families at the HTMDX catalog boundary', () => {
 
     expect(rendered).toMatchObject({ ok: true });
     expect(rendered.ok && rendered.html).toContain('<strong>key metrics</strong>');
+  });
+});
+
+describe('Dialog family at the HTMDX catalog boundary', () => {
+  test('declares composable and bodyless family members', () => {
+    expect([
+      shadcnDefinitions.Dialog,
+      shadcnDefinitions.DialogClose,
+      shadcnDefinitions.DialogContent,
+      shadcnDefinitions.DialogDescription,
+      shadcnDefinitions.DialogFooter,
+      shadcnDefinitions.DialogHeader,
+      shadcnDefinitions.DialogOverlay,
+      shadcnDefinitions.DialogPortal,
+      shadcnDefinitions.DialogTitle,
+      shadcnDefinitions.DialogTrigger,
+    ]).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: 'Dialog', body: 'htmdx' }),
+        expect.objectContaining({ name: 'DialogClose', body: 'htmdx' }),
+        expect.objectContaining({ name: 'DialogContent', body: 'htmdx' }),
+        expect.objectContaining({ name: 'DialogDescription', body: 'htmdx' }),
+        expect.objectContaining({ name: 'DialogFooter', body: 'htmdx' }),
+        expect.objectContaining({ name: 'DialogHeader', body: 'htmdx' }),
+        expect.objectContaining({ name: 'DialogOverlay', body: 'none' }),
+        expect.objectContaining({ name: 'DialogPortal', body: 'htmdx' }),
+        expect.objectContaining({ name: 'DialogTitle', body: 'htmdx' }),
+        expect.objectContaining({ name: 'DialogTrigger', body: 'htmdx' }),
+      ]),
+    );
+  });
+
+  test('declares supported authoring props', () => {
+    expect(shadcnDefinitions.Dialog.props).toEqual([
+      expect.objectContaining({ name: 'defaultOpen', type: 'boolean', default: false }),
+      expect.objectContaining({ name: 'modal', type: 'boolean', default: true }),
+    ]);
+    expect(shadcnDefinitions.DialogTrigger.props).toEqual([
+      expect.objectContaining({ name: 'asChild', type: 'boolean', default: false }),
+    ]);
+    expect(shadcnDefinitions.DialogClose.props).toEqual([
+      expect.objectContaining({ name: 'asChild', type: 'boolean', default: false }),
+    ]);
+    expect(shadcnDefinitions.DialogContent.props).toEqual([
+      expect.objectContaining({ name: 'showCloseButton', type: 'boolean', default: true }),
+      expect.objectContaining({ name: 'forceMount', type: 'boolean', default: false }),
+    ]);
+    expect(shadcnDefinitions.DialogFooter.props).toEqual([
+      expect.objectContaining({ name: 'showCloseButton', type: 'boolean', default: false }),
+    ]);
+    expect(shadcnDefinitions.DialogOverlay.props).toEqual([
+      expect.objectContaining({ name: 'forceMount', type: 'boolean', default: false }),
+    ]);
+    expect(shadcnDefinitions.DialogPortal.props).toEqual([
+      expect.objectContaining({ name: 'forceMount', type: 'boolean', default: false }),
+    ]);
+  });
+
+  test('enforces Dialog props and body modes through the HTMDX schema', () => {
+    expect(compile('<Dialog modal="sometimes" />')).toMatchObject({
+      ok: false,
+      error: expect.stringContaining('must be true or false'),
+    });
+    expect(compile('<DialogContent showCloseButton="sometimes" />')).toMatchObject({
+      ok: false,
+      error: expect.stringContaining('must be true or false'),
+    });
+    expect(compile('<DialogOverlay>backdrop</DialogOverlay>')).toMatchObject({
+      ok: false,
+      error: expect.stringContaining('does not allow a body'),
+    });
   });
 });
 

@@ -84,38 +84,6 @@ describe('react renderer with shadcn/ui', () => {
     expect(html).toMatch(/<td[^>]*>.*\$1,140.*<\/td>/s);
   });
 
-  test('Dialog opens on trigger click and portals content outside the host', () => {
-    const { host, root } = mount(`<Dialog>
-  <DialogTrigger>
-    <Button variant="outline">Open dialog</Button>
-  </DialogTrigger>
-  <DialogContent>
-    <DialogHeader>
-      <DialogTitle>Confirm migration</DialogTitle>
-      <DialogDescription>This is a real modal.</DialogDescription>
-    </DialogHeader>
-  </DialogContent>
-</Dialog>`);
-
-    expect(document.querySelector('[data-slot="dialog-content"]')).toBeNull();
-
-    const trigger = host.querySelector<HTMLElement>('[data-slot="dialog-trigger"]');
-    expect(trigger).not.toBeNull();
-
-    act(() => {
-      trigger?.click();
-    });
-
-    const content = document.querySelector('[data-slot="dialog-content"]');
-    expect(content).not.toBeNull();
-    expect(content?.textContent).toContain('Confirm migration');
-    // The dialog is portalled: it appears in the document but not inside the host.
-    expect(host.querySelector('[data-slot="dialog-content"]')).toBeNull();
-
-    unmount(host, root);
-    expect(document.querySelector('[data-slot="dialog-content"]')).toBeNull();
-  });
-
   test('full document: markdown narrative around interactive shadcn blocks', () => {
     const { host, root } = mount(`## Findings
 

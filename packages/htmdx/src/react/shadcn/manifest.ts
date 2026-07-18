@@ -18,27 +18,6 @@ export type HtmdxReactManifestComponent = {
 
 export const shadcnManifestComponents: readonly HtmdxReactManifestComponent[] = [
   {
-    name: 'Dialog',
-    purpose: 'Modal dialog opened by DialogTrigger; content renders in a portal over an overlay.',
-    example:
-      '<Dialog>\n  <DialogTrigger>\n    <Button variant="outline">Open dialog</Button>\n  </DialogTrigger>\n  <DialogContent>\n    <DialogHeader>\n      <DialogTitle>Confirm</DialogTitle>\n      <DialogDescription>This is a real modal.</DialogDescription>\n    </DialogHeader>\n    <DialogFooter>\n      <DialogClose>\n        <Button variant="outline">Close</Button>\n      </DialogClose>\n    </DialogFooter>\n  </DialogContent>\n</Dialog>',
-  },
-  { name: 'DialogTrigger', purpose: 'Element that opens the Dialog on click.' },
-  { name: 'DialogContent', purpose: 'Modal surface (portalled) holding header, body, and footer.' },
-  { name: 'DialogHeader', purpose: 'Top area of DialogContent; holds title and description.' },
-  { name: 'DialogFooter', purpose: 'Bottom action row of DialogContent.' },
-  { name: 'DialogTitle', purpose: 'Accessible title of the Dialog.' },
-  { name: 'DialogDescription', purpose: 'Muted description under the DialogTitle.' },
-  { name: 'DialogClose', purpose: 'Element that closes the Dialog on click.' },
-  {
-    name: 'DialogOverlay',
-    purpose: 'Dimmed backdrop behind the Dialog; rendered automatically by DialogContent.',
-  },
-  {
-    name: 'DialogPortal',
-    purpose: 'Portal host for Dialog layers; used internally by DialogContent.',
-  },
-  {
     name: 'HoverCard',
     purpose: 'Rich card revealed on hover of HoverCardTrigger.',
     example:

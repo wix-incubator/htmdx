@@ -35,7 +35,6 @@ export default meta;
 
 type Story = StoryObj<ReactComponentStoryArgs>;
 
-export const Dialog: Story = story('Dialog');
 export const HoverCard: Story = story('HoverCard');
 export const Popover: Story = story('Popover');
 export const Tooltip: Story = story('Tooltip');

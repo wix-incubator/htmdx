@@ -2,33 +2,11 @@ import type { HtmdxReactComponents } from '../index';
 
 export { injectShadcnTheme, SHADCN_THEME_STYLE_ID, shadcnThemeCss } from './theme';
 export { shadcnManifestComponents } from './manifest';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogOverlay,
-  DialogPortal,
-  DialogTitle,
-  DialogTrigger,
-} from './dialog';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from './hover-card';
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from './popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip';
 
 export const shadcnComponents = {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogOverlay,
-  DialogPortal,
-  DialogTitle,
-  DialogTrigger,
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,

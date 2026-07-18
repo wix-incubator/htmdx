@@ -10,3 +10,18 @@ If a PR changes anything user-visible (runtime CSS, page chrome, components, the
 4. Comment on the PR: links/screenshots, what changed, what to look at.
 
 If the change is not visual, show before & after **output** instead — e.g. compiled HTML snippets from `compile()`, generated-file diffs, or CLI/test output on the same input.
+
+## PR titles and releases
+
+Use `<type>(optional-scope)!: summary` for each PR title and each direct commit to `master`. Allowed types are `feat`, `fix`, `docs`, `test`, `chore`, `ci`, `build`, and `refactor`.
+
+Examples:
+
+- `feat(parser): support callouts`
+- `fix: keep empty code blocks`
+- `docs: explain browser setup`
+- `feat(api)!: remove the legacy compile option`
+
+Classify by public behavior: `feat` adds it, `fix` repairs it, and behavior-neutral work uses a non-release type. Mark changes or removals to public APIs, output, or runtime contracts as breaking with `!`. For mixed work, use the highest impact; prefer separate PRs when practical.
+
+Before creating or updating a PR, check its title. Never edit package versions, release tags, or generated changelogs. Release Please owns normal releases; a human merges its release PR.

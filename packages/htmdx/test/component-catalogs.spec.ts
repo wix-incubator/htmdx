@@ -52,7 +52,9 @@ describe('component definition catalogs', () => {
         'OpenQuestions',
       ]),
     );
-    expect(Object.keys(shadcnDefinitions)).toContain('Badge');
+    expect(Object.keys(shadcnDefinitions)).toEqual(
+      expect.arrayContaining(['Badge', 'Button', 'AspectRatio', 'Progress', 'Separator']),
+    );
 
     const names = new Set<string>();
     for (const { exportName, definition } of allDefinitions) {
@@ -302,6 +304,27 @@ describe('planning Built-ins through the definition catalog', () => {
       });
     },
   );
+});
+
+describe('basic shadcn components at the HTMDX catalog boundary', () => {
+  test('enforces declared props and body modes', () => {
+    expect(compile('<Button variant="loud">Run</Button>')).toMatchObject({
+      ok: false,
+      error: expect.stringContaining('must be one of'),
+    });
+    expect(compile('<AspectRatio ratio="0">media</AspectRatio>')).toMatchObject({
+      ok: false,
+      error: expect.stringContaining('at least'),
+    });
+    expect(compile('<Progress value="101" />')).toMatchObject({
+      ok: false,
+      error: expect.stringContaining('at most 100'),
+    });
+    expect(compile('<Separator>content</Separator>')).toMatchObject({
+      ok: false,
+      error: expect.stringContaining('does not allow a body'),
+    });
+  });
 });
 
 describe('Badge at the HTMDX catalog boundary', () => {

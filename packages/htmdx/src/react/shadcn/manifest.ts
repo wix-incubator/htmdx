@@ -30,18 +30,6 @@ export const shadcnManifestComponents: readonly HtmdxReactManifestComponent[] = 
   { name: 'CardContent', purpose: 'Main body of a Card; markdown and components allowed.' },
   { name: 'CardFooter', purpose: 'Footer row of a Card, usually Buttons or Badges.' },
   {
-    name: 'Button',
-    purpose: 'Button-styled element. Inert in artifacts: function props cannot be expressed.',
-    props: [
-      {
-        name: 'variant',
-        values: ['default', 'destructive', 'outline', 'secondary', 'ghost', 'link'],
-      },
-      { name: 'size', values: ['default', 'sm', 'lg', 'icon'] },
-    ],
-    example: '<Button variant="outline" size="sm">Download</Button>',
-  },
-  {
     name: 'Tabs',
     purpose: 'Interactive tab group; state lives inside the component.',
     props: [
@@ -87,13 +75,6 @@ export const shadcnManifestComponents: readonly HtmdxReactManifestComponent[] = 
   },
   { name: 'AlertTitle', purpose: 'Bold title line inside an Alert.' },
   { name: 'AlertDescription', purpose: 'Body text inside an Alert.' },
-  {
-    name: 'AspectRatio',
-    purpose: 'Locks its child to a fixed width:height ratio. Display-only.',
-    props: [{ name: 'ratio', description: 'number, e.g. 1.7778 for 16:9' }],
-    example:
-      '<AspectRatio ratio="1.7778">\n  <img src="https://images.unsplash.com/photo-1535025183041-0991a977e25b" alt="cover" />\n</AspectRatio>',
-  },
   {
     name: 'Avatar',
     purpose: 'Round avatar container; holds AvatarImage and AvatarFallback. Display-only.',
@@ -169,18 +150,6 @@ export const shadcnManifestComponents: readonly HtmdxReactManifestComponent[] = 
   { name: 'PopoverTrigger', purpose: 'Element that toggles the PopoverContent on click.' },
   { name: 'PopoverContent', purpose: 'Floating panel body, portalled to the document.' },
   { name: 'PopoverAnchor', purpose: 'Optional custom positioning anchor for PopoverContent.' },
-  {
-    name: 'Progress',
-    purpose: 'Determinate progress bar. Display-only.',
-    props: [{ name: 'value', description: 'number 0-100' }],
-    example: '<Progress value="60" />',
-  },
-  {
-    name: 'Separator',
-    purpose: 'Thin dividing rule between sections. Display-only.',
-    props: [{ name: 'orientation', values: ['horizontal', 'vertical'] }],
-    example: '<Separator orientation="horizontal" />',
-  },
   {
     name: 'Table',
     purpose: 'Data table root; wrap TableHeader/TableBody rows. Display-only.',

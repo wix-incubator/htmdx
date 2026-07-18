@@ -54,26 +54,6 @@ describe('react renderer with shadcn/ui', () => {
     expect(html).toContain('bg-card');
     expect(html).toContain('<strong>12%</strong>');
     expect(html).toContain('audited');
-    expect(html).toContain('data-slot="button"');
-    expect(html).toContain('h-8');
-  });
-
-  test('renders top-level Badge and Button labels as inline children', () => {
-    const html = renderToStaticMarkup(
-      compileToReact(
-        '<Badge variant="secondary">audited</Badge><Button variant="outline">Download</Button>',
-        { components: shadcnComponents, definitions },
-      ),
-    );
-    const container = document.createElement('div');
-    container.innerHTML = html;
-
-    const badge = container.querySelector('[data-slot="badge"]');
-    const button = container.querySelector('[data-slot="button"]');
-    expect(badge?.textContent).toBe('audited');
-    expect(badge?.firstElementChild).toBeNull();
-    expect(button?.textContent).toBe('Download');
-    expect(button?.firstElementChild).toBeNull();
   });
 
   test('Radix Tabs switch panels on trigger interaction', () => {
@@ -188,23 +168,6 @@ describe('react renderer with shadcn/ui', () => {
     expect(html).toContain('data-slot="avatar"');
     expect(html).toContain('data-slot="avatar-fallback"');
     expect(html).toContain('CN');
-  });
-
-  test('Progress renders indicator with numeric value', () => {
-    const html = renderToStaticMarkup(
-      compileToReact('<Progress value="60" />', { components: shadcnComponents }),
-    );
-    expect(html).toContain('data-slot="progress"');
-    expect(html).toContain('data-slot="progress-indicator"');
-    expect(html).toContain('translateX(-40%)');
-  });
-
-  test('Separator renders its slot marker and orientation', () => {
-    const separator = renderToStaticMarkup(
-      compileToReact('<Separator orientation="vertical" />', { components: shadcnComponents }),
-    );
-    expect(separator).toContain('data-slot="separator"');
-    expect(separator).toContain('data-orientation="vertical"');
   });
 
   test('Breadcrumb family renders trail markup', () => {

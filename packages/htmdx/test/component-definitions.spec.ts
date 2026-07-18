@@ -228,7 +228,7 @@ friend
       },
     );
     expect(
-      compile('<StrictChild><button onclick="alert(1)">unsafe</button></StrictChild>', {
+      compile('<StrictChild><a onclick="alert(1)">unsafe</a></StrictChild>', {
         definitions,
       }),
     ).toMatchObject({ ok: false, error: expect.stringContaining('event handler attribute') });

@@ -1,9 +1,11 @@
 // Vendored shadcn/ui separator (new-york), unmodified apart from the cn import
-// path and the individual @radix-ui import.
+// path, the individual @radix-ui import, and the deliberate per-component
+// split. Internal to this folder — the public contract is exported from
+// ./index.ts.
 import * as React from 'react';
 import * as SeparatorPrimitive from '@radix-ui/react-separator';
 
-import { cn } from './utils';
+import { cn } from '../shared/utils';
 
 function Separator({
   className,

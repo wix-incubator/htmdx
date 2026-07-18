@@ -4,7 +4,6 @@ export { injectShadcnTheme, SHADCN_THEME_STYLE_ID, shadcnThemeCss } from './them
 export { shadcnManifestComponents } from './manifest';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './accordion';
 import { Alert, AlertDescription, AlertTitle } from './alert';
-import { AspectRatio } from './aspect-ratio';
 import { Avatar, AvatarFallback, AvatarImage } from './avatar';
 import {
   Breadcrumb,
@@ -15,7 +14,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from './breadcrumb';
-import { Button } from './button';
 import {
   Card,
   CardAction,
@@ -40,8 +38,6 @@ import {
 } from './dialog';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from './hover-card';
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from './popover';
-import { Progress } from './progress';
-import { Separator } from './separator';
 import {
   Table,
   TableBody,
@@ -55,10 +51,6 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip';
 
-function inlineBody<T extends object>(component: T) {
-  return Object.assign(component, { htmdxInlineBody: true as const });
-}
-
 export const shadcnComponents = {
   Accordion,
   AccordionContent,
@@ -67,7 +59,6 @@ export const shadcnComponents = {
   Alert,
   AlertDescription,
   AlertTitle,
-  AspectRatio,
   Avatar,
   AvatarFallback,
   AvatarImage,
@@ -78,7 +69,6 @@ export const shadcnComponents = {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-  Button: inlineBody(Button),
   Card,
   CardAction,
   CardContent,
@@ -106,8 +96,6 @@ export const shadcnComponents = {
   PopoverAnchor,
   PopoverContent,
   PopoverTrigger,
-  Progress,
-  Separator,
   Table,
   TableBody,
   TableCaption,

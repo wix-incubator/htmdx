@@ -355,6 +355,51 @@ describe('alert, avatar, and breadcrumb definitions', () => {
   });
 });
 
+describe('Card family at the HTMDX catalog boundary', () => {
+  test('declares all structural tags as composable HTMDX definitions', () => {
+    expect([
+      shadcnDefinitions.Card,
+      shadcnDefinitions.CardAction,
+      shadcnDefinitions.CardContent,
+      shadcnDefinitions.CardDescription,
+      shadcnDefinitions.CardFooter,
+      shadcnDefinitions.CardHeader,
+      shadcnDefinitions.CardTitle,
+    ]).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: 'Card', body: 'htmdx' }),
+        expect.objectContaining({ name: 'CardAction', body: 'htmdx' }),
+        expect.objectContaining({ name: 'CardContent', body: 'htmdx' }),
+        expect.objectContaining({ name: 'CardDescription', body: 'htmdx' }),
+        expect.objectContaining({ name: 'CardFooter', body: 'htmdx' }),
+        expect.objectContaining({ name: 'CardHeader', body: 'htmdx' }),
+        expect.objectContaining({ name: 'CardTitle', body: 'htmdx' }),
+      ]),
+    );
+  });
+
+  test('renders direct Markdown and nested component composition', () => {
+    const direct = compile('<Card>Revenue grew **12%** quarter over quarter.</Card>');
+    expect(direct).toMatchObject({ ok: true });
+    expect(direct.ok && direct.html).toContain('<strong>12%</strong>');
+
+    const rendered = compile(`<Card>
+  <CardHeader>
+    <CardTitle>Revenue</CardTitle>
+    <CardDescription>Audited quarterly numbers</CardDescription>
+    <CardAction><Badge variant="secondary">audited</Badge></CardAction>
+  </CardHeader>
+  <CardContent>Revenue grew **12%** quarter over quarter.</CardContent>
+  <CardFooter><Button variant="outline" size="sm">Download</Button></CardFooter>
+</Card>`);
+
+    expect(rendered).toMatchObject({ ok: true });
+    expect(rendered.ok && rendered.html).toContain('<strong>12%</strong>');
+    expect(rendered.ok && rendered.html).toContain('audited');
+    expect(rendered.ok && rendered.html).toContain('Download');
+  });
+});
+
 describe('basic shadcn components at the HTMDX catalog boundary', () => {
   test('enforces declared props and body modes', () => {
     expect(compile('<Button variant="loud">Run</Button>')).toMatchObject({

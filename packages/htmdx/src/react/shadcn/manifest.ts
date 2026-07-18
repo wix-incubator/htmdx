@@ -18,18 +18,6 @@ export type HtmdxReactManifestComponent = {
 
 export const shadcnManifestComponents: readonly HtmdxReactManifestComponent[] = [
   {
-    name: 'Card',
-    purpose: 'Container for a self-contained block of content.',
-    example:
-      '<Card>\n  <CardHeader>\n    <CardTitle>Revenue</CardTitle>\n    <CardDescription>Quarterly numbers</CardDescription>\n  </CardHeader>\n  <CardContent>\nGrew **12%** quarter over quarter.\n  </CardContent>\n  <CardFooter>\n    <Button variant="outline" size="sm">Details</Button>\n  </CardFooter>\n</Card>',
-  },
-  { name: 'CardHeader', purpose: 'Header area of a Card; holds CardTitle and CardDescription.' },
-  { name: 'CardTitle', purpose: 'Title line inside CardHeader.' },
-  { name: 'CardDescription', purpose: 'Muted description line inside CardHeader.' },
-  { name: 'CardAction', purpose: 'Action slot aligned to the end of CardHeader.' },
-  { name: 'CardContent', purpose: 'Main body of a Card; markdown and components allowed.' },
-  { name: 'CardFooter', purpose: 'Footer row of a Card, usually Buttons or Badges.' },
-  {
     name: 'Tabs',
     purpose: 'Interactive tab group; state lives inside the component.',
     props: [

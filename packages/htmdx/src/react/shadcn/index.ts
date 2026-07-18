@@ -3,15 +3,6 @@ import type { HtmdxReactComponents } from '../index';
 export { injectShadcnTheme, SHADCN_THEME_STYLE_ID, shadcnThemeCss } from './theme';
 export { shadcnManifestComponents } from './manifest';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './accordion';
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from './card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './collapsible';
 import {
   Dialog,
@@ -45,13 +36,6 @@ export const shadcnComponents = {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,

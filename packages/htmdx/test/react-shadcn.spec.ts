@@ -48,12 +48,11 @@ describe('react renderer with shadcn/ui', () => {
       ),
     );
 
-    expect(html).toContain('data-slot="card"');
-    expect(html).toContain('data-slot="card-title"');
-    expect(html).toContain('max-w-md');
-    expect(html).toContain('bg-card');
+    expect(html).toContain('Revenue');
+    expect(html).toContain('Audited quarterly numbers');
     expect(html).toContain('<strong>12%</strong>');
     expect(html).toContain('audited');
+    expect(html).toContain('Download');
   });
 
   test('Radix Tabs switch panels on trigger interaction', () => {

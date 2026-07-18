@@ -17,7 +17,7 @@ const meta = {
   id: 'components-shadcn-legacy',
   title: 'Components/shadcn',
   args: {
-    htmdx: exampleFor('Card'),
+    htmdx: exampleFor('Tabs'),
   },
   argTypes: {
     htmdx: {
@@ -35,13 +35,6 @@ export default meta;
 
 type Story = StoryObj<ReactComponentStoryArgs>;
 
-export const Card: Story = story('Card');
-export const CardWithRegularText: Story = {
-  args: {
-    htmdx:
-      '<Card>\n  <CardContent>Regular text is padded inside the card content.</CardContent>\n</Card>',
-  },
-};
 export const Tabs: Story = story('Tabs');
 export const Accordion: Story = story('Accordion');
 export const Collapsible: Story = story('Collapsible');

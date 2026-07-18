@@ -22,9 +22,6 @@
     "dist/components.json",
     "!dist/src/**/*.stories.d.ts",
     "!dist/src/storybook/**",
-    "!dist/src/react/demo/**",
-    "!dist/react-demo/**",
-    "!dist/artifact.html",
     "!dist/test/**",
     "README.md",
     "LICENSE"
@@ -71,7 +68,6 @@
     "build": "yarn build:library && yarn build-storybook",
     "build:library": "rm -rf dist && yarn typecheck && rollup -c && yarn build:browser",
     "build:browser": "vite build -c vite.browser.config.ts",
-    "build:react-demo": "vite build -c vite.demo.config.ts && cp src/react/demo/index.html dist/react-demo/ && cp src/react/demo/artifact.html dist/",
     "build-storybook": "../../node_modules/.bin/storybook build",
     "storybook": "../../node_modules/.bin/storybook dev -p 6006",
     "typecheck": "tsc --noEmit",

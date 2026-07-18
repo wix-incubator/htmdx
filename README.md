@@ -180,7 +180,6 @@ const MyChart = {
 - custom element: `<htmdx-code>` · browser API: `window.Htmdx`
 - component contract: `dist/components.json`
 - architecture decisions: [`adr/`](./adr/)
-- 4.0 review evidence: [generated manifests and rendering captures](./docs/release-evidence/4.0.0/)
 
 ## Development
 

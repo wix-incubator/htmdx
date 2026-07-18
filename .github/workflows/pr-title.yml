@@ -1,0 +1,29 @@
+name: PR title
+
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - synchronize
+      - reopened
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate title
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check Conventional Commit form
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          pattern='^(feat|fix|docs|test|chore|ci|build|refactor)(\([^()[:space:]]+\))?!?:[[:space:]]+[^[:space:]].*$'
+          if [[ ! "$PR_TITLE" =~ $pattern ]]; then
+            echo "::error title=Invalid pull request title::Use <type>(optional-scope)!: summary. Allowed types: feat, fix, docs, test, chore, ci, build, refactor. Example: feat(parser): support callouts"
+            exit 1
+          fi
+          echo "Valid pull request title: $PR_TITLE"

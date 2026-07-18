@@ -1,27 +1,54 @@
-name: Publish
+name: Release and publish
 
 on:
   workflow_dispatch:
   push:
-    tags:
-      - "v*"
-
-permissions:
-  contents: read
-  id-token: write
-
-env:
-  YARN_NPM_REGISTRY_SERVER: https://registry.npmjs.org
+    branches:
+      - master
 
 jobs:
-  publish:
-    name: Publish to npm
+  release-please:
+    name: Open or finish release PR
     runs-on: ubuntu-latest
-    environment: npm-publish
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    outputs:
+      release_created: ${{ steps.release.outputs['packages/htmdx--release_created'] }}
+      release_sha: ${{ steps.release.outputs['packages/htmdx--sha'] }}
+      tag_name: ${{ steps.release.outputs['packages/htmdx--tag_name'] }}
 
     steps:
-      - name: Checkout
+      - name: Run Release Please
+        id: release
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
+          target-branch: master
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  publish:
+    name: Publish to npm
+    if: needs.release-please.outputs.release_created == 'true'
+    needs: release-please
+    runs-on: ubuntu-latest
+    environment: npm-publish
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      RELEASE_SHA: ${{ needs.release-please.outputs.release_sha }}
+      RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
+      YARN_NPM_REGISTRY_SERVER: https://registry.npmjs.org
+
+    steps:
+      - name: Checkout release tag
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ needs.release-please.outputs.tag_name }}
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
@@ -47,15 +74,18 @@ jobs:
       - name: Test
         run: yarn test
 
-      - name: Verify release tag
+      - name: Verify release tag and commit
         run: |
           version="$(node -p "require('./packages/htmdx/package.json').version")"
-          if [ "$GITHUB_REF_TYPE" != "tag" ]; then
-            echo "Publish must run from a tag, got $GITHUB_REF_TYPE"
+          head_sha="$(git rev-parse HEAD)"
+          tag_sha="$(git rev-list -n 1 "$RELEASE_TAG")"
+          if [ "$RELEASE_TAG" != "v$version" ]; then
+            echo "Publish must run from tag v$version, got $RELEASE_TAG"
             exit 1
           fi
-          if [ "$GITHUB_REF_NAME" != "v$version" ]; then
-            echo "Publish must run from tag v$version, got $GITHUB_REF_NAME"
+          if [ "$head_sha" != "$RELEASE_SHA" ] || [ "$tag_sha" != "$RELEASE_SHA" ]; then
+            echo "Release tag, checkout, and Release Please output must point to $RELEASE_SHA"
+            echo "checkout: $head_sha; $RELEASE_TAG: $tag_sha"
             exit 1
           fi
 

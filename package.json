@@ -32,7 +32,6 @@
     "storybook": "yarn workspace @wix/htmdx storybook",
     "test": "turbo test",
     "bench": "yarn workspace @wix/htmdx bench",
-    "release": "bash scripts/release.sh",
     "-- Tools --": ":",
     "syncpack": "syncpack lint",
     "knip": "knip"

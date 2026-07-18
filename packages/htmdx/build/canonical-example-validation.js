@@ -11,7 +11,11 @@ export function validateCanonicalExamples(components, compile) {
       );
     }
 
-    if (!result.components.includes(component.name)) {
+    const authoredTags = component.example
+      .replace(/<!--[\s\S]*?-->/g, '')
+      .replace(/```[\s\S]*?```/g, '')
+      .replace(/`[^`]*`/g, '');
+    if (!new RegExp(`<${component.name}(?:\\s|/?>)`).test(authoredTags)) {
       throw new Error(`canonical example for <${component.name}> does not contain its target`);
     }
   }

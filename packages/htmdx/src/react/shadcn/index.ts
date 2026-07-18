@@ -3,17 +3,6 @@ import type { HtmdxReactComponents } from '../index';
 export { injectShadcnTheme, SHADCN_THEME_STYLE_ID, shadcnThemeCss } from './theme';
 export { shadcnManifestComponents } from './manifest';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './accordion';
-import { Alert, AlertDescription, AlertTitle } from './alert';
-import { Avatar, AvatarFallback, AvatarImage } from './avatar';
-import {
-  Breadcrumb,
-  BreadcrumbEllipsis,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from './breadcrumb';
 import {
   Card,
   CardAction,
@@ -56,19 +45,6 @@ export const shadcnComponents = {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-  Alert,
-  AlertDescription,
-  AlertTitle,
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-  Breadcrumb,
-  BreadcrumbEllipsis,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
   Card,
   CardAction,
   CardContent,

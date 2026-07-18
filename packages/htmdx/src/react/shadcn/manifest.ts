@@ -67,43 +67,6 @@ export const shadcnManifestComponents: readonly HtmdxReactManifestComponent[] = 
   { name: 'AccordionTrigger', purpose: 'Clickable header that toggles its AccordionItem.' },
   { name: 'AccordionContent', purpose: 'Body revealed when the AccordionItem is open.' },
   {
-    name: 'Alert',
-    purpose: 'Callout banner for a titled note or warning. Display-only.',
-    props: [{ name: 'variant', values: ['default', 'destructive'] }],
-    example:
-      '<Alert>\n  <AlertTitle>Heads up</AlertTitle>\n  <AlertDescription>This artifact is display-only.</AlertDescription>\n</Alert>',
-  },
-  { name: 'AlertTitle', purpose: 'Bold title line inside an Alert.' },
-  { name: 'AlertDescription', purpose: 'Body text inside an Alert.' },
-  {
-    name: 'Avatar',
-    purpose: 'Round avatar container; holds AvatarImage and AvatarFallback. Display-only.',
-    example:
-      '<Avatar>\n  <AvatarImage src="https://github.com/shadcn.png" alt="shadcn" />\n  <AvatarFallback>CN</AvatarFallback>\n</Avatar>',
-  },
-  {
-    name: 'AvatarImage',
-    purpose: 'Avatar photo; falls back to AvatarFallback when it fails to load.',
-    props: [{ name: 'src', required: true }, { name: 'alt' }],
-  },
-  { name: 'AvatarFallback', purpose: 'Initials or icon shown when AvatarImage is unavailable.' },
-  {
-    name: 'Breadcrumb',
-    purpose: 'Breadcrumb navigation trail. Display-only.',
-    example:
-      '<Breadcrumb>\n  <BreadcrumbList>\n    <BreadcrumbItem>\n      <BreadcrumbLink href="/">Home</BreadcrumbLink>\n    </BreadcrumbItem>\n    <BreadcrumbSeparator />\n    <BreadcrumbItem>\n      <BreadcrumbPage>Reports</BreadcrumbPage>\n    </BreadcrumbItem>\n  </BreadcrumbList>\n</Breadcrumb>',
-  },
-  { name: 'BreadcrumbList', purpose: 'Ordered-list wrapper for breadcrumb items.' },
-  { name: 'BreadcrumbItem', purpose: 'One entry in the breadcrumb trail.' },
-  {
-    name: 'BreadcrumbLink',
-    purpose: 'Linked breadcrumb entry.',
-    props: [{ name: 'href', required: true }],
-  },
-  { name: 'BreadcrumbPage', purpose: 'Current-page breadcrumb entry (not a link).' },
-  { name: 'BreadcrumbSeparator', purpose: 'Chevron between breadcrumb items.' },
-  { name: 'BreadcrumbEllipsis', purpose: 'Collapsed-items indicator in a breadcrumb.' },
-  {
     name: 'Collapsible',
     purpose: 'Single expandable region toggled by CollapsibleTrigger; state lives inside.',
     props: [{ name: 'defaultOpen', description: 'defaultOpen="true" starts expanded' }],

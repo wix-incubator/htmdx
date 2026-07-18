@@ -108,23 +108,6 @@ describe('react renderer with shadcn/ui', () => {
     unmount(host, root);
   });
 
-  test('Alert renders titled variant markup', () => {
-    const html = renderToStaticMarkup(
-      compileToReact(
-        `<Alert variant="destructive">
-  <AlertTitle>Blocked</AlertTitle>
-  <AlertDescription>Migration cannot proceed.</AlertDescription>
-</Alert>`,
-        { components: shadcnComponents },
-      ),
-    );
-    expect(html).toContain('data-slot="alert"');
-    expect(html).toContain('data-slot="alert-title"');
-    expect(html).toContain('data-slot="alert-description"');
-    expect(html).toContain('text-destructive');
-    expect(html).toContain('Migration cannot proceed.');
-  });
-
   test('Table family renders semantic table markup', () => {
     const html = renderToStaticMarkup(
       compileToReact(
@@ -153,45 +136,6 @@ describe('react renderer with shadcn/ui', () => {
     expect(html).toContain('data-slot="table-caption"');
     expect(html).toContain('<th');
     expect(html).toContain('$1,140');
-  });
-
-  test('Avatar family renders fallback and slot markers', () => {
-    const html = renderToStaticMarkup(
-      compileToReact(
-        `<Avatar>
-  <AvatarImage src="https://example.com/a.png" alt="A" />
-  <AvatarFallback>CN</AvatarFallback>
-</Avatar>`,
-        { components: shadcnComponents },
-      ),
-    );
-    expect(html).toContain('data-slot="avatar"');
-    expect(html).toContain('data-slot="avatar-fallback"');
-    expect(html).toContain('CN');
-  });
-
-  test('Breadcrumb family renders trail markup', () => {
-    const html = renderToStaticMarkup(
-      compileToReact(
-        `<Breadcrumb>
-  <BreadcrumbList>
-    <BreadcrumbItem>
-      <BreadcrumbLink href="/">Home</BreadcrumbLink>
-    </BreadcrumbItem>
-    <BreadcrumbSeparator />
-    <BreadcrumbItem>
-      <BreadcrumbPage>Reports</BreadcrumbPage>
-    </BreadcrumbItem>
-  </BreadcrumbList>
-</Breadcrumb>`,
-        { components: shadcnComponents },
-      ),
-    );
-    expect(html).toContain('data-slot="breadcrumb"');
-    expect(html).toContain('data-slot="breadcrumb-link"');
-    expect(html).toContain('data-slot="breadcrumb-page"');
-    expect(html).toContain('data-slot="breadcrumb-separator"');
-    expect(html).toContain('aria-current="page"');
   });
 
   test('Dialog opens on trigger click and portals content outside the host', () => {

@@ -44,9 +44,6 @@ export const CardWithRegularText: Story = {
 };
 export const Tabs: Story = story('Tabs');
 export const Accordion: Story = story('Accordion');
-export const Alert: Story = story('Alert');
-export const Avatar: Story = story('Avatar');
-export const Breadcrumb: Story = story('Breadcrumb');
 export const Collapsible: Story = story('Collapsible');
 export const Dialog: Story = story('Dialog');
 export const HoverCard: Story = story('HoverCard');

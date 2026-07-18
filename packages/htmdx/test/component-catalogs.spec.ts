@@ -53,7 +53,26 @@ describe('component definition catalogs', () => {
       ]),
     );
     expect(Object.keys(shadcnDefinitions)).toEqual(
-      expect.arrayContaining(['Badge', 'Button', 'AspectRatio', 'Progress', 'Separator']),
+      expect.arrayContaining([
+        'Badge',
+        'Button',
+        'AspectRatio',
+        'Progress',
+        'Separator',
+        'Alert',
+        'AlertTitle',
+        'AlertDescription',
+        'Avatar',
+        'AvatarImage',
+        'AvatarFallback',
+        'Breadcrumb',
+        'BreadcrumbList',
+        'BreadcrumbItem',
+        'BreadcrumbLink',
+        'BreadcrumbPage',
+        'BreadcrumbSeparator',
+        'BreadcrumbEllipsis',
+      ]),
     );
 
     const names = new Set<string>();
@@ -304,6 +323,36 @@ describe('planning Built-ins through the definition catalog', () => {
       });
     },
   );
+});
+
+describe('alert, avatar, and breadcrumb definitions', () => {
+  test('declare their HTMDX body and authoring prop contracts', () => {
+    expect(shadcnDefinitions.Alert).toMatchObject({
+      body: 'htmdx',
+      props: [{ name: 'variant', type: 'string', values: ['default', 'destructive'] }],
+    });
+    expect(shadcnDefinitions.AlertTitle.body).toBe('htmdx');
+    expect(shadcnDefinitions.AlertDescription.body).toBe('htmdx');
+    expect(shadcnDefinitions.Avatar.body).toBe('htmdx');
+    expect(shadcnDefinitions.AvatarImage).toMatchObject({
+      body: 'none',
+      props: [
+        { name: 'src', type: 'string', required: true },
+        { name: 'alt', type: 'string' },
+      ],
+    });
+    expect(shadcnDefinitions.AvatarFallback.body).toBe('htmdx');
+    expect(shadcnDefinitions.Breadcrumb.body).toBe('htmdx');
+    expect(shadcnDefinitions.BreadcrumbList.body).toBe('htmdx');
+    expect(shadcnDefinitions.BreadcrumbItem.body).toBe('htmdx');
+    expect(shadcnDefinitions.BreadcrumbLink).toMatchObject({
+      body: 'htmdx',
+      props: [{ name: 'href', type: 'string', required: true }],
+    });
+    expect(shadcnDefinitions.BreadcrumbPage.body).toBe('htmdx');
+    expect(shadcnDefinitions.BreadcrumbSeparator.body).toBe('htmdx');
+    expect(shadcnDefinitions.BreadcrumbEllipsis.body).toBe('none');
+  });
 });
 
 describe('basic shadcn components at the HTMDX catalog boundary', () => {

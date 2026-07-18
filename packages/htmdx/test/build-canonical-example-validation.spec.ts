@@ -12,6 +12,21 @@ describe('canonical example build validation', () => {
     ).toThrow('canonical example for <Compare> failed to compile');
   });
 
+  test('accepts a structural target inside its required parent context', () => {
+    expect(() =>
+      validateCanonicalExamples(
+        [
+          {
+            name: 'AlertDescription',
+            example:
+              '<Alert><AlertTitle>Notice</AlertTitle><AlertDescription>Details</AlertDescription></Alert>',
+          },
+        ],
+        compile,
+      ),
+    ).not.toThrow();
+  });
+
   test.each([
     ['inline code', '`<Compare></Compare>`'],
     ['an HTML comment', '<!-- <Compare></Compare> -->'],

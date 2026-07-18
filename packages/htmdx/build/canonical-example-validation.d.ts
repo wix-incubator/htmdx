@@ -3,7 +3,7 @@ type CanonicalExample = {
   example?: string;
 };
 
-type CompileResult = { ok: true } | { ok: false; error: string };
+type CompileResult = { ok: true; components: string[] } | { ok: false; error: string };
 
 export declare function validateCanonicalExamples(
   components: readonly CanonicalExample[],

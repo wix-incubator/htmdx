@@ -7,7 +7,6 @@ import {
   parseLabelValueList,
   parseMarkdownListCards,
 } from '../src/components/body-contracts';
-import { builtInComponents } from '../src/components/catalog';
 
 describe('component body contracts', () => {
   test('parses label-value rows at the first colon', () => {
@@ -110,12 +109,6 @@ describe('component body contracts', () => {
     expect(() => parseComponentBody('Callout', 'markdown', body)).toThrow(
       new RegExp(`Invalid body for <Callout>.*${violation}.*expected`),
     );
-  });
-
-  test('compiles every required catalog example through runtime validation', () => {
-    for (const component of builtInComponents) {
-      expect(compile(component.example), component.name).toMatchObject({ ok: true });
-    }
   });
 
   test.each(['<MetricStrip></MetricStrip>', '<MetricStrip />'])(

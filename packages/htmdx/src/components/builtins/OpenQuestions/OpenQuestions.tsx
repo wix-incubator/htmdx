@@ -1,7 +1,12 @@
-import { parseComponentBody } from '../../components/body-contracts';
-import { cn } from '../shadcn/utils';
-import { Block, Inline, rawBody, splitFeature, type RawBodyProps } from './shell';
-import { toneChip, TONE_BORDER, TONE_SOFT, type Tone } from './tones';
+import { parseComponentBody } from '../../body-contracts';
+import { cn } from '../../../react/shadcn/utils';
+import {
+  InlineMarkdown,
+  splitFeature,
+  StructuredBlock,
+  type StructuredBodyProps,
+} from '../shared/structured';
+import { toneChip, TONE_BORDER, TONE_SOFT, type Tone } from '../shared/tones';
 
 // Open questions & assumptions: an amber-framed panel whose rows each carry a
 // labeled badge. Item: **Assumption:** text · **Risk:** text · **Open:** text.
@@ -16,10 +21,10 @@ function labelToneOf(label: string): Tone {
   return LABEL_TONES[label.trim().toLowerCase()] ?? 'gray';
 }
 
-export const OpenQuestions = rawBody(({ body = '' }: RawBodyProps) => {
+export function OpenQuestions({ body = '', className, ...attributes }: StructuredBodyProps) {
   const parsed = parseComponentBody('OpenQuestions', 'markdown-list-cards', body);
   return (
-    <Block name="OpenQuestions">
+    <StructuredBlock name="OpenQuestions" className={className} {...attributes}>
       <div className={cn('overflow-hidden rounded-lg border', TONE_BORDER.amber)}>
         <div
           className={cn(
@@ -39,13 +44,13 @@ export const OpenQuestions = rawBody(({ body = '' }: RawBodyProps) => {
                   {(title ?? 'Note').toUpperCase()}
                 </span>
                 <span className="text-sm text-muted-foreground">
-                  <Inline text={text} />
+                  <InlineMarkdown text={text} />
                 </span>
               </div>
             );
           })}
         </div>
       </div>
-    </Block>
+    </StructuredBlock>
   );
-}, 'OpenQuestions');
+}

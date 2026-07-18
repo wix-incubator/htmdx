@@ -1,6 +1,6 @@
 import { parseComponentBody } from '../../body-contracts';
 import { cn } from '../../../react/shadcn/utils';
-import { toneChip, TONE_DOT, TONE_SURFACE, type Tone } from '../../../react/builtins/tones';
+import { toneChip, TONE_DOT, TONE_SURFACE, type Tone } from '../shared/tones';
 import { InlineMarkdown, StructuredBlock, type StructuredBodyProps } from '../shared/structured';
 
 function splitDot(cell: string): { tone?: Tone; text: string } {

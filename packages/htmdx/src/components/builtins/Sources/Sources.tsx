@@ -1,6 +1,6 @@
 import { parseComponentBody } from '../../body-contracts';
 import { cn } from '../../../react/shadcn/utils';
-import { toneChip, TONE_BORDER } from '../../../react/builtins/tones';
+import { toneChip, TONE_BORDER } from '../shared/tones';
 import {
   InlineMarkdown,
   splitFeature,

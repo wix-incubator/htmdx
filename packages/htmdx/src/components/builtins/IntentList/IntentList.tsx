@@ -1,7 +1,12 @@
-import { parseComponentBody } from '../../components/body-contracts';
-import { cn } from '../shadcn/utils';
-import { Block, Inline, rawBody, splitFeature, type RawBodyProps } from './shell';
-import { feelingChip, toneChip, TONE_BAR, TONE_SOFT, type Tone } from './tones';
+import { parseComponentBody } from '../../body-contracts';
+import { cn } from '../../../react/shadcn/utils';
+import {
+  InlineMarkdown,
+  splitFeature,
+  StructuredBlock,
+  type StructuredBodyProps,
+} from '../shared/structured';
+import { feelingChip, toneChip, TONE_BAR, TONE_SOFT, type Tone } from '../shared/tones';
 
 // Priority tiers drive grouping order, the group badge tone, and each card's
 // left accent bar.
@@ -86,20 +91,20 @@ function IntentCard({ intent }: { intent: Intent }) {
         ) : null}
         {intent.kind ? (
           <span className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-            <Inline text={intent.kind} />
+            <InlineMarkdown text={intent.kind} />
           </span>
         ) : null}
       </div>
       {intent.quote ? (
         <p className="mt-2 text-base text-card-foreground italic">
-          “<Inline text={intent.quote} />”
+          “<InlineMarkdown text={intent.quote} />”
         </p>
       ) : null}
       {intent.negatives.length || intent.positives.length ? (
         <div className="mt-3 flex flex-wrap items-center gap-2">
           {intent.negatives.map((feeling, index) => (
             <span key={`n-${index}`} className={feelingChip({ kind: 'negative' })}>
-              <Inline text={feeling} />
+              <InlineMarkdown text={feeling} />
             </span>
           ))}
           {intent.negatives.length && intent.positives.length ? (
@@ -109,7 +114,7 @@ function IntentCard({ intent }: { intent: Intent }) {
           ) : null}
           {intent.positives.map((feeling, index) => (
             <span key={`p-${index}`} className={feelingChip({ kind: 'positive' })}>
-              <Inline text={feeling} />
+              <InlineMarkdown text={feeling} />
             </span>
           ))}
         </div>
@@ -123,7 +128,7 @@ function IntentCard({ intent }: { intent: Intent }) {
         >
           <span aria-hidden>⚠</span>
           <span>
-            <Inline text={intent.note} />
+            <InlineMarkdown text={intent.note} />
           </span>
         </div>
       ) : null}
@@ -131,7 +136,7 @@ function IntentCard({ intent }: { intent: Intent }) {
   );
 }
 
-export const IntentList = rawBody(({ body = '' }: RawBodyProps) => {
+export function IntentList({ body = '', className, ...attributes }: StructuredBodyProps) {
   const parsed = parseComponentBody('IntentList', 'markdown-list-cards', body);
   const intents = parsed.items.map(parseIntent);
   const groups = PRIORITY_ORDER.map((key) => ({
@@ -141,7 +146,7 @@ export const IntentList = rawBody(({ body = '' }: RawBodyProps) => {
   })).filter((group) => group.intents.length > 0);
 
   return (
-    <Block name="IntentList">
+    <StructuredBlock name="IntentList" className={className} {...attributes}>
       <div className="flex flex-col gap-6">
         {groups.map((group) => (
           <div key={group.key} className="flex flex-col gap-3">
@@ -160,6 +165,6 @@ export const IntentList = rawBody(({ body = '' }: RawBodyProps) => {
           </div>
         ))}
       </div>
-    </Block>
+    </StructuredBlock>
   );
-}, 'IntentList');
+}

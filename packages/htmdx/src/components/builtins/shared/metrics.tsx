@@ -1,6 +1,6 @@
 import { cva } from 'class-variance-authority';
 import type { LabelValue } from '../../body-contracts';
-import { TONE_DOT } from '../../../react/builtins/tones';
+import { TONE_DOT } from './tones';
 import { InlineMarkdown, stripWrappingBold } from './structured';
 
 const DIRECTIONS = {

@@ -1,7 +1,12 @@
-import { parseComponentBody } from '../../components/body-contracts';
-import { cn } from '../shadcn/utils';
-import { Block, Inline, rawBody, splitFeature, type RawBodyProps } from './shell';
-import { splitTone, TONE_TOP, type Tone } from './tones';
+import { parseComponentBody } from '../../body-contracts';
+import { cn } from '../../../react/shadcn/utils';
+import {
+  InlineMarkdown,
+  splitFeature,
+  StructuredBlock,
+  type StructuredBodyProps,
+} from '../shared/structured';
+import { splitTone, TONE_TOP, type Tone } from '../shared/tones';
 
 // A grid of category cards, each with a colored top accent. Used for Why-Now
 // signals (category eyebrow + headline + body) and for the
@@ -34,11 +39,11 @@ function columnsFor(count: number): string {
   return 'sm:grid-cols-2 lg:grid-cols-3';
 }
 
-export const SignalGrid = rawBody(({ body = '' }: RawBodyProps) => {
+export function SignalGrid({ body = '', className, ...attributes }: StructuredBodyProps) {
   const parsed = parseComponentBody('SignalGrid', 'markdown-list-cards', body);
   const signals = parsed.items.map(parseSignal);
   return (
-    <Block name="SignalGrid">
+    <StructuredBlock name="SignalGrid" className={className} {...attributes}>
       <div className={cn('grid gap-4', columnsFor(signals.length))}>
         {signals.map((signal, index) => (
           <div
@@ -47,20 +52,20 @@ export const SignalGrid = rawBody(({ body = '' }: RawBodyProps) => {
           >
             {signal.category ? (
               <div className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                <Inline text={signal.category} />
+                <InlineMarkdown text={signal.category} />
               </div>
             ) : null}
             {signal.headline ? (
               <div className="mt-2 font-semibold text-card-foreground">
-                <Inline text={signal.headline} />
+                <InlineMarkdown text={signal.headline} />
               </div>
             ) : null}
             <div className={cn('text-sm text-muted-foreground', signal.headline ? 'mt-1' : 'mt-2')}>
-              <Inline text={signal.body} />
+              <InlineMarkdown text={signal.body} />
             </div>
           </div>
         ))}
       </div>
-    </Block>
+    </StructuredBlock>
   );
-}, 'SignalGrid');
+}

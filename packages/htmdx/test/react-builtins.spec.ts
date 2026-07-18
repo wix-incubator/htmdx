@@ -37,7 +37,7 @@ Ship **one HTML file** with editable HTMDX source.
         `<IntentList>
 - **#int-001 · Blocker · Self-Creator · Main intent:** "I want to collect a shopper's file, so I don't have to chase it over email." — frustrated, resigned → in control, relieved
 </IntentList>`,
-        { components: merged },
+        { components: merged, definitions },
       ),
     );
     const container = document.createElement('div');

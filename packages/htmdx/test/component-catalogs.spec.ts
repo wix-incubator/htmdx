@@ -47,6 +47,9 @@ describe('component definition catalogs', () => {
         'DecisionMatrix',
         'RiskTable',
         'Timeline',
+        'IntentList',
+        'SignalGrid',
+        'OpenQuestions',
       ]),
     );
     expect(Object.keys(shadcnDefinitions)).toContain('Badge');
@@ -261,6 +264,44 @@ describe('tabular and decision Built-ins through the definition catalog', () => 
       error: expect.stringContaining(error),
     });
   });
+});
+
+describe('planning Built-ins through the definition catalog', () => {
+  test.each([
+    [
+      'IntentList',
+      '- **#int-001 · Blocker · Owner · Main intent:** "I want one source of truth." — unsure → confident',
+      ['#int-001', 'Owner', 'one source of truth', 'confident'],
+    ],
+    [
+      'SignalGrid',
+      '- **User pain | red:** Manual review — Teams lose time to repeated checks.',
+      ['User pain', 'Manual review', 'Teams lose time'],
+    ],
+    [
+      'OpenQuestions',
+      '- **Risk:** The old catalog may drift from runtime registration.',
+      ['RISK', 'The old catalog may drift'],
+    ],
+  ])('parses and renders <%s> structured Markdown', (name, body, output) => {
+    const rendered = compile(`<${name}>\n${body}\n</${name}>`);
+
+    expect(rendered).toMatchObject({ ok: true, components: [name] });
+    expect(rendered.ok && rendered.html).toContain(`data-htmdx-component="${name}"`);
+    for (const text of output) {
+      expect(rendered.ok && rendered.html).toContain(text);
+    }
+  });
+
+  test.each(['IntentList', 'SignalGrid', 'OpenQuestions'])(
+    'keeps <%s> card-list validation actionable',
+    (name) => {
+      expect(compile(`<${name}>\nnot a list\n</${name}>`)).toMatchObject({
+        ok: false,
+        error: expect.stringContaining("one or more non-empty '- item' rows"),
+      });
+    },
+  );
 });
 
 describe('Badge at the HTMDX catalog boundary', () => {

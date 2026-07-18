@@ -125,16 +125,15 @@ describe('react renderer with shadcn/ui', () => {
     </TableRow>
   </TableBody>
 </Table>`,
-        { components: shadcnComponents },
+        { components: shadcnComponents, definitions },
       ),
     );
-    expect(html).toContain('data-slot="table-container"');
-    expect(html).toContain('data-slot="table"');
-    expect(html).toContain('data-slot="table-header"');
-    expect(html).toContain('data-slot="table-body"');
-    expect(html).toContain('data-slot="table-caption"');
-    expect(html).toContain('<th');
-    expect(html).toContain('$1,140');
+    expect(html).toContain('<table');
+    expect(html).toMatch(/<caption[^>]*>.*Plans.*<\/caption>/s);
+    expect(html).toContain('<thead');
+    expect(html).toContain('<tbody');
+    expect(html).toMatch(/<th[^>]*>.*Plan.*<\/th>/s);
+    expect(html).toMatch(/<td[^>]*>.*\$1,140.*<\/td>/s);
   });
 
   test('Dialog opens on trigger click and portals content outside the host', () => {

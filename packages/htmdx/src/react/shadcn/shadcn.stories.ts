@@ -41,7 +41,6 @@ export const Collapsible: Story = story('Collapsible');
 export const Dialog: Story = story('Dialog');
 export const HoverCard: Story = story('HoverCard');
 export const Popover: Story = story('Popover');
-export const Table: Story = story('Table');
 export const Tooltip: Story = story('Tooltip');
 
 function story(name: string): Story {

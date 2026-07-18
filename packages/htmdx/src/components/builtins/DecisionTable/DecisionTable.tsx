@@ -1,5 +1,9 @@
 import { parseComponentBody } from '../../body-contracts';
-import { Table, TableBody, TableCell, TableHead, TableRow } from '../../../react/shadcn/table';
+import { Table } from '../../shadcn/Table/Table';
+import { TableBody } from '../../shadcn/TableBody/TableBody';
+import { TableCell } from '../../shadcn/TableCell/TableCell';
+import { TableHead } from '../../shadcn/TableHead/TableHead';
+import { TableRow } from '../../shadcn/TableRow/TableRow';
 import { InlineMarkdown, StructuredBlock, type StructuredBodyProps } from '../shared/structured';
 
 export function DecisionTable({ body = '', className, ...attributes }: StructuredBodyProps) {

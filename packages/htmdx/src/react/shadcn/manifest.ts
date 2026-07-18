@@ -102,19 +102,6 @@ export const shadcnManifestComponents: readonly HtmdxReactManifestComponent[] = 
   { name: 'PopoverContent', purpose: 'Floating panel body, portalled to the document.' },
   { name: 'PopoverAnchor', purpose: 'Optional custom positioning anchor for PopoverContent.' },
   {
-    name: 'Table',
-    purpose: 'Data table root; wrap TableHeader/TableBody rows. Display-only.',
-    example:
-      '<Table>\n  <TableCaption>Quarterly revenue</TableCaption>\n  <TableHeader>\n    <TableRow>\n      <TableHead>Plan</TableHead>\n      <TableHead>MRR</TableHead>\n    </TableRow>\n  </TableHeader>\n  <TableBody>\n    <TableRow>\n      <TableCell>Pro</TableCell>\n      <TableCell>$1,140</TableCell>\n    </TableRow>\n  </TableBody>\n</Table>',
-  },
-  { name: 'TableHeader', purpose: 'Header section (thead) of a Table.' },
-  { name: 'TableBody', purpose: 'Body section (tbody) holding data rows.' },
-  { name: 'TableFooter', purpose: 'Footer section (tfoot), usually totals.' },
-  { name: 'TableRow', purpose: 'One row (tr) inside a Table section.' },
-  { name: 'TableHead', purpose: 'Header cell (th) inside a TableRow.' },
-  { name: 'TableCell', purpose: 'Data cell (td) inside a TableRow.' },
-  { name: 'TableCaption', purpose: 'Caption line rendered under the Table.' },
-  {
     name: 'Tooltip',
     purpose:
       'Hover tooltip; wraps its own provider so it works standalone. Shows on hover of TooltipTrigger.',

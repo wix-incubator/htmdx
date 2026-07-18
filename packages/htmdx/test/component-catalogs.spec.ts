@@ -72,6 +72,14 @@ describe('component definition catalogs', () => {
         'BreadcrumbPage',
         'BreadcrumbSeparator',
         'BreadcrumbEllipsis',
+        'Table',
+        'TableBody',
+        'TableCaption',
+        'TableCell',
+        'TableFooter',
+        'TableHead',
+        'TableHeader',
+        'TableRow',
       ]),
     );
 
@@ -397,6 +405,87 @@ describe('Card family at the HTMDX catalog boundary', () => {
     expect(rendered.ok && rendered.html).toContain('<strong>12%</strong>');
     expect(rendered.ok && rendered.html).toContain('audited');
     expect(rendered.ok && rendered.html).toContain('Download');
+  });
+});
+
+describe('Table family at the HTMDX catalog boundary', () => {
+  test('declares all structural tags as composable HTMDX definitions', () => {
+    expect([
+      shadcnDefinitions.Table,
+      shadcnDefinitions.TableBody,
+      shadcnDefinitions.TableCaption,
+      shadcnDefinitions.TableCell,
+      shadcnDefinitions.TableFooter,
+      shadcnDefinitions.TableHead,
+      shadcnDefinitions.TableHeader,
+      shadcnDefinitions.TableRow,
+    ]).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: 'Table', body: 'htmdx' }),
+        expect.objectContaining({ name: 'TableBody', body: 'htmdx' }),
+        expect.objectContaining({ name: 'TableCaption', body: 'htmdx' }),
+        expect.objectContaining({ name: 'TableCell', body: 'htmdx' }),
+        expect.objectContaining({ name: 'TableFooter', body: 'htmdx' }),
+        expect.objectContaining({ name: 'TableHead', body: 'htmdx' }),
+        expect.objectContaining({ name: 'TableHeader', body: 'htmdx' }),
+        expect.objectContaining({ name: 'TableRow', body: 'htmdx' }),
+      ]),
+    );
+  });
+
+  test('declares supported cell authoring props', () => {
+    expect(shadcnDefinitions.TableCell.props).toEqual([
+      expect.objectContaining({ name: 'colSpan', type: 'number', min: 1, max: 1000 }),
+      expect.objectContaining({ name: 'rowSpan', type: 'number', min: 0, max: 65534 }),
+      expect.objectContaining({ name: 'headers', type: 'string' }),
+    ]);
+    expect(shadcnDefinitions.TableHead.props).toEqual([
+      expect.objectContaining({ name: 'colSpan', type: 'number', min: 1, max: 1000 }),
+      expect.objectContaining({ name: 'rowSpan', type: 'number', min: 0, max: 65534 }),
+      expect.objectContaining({
+        name: 'scope',
+        type: 'string',
+        values: ['row', 'col', 'rowgroup', 'colgroup'],
+      }),
+      expect.objectContaining({ name: 'abbr', type: 'string' }),
+    ]);
+  });
+
+  test('enforces declared cell props through the HTMDX schema', () => {
+    expect(
+      compile(
+        '<Table><TableHeader><TableRow><TableHead scope="page">Plan</TableHead></TableRow></TableHeader></Table>',
+      ),
+    ).toMatchObject({ ok: false, error: expect.stringContaining('must be one of') });
+    expect(
+      compile(
+        '<Table><TableBody><TableRow><TableCell colSpan="0">Plan</TableCell></TableRow></TableBody></Table>',
+      ),
+    ).toMatchObject({ ok: false, error: expect.stringContaining('at least 1') });
+    expect(
+      compile(
+        '<Table><TableBody><TableRow><TableCell title="Plan">Pro</TableCell></TableRow></TableBody></Table>',
+      ),
+    ).toMatchObject({ ok: false, error: expect.stringContaining('unknown prop "title"') });
+  });
+
+  test('renders a complete table with Markdown cell content and declared props', () => {
+    const rendered = compile(`<Table>
+  <TableCaption>Quarterly plans</TableCaption>
+  <TableHeader>
+    <TableRow><TableHead scope="col">Plan</TableHead><TableHead scope="col">MRR</TableHead></TableRow>
+  </TableHeader>
+  <TableBody>
+    <TableRow><TableCell>**Pro**</TableCell><TableCell>$1,140</TableCell></TableRow>
+  </TableBody>
+  <TableFooter>
+    <TableRow><TableCell colSpan="2">Two plans</TableCell></TableRow>
+  </TableFooter>
+</Table>`);
+
+    expect(rendered).toMatchObject({ ok: true });
+    expect(rendered.ok && rendered.html).toContain('<strong>Pro</strong>');
+    expect(rendered.ok && rendered.html).toContain('Two plans');
   });
 });
 

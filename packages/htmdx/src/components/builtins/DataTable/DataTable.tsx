@@ -1,12 +1,10 @@
 import { parseComponentBody } from '../../body-contracts';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '../../../react/shadcn/table';
+import { Table } from '../../shadcn/Table/Table';
+import { TableBody } from '../../shadcn/TableBody/TableBody';
+import { TableCell } from '../../shadcn/TableCell/TableCell';
+import { TableHead } from '../../shadcn/TableHead/TableHead';
+import { TableHeader } from '../../shadcn/TableHeader/TableHeader';
+import { TableRow } from '../../shadcn/TableRow/TableRow';
 import { InlineMarkdown, StructuredBlock, type StructuredBodyProps } from '../shared/structured';
 
 export function DataTable({ body = '', className, ...attributes }: StructuredBodyProps) {

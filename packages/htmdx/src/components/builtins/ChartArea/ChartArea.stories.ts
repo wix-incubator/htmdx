@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { createComponentStory, type ComponentStoryArgs } from '../storybook/component-story';
-import { chartLine } from './chart-line';
+import { createComponentStory, type ComponentStoryArgs } from '../../../storybook/component-story';
+import { ChartArea } from './index';
 
 const meta = {
-  title: 'Components/default/ChartLine',
-  ...createComponentStory(chartLine),
+  title: 'Components/Built-ins/ChartArea',
+  ...createComponentStory(ChartArea),
 } satisfies Meta<ComponentStoryArgs>;
 
 export default meta;

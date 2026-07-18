@@ -27,7 +27,17 @@ const allDefinitions = catalogs.flatMap(({ directory, source, definitions }) =>
 describe('component definition catalogs', () => {
   test('category barrels export each definition once under its PascalCase name', () => {
     expect(Object.keys(builtinDefinitions)).toEqual(
-      expect.arrayContaining(['ExecutiveSummary', 'Callout', 'SourceQuote']),
+      expect.arrayContaining([
+        'ExecutiveSummary',
+        'Callout',
+        'SourceQuote',
+        'MetricStrip',
+        'Stat',
+        'ChartBar',
+        'ChartArea',
+        'ChartLine',
+        'ChartPie',
+      ]),
     );
     expect(Object.keys(shadcnDefinitions)).toContain('Badge');
 
@@ -134,6 +144,37 @@ describe('narrative Built-ins through the definition catalog', () => {
     } else {
       expect(rendered.ok && rendered.html).toContain('“Artifacts should remain editable.”');
     }
+  });
+});
+
+describe('metric and chart Built-ins through the definition catalog', () => {
+  test.each([
+    ['MetricStrip', '- Adoption: **72%**', '72%'],
+    ['Stat', '- Revenue: **$4.2M**', '$4.2M'],
+    ['ChartBar', '- Free users: 48', 'Free users: 48'],
+    ['ChartArea', '- January: 18', 'January: 18'],
+    ['ChartLine', '- Week 1: 8', 'Week 1: 8'],
+    ['ChartPie', '- Direct: 62', 'Direct: 62'],
+  ])('parses and renders <%s> structured Markdown', (name, body, output) => {
+    const rendered = compile(`<${name}>\n${body}\n</${name}>`);
+
+    expect(rendered).toMatchObject({ ok: true, components: [name] });
+    expect(rendered.ok && rendered.html).toContain(`data-htmdx-component="${name}"`);
+    expect(rendered.ok && rendered.html).toContain(output);
+  });
+
+  test.each([
+    ['MetricStrip', 'not a label-value list', "one or more '- label: value' rows"],
+    ['Stat', '- Missing value:', 'non-empty label and value'],
+    ['ChartBar', '- Signups: many', 'not a non-negative decimal'],
+    ['ChartArea', '- Signups: -1', 'not a non-negative decimal'],
+    ['ChartLine', '- Signups: Infinity', 'not a non-negative decimal'],
+    ['ChartPie', '- : 12', 'non-empty label'],
+  ])('keeps <%s> validation actionable', (name, body, error) => {
+    expect(compile(`<${name}>\n${body}\n</${name}>`)).toMatchObject({
+      ok: false,
+      error: expect.stringContaining(error),
+    });
   });
 });
 

@@ -2,20 +2,7 @@ import type { HtmdxReactComponents } from '../index';
 
 export { injectShadcnTheme, SHADCN_THEME_STYLE_ID, shadcnThemeCss } from './theme';
 export { shadcnManifestComponents } from './manifest';
-import { HoverCard, HoverCardContent, HoverCardTrigger } from './hover-card';
-import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from './popover';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip';
 
-export const shadcnComponents = {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-  Popover,
-  PopoverAnchor,
-  PopoverContent,
-  PopoverTrigger,
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} satisfies HtmdxReactComponents;
+// All shadcn components now flow through the definition catalog. Keep the
+// legacy map empty until the compatibility API is removed in the v4 release.
+export const shadcnComponents = {} satisfies HtmdxReactComponents;

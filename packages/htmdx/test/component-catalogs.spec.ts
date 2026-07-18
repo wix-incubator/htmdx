@@ -89,6 +89,17 @@ describe('component definition catalogs', () => {
         'DialogPortal',
         'DialogTitle',
         'DialogTrigger',
+        'HoverCard',
+        'HoverCardContent',
+        'HoverCardTrigger',
+        'Popover',
+        'PopoverAnchor',
+        'PopoverContent',
+        'PopoverTrigger',
+        'Tooltip',
+        'TooltipContent',
+        'TooltipProvider',
+        'TooltipTrigger',
         'Table',
         'TableBody',
         'TableCaption',
@@ -608,6 +619,129 @@ describe('Dialog family at the HTMDX catalog boundary', () => {
       ok: false,
       error: expect.stringContaining('does not allow a body'),
     });
+  });
+});
+
+describe('floating-content families at the HTMDX catalog boundary', () => {
+  test('declares all family members as composable HTMDX definitions', () => {
+    expect([
+      shadcnDefinitions.HoverCard,
+      shadcnDefinitions.HoverCardContent,
+      shadcnDefinitions.HoverCardTrigger,
+      shadcnDefinitions.Popover,
+      shadcnDefinitions.PopoverAnchor,
+      shadcnDefinitions.PopoverContent,
+      shadcnDefinitions.PopoverTrigger,
+      shadcnDefinitions.Tooltip,
+      shadcnDefinitions.TooltipContent,
+      shadcnDefinitions.TooltipProvider,
+      shadcnDefinitions.TooltipTrigger,
+    ]).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: 'HoverCard', body: 'htmdx' }),
+        expect.objectContaining({ name: 'HoverCardContent', body: 'htmdx' }),
+        expect.objectContaining({ name: 'HoverCardTrigger', body: 'htmdx' }),
+        expect.objectContaining({ name: 'Popover', body: 'htmdx' }),
+        expect.objectContaining({ name: 'PopoverAnchor', body: 'htmdx' }),
+        expect.objectContaining({ name: 'PopoverContent', body: 'htmdx' }),
+        expect.objectContaining({ name: 'PopoverTrigger', body: 'htmdx' }),
+        expect.objectContaining({ name: 'Tooltip', body: 'htmdx' }),
+        expect.objectContaining({ name: 'TooltipContent', body: 'htmdx' }),
+        expect.objectContaining({ name: 'TooltipProvider', body: 'htmdx' }),
+        expect.objectContaining({ name: 'TooltipTrigger', body: 'htmdx' }),
+      ]),
+    );
+  });
+
+  test('declares supported root, trigger, content, and provider props', () => {
+    expect(shadcnDefinitions.HoverCard.props).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: 'defaultOpen', type: 'boolean', default: false }),
+        expect.objectContaining({ name: 'openDelay', type: 'number', default: 700 }),
+        expect.objectContaining({ name: 'closeDelay', type: 'number', default: 300 }),
+      ]),
+    );
+    expect(shadcnDefinitions.Popover.props).toEqual([
+      expect.objectContaining({ name: 'defaultOpen', type: 'boolean', default: false }),
+      expect.objectContaining({ name: 'modal', type: 'boolean', default: false }),
+    ]);
+    for (const trigger of [
+      shadcnDefinitions.HoverCardTrigger,
+      shadcnDefinitions.PopoverAnchor,
+      shadcnDefinitions.PopoverTrigger,
+      shadcnDefinitions.TooltipTrigger,
+    ]) {
+      expect(trigger.props).toEqual([
+        expect.objectContaining({ name: 'asChild', type: 'boolean', default: false }),
+      ]);
+    }
+    for (const content of [
+      shadcnDefinitions.HoverCardContent,
+      shadcnDefinitions.PopoverContent,
+      shadcnDefinitions.TooltipContent,
+    ]) {
+      expect(content.props).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ name: 'forceMount', type: 'boolean', default: false }),
+          expect.objectContaining({
+            name: 'side',
+            type: 'string',
+            values: ['top', 'right', 'bottom', 'left'],
+          }),
+          expect.objectContaining({
+            name: 'align',
+            type: 'string',
+            values: ['start', 'center', 'end'],
+          }),
+        ]),
+      );
+    }
+    expect(shadcnDefinitions.TooltipProvider.props).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: 'delayDuration', type: 'number', default: 0 }),
+        expect.objectContaining({ name: 'skipDelayDuration', type: 'number', default: 300 }),
+        expect.objectContaining({
+          name: 'disableHoverableContent',
+          type: 'boolean',
+          default: false,
+        }),
+      ]),
+    );
+  });
+
+  test('enforces floating-content props through the HTMDX schema', () => {
+    expect(compile('<HoverCard openDelay="soon" />')).toMatchObject({
+      ok: false,
+      error: expect.stringContaining('finite number'),
+    });
+    expect(compile('<PopoverContent side="diagonal" />')).toMatchObject({
+      ok: false,
+      error: expect.stringContaining('must be one of'),
+    });
+    expect(compile('<TooltipProvider delayDuration="-1" />')).toMatchObject({
+      ok: false,
+      error: expect.stringContaining('at least 0'),
+    });
+  });
+
+  test('compiles declarative compositions at the runtime boundary', () => {
+    expect(
+      compile(`<TooltipProvider delayDuration="200">
+  <HoverCard>
+    <HoverCardTrigger>Account</HoverCardTrigger>
+    <HoverCardContent>Account preview.</HoverCardContent>
+  </HoverCard>
+  <Popover>
+    <PopoverAnchor>Filters</PopoverAnchor>
+    <PopoverTrigger>Open filters</PopoverTrigger>
+    <PopoverContent>Filter choices.</PopoverContent>
+  </Popover>
+  <Tooltip>
+    <TooltipTrigger>Status</TooltipTrigger>
+    <TooltipContent>Published</TooltipContent>
+  </Tooltip>
+</TooltipProvider>`),
+    ).toMatchObject({ ok: true });
   });
 });
 

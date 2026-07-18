@@ -1,18 +1,8 @@
-// Vendored shadcn/ui popover (new-york), unmodified apart from the cn import
-// path and the individual @radix-ui import. Trimmed to the classic family
-// (Popover, PopoverTrigger, PopoverContent, PopoverAnchor).
+// Vendored shadcn/ui popover content (new-york), split into its own component file.
 import * as React from 'react';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 
-import { cn } from './utils';
-
-function Popover({ ...props }: React.ComponentProps<typeof PopoverPrimitive.Root>) {
-  return <PopoverPrimitive.Root data-slot="popover" {...props} />;
-}
-
-function PopoverTrigger({ ...props }: React.ComponentProps<typeof PopoverPrimitive.Trigger>) {
-  return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />;
-}
+import { cn } from '../shared/utils';
 
 function PopoverContent({
   className,
@@ -36,8 +26,4 @@ function PopoverContent({
   );
 }
 
-function PopoverAnchor({ ...props }: React.ComponentProps<typeof PopoverPrimitive.Anchor>) {
-  return <PopoverPrimitive.Anchor data-slot="popover-anchor" {...props} />;
-}
-
-export { Popover, PopoverTrigger, PopoverContent, PopoverAnchor };
+export { PopoverContent };

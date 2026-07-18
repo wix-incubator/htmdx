@@ -23,7 +23,7 @@ driven from the same HTMDX source string.
   </CardFooter>
 </Card>
 
-<Tabs default-value="summary" class="max-w-xl">
+<Tabs defaultValue="summary" class="max-w-xl">
   <TabsList>
     <TabsTrigger value="summary">Summary</TabsTrigger>
     <TabsTrigger value="details">Details</TabsTrigger>

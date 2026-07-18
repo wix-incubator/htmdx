@@ -2,6 +2,10 @@
 // shadcn definitions. The runtime registry and the manifest derive from the
 // definitions exported here; unmigrated shadcn components still flow through
 // the legacy react/shadcn map until their migration lands.
+export { Accordion } from './Accordion';
+export { AccordionContent } from './AccordionContent';
+export { AccordionItem } from './AccordionItem';
+export { AccordionTrigger } from './AccordionTrigger';
 export { Alert } from './Alert';
 export { AlertDescription } from './AlertDescription';
 export { AlertTitle } from './AlertTitle';
@@ -25,6 +29,9 @@ export { CardDescription } from './CardDescription';
 export { CardFooter } from './CardFooter';
 export { CardHeader } from './CardHeader';
 export { CardTitle } from './CardTitle';
+export { Collapsible } from './Collapsible';
+export { CollapsibleContent } from './CollapsibleContent';
+export { CollapsibleTrigger } from './CollapsibleTrigger';
 export { Progress } from './Progress';
 export { Separator } from './Separator';
 export { Table } from './Table';
@@ -35,3 +42,7 @@ export { TableFooter } from './TableFooter';
 export { TableHead } from './TableHead';
 export { TableHeader } from './TableHeader';
 export { TableRow } from './TableRow';
+export { Tabs } from './Tabs';
+export { TabsContent } from './TabsContent';
+export { TabsList } from './TabsList';
+export { TabsTrigger } from './TabsTrigger';

@@ -54,6 +54,10 @@ describe('component definition catalogs', () => {
     );
     expect(Object.keys(shadcnDefinitions)).toEqual(
       expect.arrayContaining([
+        'Accordion',
+        'AccordionContent',
+        'AccordionItem',
+        'AccordionTrigger',
         'Badge',
         'Button',
         'AspectRatio',
@@ -72,6 +76,9 @@ describe('component definition catalogs', () => {
         'BreadcrumbPage',
         'BreadcrumbSeparator',
         'BreadcrumbEllipsis',
+        'Collapsible',
+        'CollapsibleContent',
+        'CollapsibleTrigger',
         'Table',
         'TableBody',
         'TableCaption',
@@ -80,6 +87,10 @@ describe('component definition catalogs', () => {
         'TableHead',
         'TableHeader',
         'TableRow',
+        'Tabs',
+        'TabsContent',
+        'TabsList',
+        'TabsTrigger',
       ]),
     );
 
@@ -405,6 +416,117 @@ describe('Card family at the HTMDX catalog boundary', () => {
     expect(rendered.ok && rendered.html).toContain('<strong>12%</strong>');
     expect(rendered.ok && rendered.html).toContain('audited');
     expect(rendered.ok && rendered.html).toContain('Download');
+  });
+});
+
+describe('disclosure families at the HTMDX catalog boundary', () => {
+  test('declares each family member as composable HTMDX', () => {
+    expect([
+      shadcnDefinitions.Accordion,
+      shadcnDefinitions.AccordionContent,
+      shadcnDefinitions.AccordionItem,
+      shadcnDefinitions.AccordionTrigger,
+      shadcnDefinitions.Tabs,
+      shadcnDefinitions.TabsContent,
+      shadcnDefinitions.TabsList,
+      shadcnDefinitions.TabsTrigger,
+      shadcnDefinitions.Collapsible,
+      shadcnDefinitions.CollapsibleContent,
+      shadcnDefinitions.CollapsibleTrigger,
+    ]).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: 'Accordion', body: 'htmdx' }),
+        expect.objectContaining({ name: 'AccordionContent', body: 'htmdx' }),
+        expect.objectContaining({ name: 'AccordionItem', body: 'htmdx' }),
+        expect.objectContaining({ name: 'AccordionTrigger', body: 'htmdx' }),
+        expect.objectContaining({ name: 'Tabs', body: 'htmdx' }),
+        expect.objectContaining({ name: 'TabsContent', body: 'htmdx' }),
+        expect.objectContaining({ name: 'TabsList', body: 'htmdx' }),
+        expect.objectContaining({ name: 'TabsTrigger', body: 'htmdx' }),
+        expect.objectContaining({ name: 'Collapsible', body: 'htmdx' }),
+        expect.objectContaining({ name: 'CollapsibleContent', body: 'htmdx' }),
+        expect.objectContaining({ name: 'CollapsibleTrigger', body: 'htmdx' }),
+      ]),
+    );
+  });
+
+  test('declares the family authoring props', () => {
+    expect(shadcnDefinitions.Accordion.props).toEqual([
+      expect.objectContaining({
+        name: 'type',
+        type: 'string',
+        required: true,
+        values: ['single', 'multiple'],
+      }),
+      expect.objectContaining({
+        name: 'collapsible',
+        type: 'boolean',
+        default: false,
+      }),
+      expect.objectContaining({ name: 'defaultValue', type: 'json' }),
+    ]);
+    expect(shadcnDefinitions.AccordionItem.props).toEqual([
+      expect.objectContaining({ name: 'value', type: 'string', required: true }),
+    ]);
+    expect(shadcnDefinitions.Tabs.props).toEqual([
+      expect.objectContaining({ name: 'defaultValue', type: 'string', required: true }),
+    ]);
+    expect(shadcnDefinitions.TabsTrigger.props).toEqual([
+      expect.objectContaining({ name: 'value', type: 'string', required: true }),
+    ]);
+    expect(shadcnDefinitions.TabsContent.props).toEqual([
+      expect.objectContaining({ name: 'value', type: 'string', required: true }),
+    ]);
+    expect(shadcnDefinitions.Collapsible.props).toEqual([
+      expect.objectContaining({
+        name: 'defaultOpen',
+        type: 'boolean',
+        default: false,
+      }),
+    ]);
+  });
+
+  test('enforces disclosure props through the HTMDX schema', () => {
+    expect(
+      compile('<Accordion><AccordionItem value="a">A</AccordionItem></Accordion>'),
+    ).toMatchObject({
+      ok: false,
+      error: expect.stringContaining('required prop "type" is missing'),
+    });
+    expect(compile('<Accordion type="many"></Accordion>')).toMatchObject({
+      ok: false,
+      error: expect.stringContaining('must be one of'),
+    });
+    expect(compile('<Tabs><TabsList /></Tabs>')).toMatchObject({
+      ok: false,
+      error: expect.stringContaining('required prop "defaultValue" is missing'),
+    });
+    expect(compile('<Collapsible defaultOpen="sometimes" />')).toMatchObject({
+      ok: false,
+      error: expect.stringContaining('must be true or false'),
+    });
+  });
+
+  test('renders declarative family compositions with nested Markdown', () => {
+    const rendered = compile(`<Tabs defaultValue="summary">
+  <TabsList><TabsTrigger value="summary">Summary</TabsTrigger></TabsList>
+  <TabsContent value="summary">
+    Summary with **key metrics**.
+    <Accordion type="single" collapsible="true">
+      <AccordionItem value="risks">
+        <AccordionTrigger>Risks</AccordionTrigger>
+        <AccordionContent>Vendor **lock-in**.</AccordionContent>
+      </AccordionItem>
+    </Accordion>
+    <Collapsible defaultOpen>
+      <CollapsibleTrigger>Details</CollapsibleTrigger>
+      <CollapsibleContent>Supporting evidence.</CollapsibleContent>
+    </Collapsible>
+  </TabsContent>
+</Tabs>`);
+
+    expect(rendered).toMatchObject({ ok: true });
+    expect(rendered.ok && rendered.html).toContain('<strong>key metrics</strong>');
   });
 });
 

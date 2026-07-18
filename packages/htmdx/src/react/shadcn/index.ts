@@ -2,8 +2,6 @@ import type { HtmdxReactComponents } from '../index';
 
 export { injectShadcnTheme, SHADCN_THEME_STYLE_ID, shadcnThemeCss } from './theme';
 export { shadcnManifestComponents } from './manifest';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './accordion';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './collapsible';
 import {
   Dialog,
   DialogClose,
@@ -18,17 +16,9 @@ import {
 } from './dialog';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from './hover-card';
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from './popover';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip';
 
 export const shadcnComponents = {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
   Dialog,
   DialogClose,
   DialogContent,
@@ -46,10 +36,6 @@ export const shadcnComponents = {
   PopoverAnchor,
   PopoverContent,
   PopoverTrigger,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
   Tooltip,
   TooltipContent,
   TooltipProvider,

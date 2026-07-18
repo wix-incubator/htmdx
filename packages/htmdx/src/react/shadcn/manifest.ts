@@ -18,52 +18,6 @@ export type HtmdxReactManifestComponent = {
 
 export const shadcnManifestComponents: readonly HtmdxReactManifestComponent[] = [
   {
-    name: 'Tabs',
-    purpose: 'Interactive tab group; state lives inside the component.',
-    props: [
-      { name: 'defaultValue', required: true, description: 'value of the initially active tab' },
-    ],
-    example:
-      '<Tabs defaultValue="a">\n  <TabsList>\n    <TabsTrigger value="a">First</TabsTrigger>\n    <TabsTrigger value="b">Second</TabsTrigger>\n  </TabsList>\n  <TabsContent value="a">First panel.</TabsContent>\n  <TabsContent value="b">Second panel.</TabsContent>\n</Tabs>',
-  },
-  { name: 'TabsList', purpose: 'Row of TabsTrigger elements inside Tabs.' },
-  {
-    name: 'TabsTrigger',
-    purpose: 'Clickable tab label.',
-    props: [{ name: 'value', required: true }],
-  },
-  {
-    name: 'TabsContent',
-    purpose: 'Panel shown when its value matches the active tab.',
-    props: [{ name: 'value', required: true }],
-  },
-  {
-    name: 'Accordion',
-    purpose: 'Expandable sections; state lives inside the component.',
-    props: [
-      { name: 'type', values: ['single', 'multiple'], required: true },
-      { name: 'collapsible', description: 'bare attribute; allows closing the open item' },
-    ],
-    example:
-      '<Accordion type="single" collapsible>\n  <AccordionItem value="risks">\n    <AccordionTrigger>Key risks</AccordionTrigger>\n    <AccordionContent>Vendor lock-in.</AccordionContent>\n  </AccordionItem>\n</Accordion>',
-  },
-  {
-    name: 'AccordionItem',
-    purpose: 'One expandable section inside Accordion.',
-    props: [{ name: 'value', required: true }],
-  },
-  { name: 'AccordionTrigger', purpose: 'Clickable header that toggles its AccordionItem.' },
-  { name: 'AccordionContent', purpose: 'Body revealed when the AccordionItem is open.' },
-  {
-    name: 'Collapsible',
-    purpose: 'Single expandable region toggled by CollapsibleTrigger; state lives inside.',
-    props: [{ name: 'defaultOpen', description: 'defaultOpen="true" starts expanded' }],
-    example:
-      '<Collapsible>\n  <CollapsibleTrigger>\n    <Button variant="outline">Toggle details</Button>\n  </CollapsibleTrigger>\n  <CollapsibleContent>Hidden until expanded.</CollapsibleContent>\n</Collapsible>',
-  },
-  { name: 'CollapsibleTrigger', purpose: 'Element that expands/collapses the CollapsibleContent.' },
-  { name: 'CollapsibleContent', purpose: 'Region shown when the Collapsible is open.' },
-  {
     name: 'Dialog',
     purpose: 'Modal dialog opened by DialogTrigger; content renders in a portal over an overlay.',
     example:

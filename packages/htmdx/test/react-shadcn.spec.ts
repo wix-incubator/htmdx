@@ -55,58 +55,6 @@ describe('react renderer with shadcn/ui', () => {
     expect(html).toContain('Download');
   });
 
-  test('Radix Tabs switch panels on trigger interaction', () => {
-    const { host, root } = mount(`<Tabs default-value="summary">
-  <TabsList>
-    <TabsTrigger value="summary">Summary</TabsTrigger>
-    <TabsTrigger value="details">Details</TabsTrigger>
-  </TabsList>
-  <TabsContent value="summary">The summary panel</TabsContent>
-  <TabsContent value="details">The details panel</TabsContent>
-</Tabs>`);
-
-    const activePanel = () => host.querySelector('[data-slot="tabs-content"][data-state="active"]');
-    expect(activePanel()?.textContent).toContain('The summary panel');
-
-    const detailsTrigger = Array.from(
-      host.querySelectorAll<HTMLElement>('[data-slot="tabs-trigger"]'),
-    ).find((trigger) => trigger.textContent?.includes('Details'));
-    expect(detailsTrigger).toBeDefined();
-
-    act(() => {
-      detailsTrigger?.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0 }));
-      detailsTrigger?.dispatchEvent(new MouseEvent('click', { bubbles: true, button: 0 }));
-    });
-
-    expect(activePanel()?.textContent).toContain('The details panel');
-    unmount(host, root);
-  });
-
-  test('Radix Accordion expands and collapses from HTMDX source', () => {
-    const { host, root } = mount(`<Accordion type="single" collapsible>
-  <AccordionItem value="risks">
-    <AccordionTrigger>Key risks</AccordionTrigger>
-    <AccordionContent>Vendor lock-in and churn.</AccordionContent>
-  </AccordionItem>
-</Accordion>`);
-
-    const trigger = host.querySelector<HTMLElement>('[data-slot="accordion-trigger"]');
-    expect(trigger).not.toBeNull();
-    expect(host.textContent).not.toContain('Vendor lock-in');
-
-    act(() => {
-      trigger?.click();
-    });
-    expect(host.textContent).toContain('Vendor lock-in and churn.');
-    expect(trigger?.getAttribute('data-state')).toBe('open');
-
-    act(() => {
-      trigger?.click();
-    });
-    expect(trigger?.getAttribute('data-state')).toBe('closed');
-    unmount(host, root);
-  });
-
   test('Table family renders semantic table markup', () => {
     const html = renderToStaticMarkup(
       compileToReact(
@@ -168,30 +116,6 @@ describe('react renderer with shadcn/ui', () => {
     expect(document.querySelector('[data-slot="dialog-content"]')).toBeNull();
   });
 
-  test('Collapsible toggles open state from its trigger', () => {
-    const { host, root } = mount(`<Collapsible>
-  <CollapsibleTrigger>
-    <Button variant="outline">Toggle details</Button>
-  </CollapsibleTrigger>
-  <CollapsibleContent>Hidden until expanded.</CollapsibleContent>
-</Collapsible>`);
-
-    const trigger = host.querySelector<HTMLElement>('[data-slot="collapsible-trigger"]');
-    expect(trigger).not.toBeNull();
-    expect(trigger?.getAttribute('data-state')).toBe('closed');
-
-    act(() => {
-      trigger?.click();
-    });
-    expect(trigger?.getAttribute('data-state')).toBe('open');
-
-    act(() => {
-      trigger?.click();
-    });
-    expect(trigger?.getAttribute('data-state')).toBe('closed');
-    unmount(host, root);
-  });
-
   test('full document: markdown narrative around interactive shadcn blocks', () => {
     const { host, root } = mount(`## Findings
 
@@ -203,7 +127,7 @@ Narrative before the card.
   </CardContent>
 </Card>
 
-<Tabs default-value="a">
+<Tabs defaultValue="a">
   <TabsList>
     <TabsTrigger value="a">A</TabsTrigger>
     <TabsTrigger value="b">B</TabsTrigger>
@@ -216,7 +140,7 @@ Narrative after the tabs.`);
 
     expect(host.querySelector('h2')?.textContent).toContain('Findings');
     expect(host.querySelector('[data-slot="card"]')).not.toBeNull();
-    expect(host.querySelector('[data-slot="tabs"]')).not.toBeNull();
+    expect(host.textContent).toContain('Panel A');
     expect(host.textContent).toContain('Narrative before the card.');
     expect(host.textContent).toContain('Narrative after the tabs.');
     unmount(host, root);

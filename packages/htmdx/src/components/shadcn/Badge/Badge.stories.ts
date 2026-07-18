@@ -12,6 +12,9 @@ injectShadcnTheme();
 register();
 
 const meta = {
+  // Keep the flat shadcn navigation while distinguishing this colocated meta
+  // from the transitional aggregate that owns the remaining components.
+  id: 'components-shadcn-badge',
   title: 'Components/shadcn',
   args: {
     htmdx: BadgeDefinition.example,

@@ -12,6 +12,9 @@ injectShadcnTheme();
 register();
 
 const meta = {
+  // Keep the flat shadcn navigation while distinguishing this transitional
+  // aggregate from colocated component metas.
+  id: 'components-shadcn-legacy',
   title: 'Components/shadcn',
   args: {
     htmdx: exampleFor('Card'),

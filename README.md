@@ -179,7 +179,7 @@ const MyChart = {
 - npm: `@wix/htmdx` · CDN entry: `dist/browser.js` (~138KB gzip) · module entries: `.`, `./react`, `./components`, `./components/builtins`, `./components/shadcn`
 - custom element: `<htmdx-code>` · browser API: `window.Htmdx`
 - component contract: `dist/components.json`
-- architecture decisions: [`adr/`](./adr/)
+- product stories: [`docs/user-stories.md`](./docs/user-stories.md) · architecture decisions: [`adr/`](./adr/)
 
 ## Development
 

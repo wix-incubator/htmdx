@@ -71,7 +71,8 @@ of shadcn, is authoritative for the exact pinned runtime version.
 This decision only defines shipped component-catalog composition and discovery.
 It neither ships nor standardizes layout components, layout frontmatter,
 palettes, or a layout extension API. Host component registration remains an
-orthogonal extension mechanism.
+orthogonal extension mechanism. The supported and unresolved authoring flows
+are illustrated in [`../docs/user-stories.md`](../docs/user-stories.md).
 
 ## Consequences
 

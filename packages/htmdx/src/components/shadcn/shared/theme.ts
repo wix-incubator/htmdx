@@ -125,7 +125,7 @@ htmdx-code {
   margin: 1.25rem 0 0.5rem;
 }
 .htmdx-doc-section-card h3:not([data-slot]) {
-  font-size: 1rem;
+  font-size: 1.15rem;
   font-weight: 600;
   margin: 1rem 0 0.5rem;
 }

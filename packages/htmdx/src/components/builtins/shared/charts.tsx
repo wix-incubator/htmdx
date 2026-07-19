@@ -34,7 +34,14 @@ export function ChartVisualization({ name, data }: { name: string; data: LabelNu
           const y = axisY - height;
           return (
             <g key={index}>
-              <rect className="fill-primary" x={x} y={y} width={barWidth} height={height} rx={7}>
+              <rect
+                className="fill-[var(--md-sys-color-primary)]"
+                x={x}
+                y={y}
+                width={barWidth}
+                height={height}
+                rx={7}
+              >
                 <title>{`${datum.label}: ${datum.value}`}</title>
               </rect>
               <text

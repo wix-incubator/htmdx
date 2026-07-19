@@ -36,7 +36,7 @@ export function DecisionMatrix({ body = '', className, ...attributes }: Structur
 
   return (
     <StructuredBlock name="DecisionMatrix" className={className} {...attributes}>
-      <div className="overflow-hidden rounded-lg border">
+      <div className="overflow-hidden rounded-lg border bg-card">
         <table className="w-full border-collapse text-sm" style={{ margin: 0 }}>
           <thead>
             <tr className="border-b bg-muted/40">

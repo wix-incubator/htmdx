@@ -31,10 +31,13 @@ export const executiveSummaryStyles = `
     padding: 22px 26px;
     font-family: var(--md-ref-typeface-brand);
   }
-  .htmdx-executive-summary .htmdx-component-body p {
-    margin: 0;
-    font-size: 1.0625rem;
+  .htmdx-executive-summary .htmdx-component-body p:not([data-slot]) {
+    margin: 0 0 12px;
+    font-size: 1rem;
     line-height: 1.55;
     color: var(--md-sys-color-on-surface);
+  }
+  .htmdx-executive-summary .htmdx-component-body p:not([data-slot]):last-child {
+    margin-bottom: 0;
   }
 `;

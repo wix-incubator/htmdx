@@ -109,46 +109,49 @@ htmdx-code {
   font-family: var(--md-ref-typeface-plain, ui-sans-serif, system-ui, sans-serif);
   -webkit-font-smoothing: antialiased;
 }
-htmdx-code h1:not([data-slot]) {
+/* Scoped to .htmdx-doc-section-card (markdown content) so these do not leak
+   into the page chrome — hero, section headers, and the TOC nav all live under
+   htmdx-code without a data-slot and were being restyled unintentionally. */
+.htmdx-doc-section-card h1:not([data-slot]) {
   font-size: 1.5rem;
   font-weight: 700;
   letter-spacing: -0.025em;
   margin: 1.5rem 0 0.75rem;
 }
-htmdx-code h2:not([data-slot]) {
+.htmdx-doc-section-card h2:not([data-slot]) {
   font-size: 1.25rem;
   font-weight: 600;
   letter-spacing: -0.025em;
   margin: 1.25rem 0 0.5rem;
 }
-htmdx-code h3:not([data-slot]) {
+.htmdx-doc-section-card h3:not([data-slot]) {
   font-size: 1rem;
   font-weight: 600;
   margin: 1rem 0 0.5rem;
 }
-htmdx-code p:not([data-slot]) {
+.htmdx-doc-section-card p:not([data-slot]) {
   font-size: 0.875rem;
   line-height: 1.6;
   margin: 0 0 0.75rem;
 }
-htmdx-code ul:not([data-slot]),
-htmdx-code ol:not([data-slot]) {
+.htmdx-doc-section-card ul:not([data-slot]),
+.htmdx-doc-section-card ol:not([data-slot]) {
   font-size: 0.875rem;
   line-height: 1.6;
   margin: 0 0 0.75rem;
   padding-left: 1.25rem;
 }
-htmdx-code ul:not([data-slot]) {
+.htmdx-doc-section-card ul:not([data-slot]) {
   list-style-type: disc;
 }
-htmdx-code ol:not([data-slot]) {
+.htmdx-doc-section-card ol:not([data-slot]) {
   list-style-type: decimal;
 }
-htmdx-code a:not([data-slot]) {
+.htmdx-doc-section-card a:not([data-slot]) {
   color: var(--primary);
   text-underline-offset: 2px;
 }
-htmdx-code code:not([data-slot]) {
+.htmdx-doc-section-card code:not([data-slot]) {
   font-family: ui-monospace, monospace;
   font-size: 0.8125rem;
   background: var(--muted);

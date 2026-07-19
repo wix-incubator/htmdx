@@ -27,6 +27,6 @@ export const calloutStyles = `
     padding: 18px 22px;
     font-family: var(--md-ref-typeface-brand);
   }
-  .htmdx-callout .htmdx-component-body p { margin: 0 0 8px; color: var(--md-sys-color-on-secondary-container); }
+  .htmdx-callout .htmdx-component-body p:not([data-slot]) { margin: 0 0 8px; font-size: 1rem; color: var(--md-sys-color-on-secondary-container); }
   .htmdx-callout .htmdx-component-body p:last-child { margin-bottom: 0; }
 `;

@@ -20,12 +20,12 @@ export function SourceQuote({ body = '', className, ...attributes }: SourceQuote
 }
 
 export const sourceQuoteStyles = `
-  .htmdx-source-quote .htmdx-component-body p {
+  .htmdx-source-quote .htmdx-component-body p:not([data-slot]) {
     font-size: 0.9375rem;
     color: var(--md-sys-color-on-surface-variant);
     border-left: 3px solid var(--md-sys-color-primary);
     padding-left: 16px;
-    margin: 6px 0;
+    margin: 0;
     line-height: 1.55;
   }
   .htmdx-source-quote .htmdx-component-body {

@@ -207,7 +207,7 @@ describe('insight and evidence Built-ins through the definition catalog', () => 
     ['Compare', '- **Current:** Manual review', 'Current'],
     ['Finding', '- **Drift:** Runtime support was split across catalogs.', 'Drift'],
     ['Evidence', '- **Runtime:** The exported definition drives registration.', 'Runtime'],
-    ['Sources', '- **Product Strategy**', 'Product Strategy'],
+    ['Sources', '- Product Strategy', 'Product Strategy'],
     [
       'Audience',
       '- **Store owner — Primary:** Needs clear product data. · metrics: 72% — adoption · priority: High',

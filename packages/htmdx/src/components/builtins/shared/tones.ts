@@ -21,6 +21,17 @@ export const TONE_BORDER: Record<Tone, string> = {
   purple: 'border-violet-300 dark:border-violet-800',
 };
 
+// Solid badge: background + border in the tone's 500 shade, white text. Gray
+// sits one step lighter (400) so it reads as the lowest-emphasis tone.
+export const TONE_STRONG: Record<Tone, string> = {
+  blue: 'bg-blue-500 border-blue-500 text-white',
+  green: 'bg-emerald-500 border-emerald-500 text-white',
+  amber: 'bg-amber-500 border-amber-500 text-white',
+  red: 'bg-red-500 border-red-500 text-white',
+  gray: 'bg-gray-400 border-gray-400 text-white',
+  purple: 'bg-violet-500 border-violet-500 text-white',
+};
+
 export const TONE_FOREGROUND: Record<Tone, string> = {
   blue: 'text-blue-700 dark:text-blue-300',
   green: 'text-emerald-700 dark:text-emerald-300',

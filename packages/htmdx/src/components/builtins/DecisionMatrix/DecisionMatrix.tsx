@@ -53,19 +53,19 @@ export function DecisionMatrix({ body = '', className, ...attributes }: Structur
                       chosen && TONE_SURFACE.blue,
                     )}
                   >
-                    <div>
+                    <div className="flex items-center gap-2">
                       <InlineMarkdown text={header.replace('✓', '').trim()} />
+                      {chosen ? (
+                        <span
+                          className={cn(
+                            toneChip({ tone: 'blue', emphasis: 'soft' }),
+                            'normal-case',
+                          )}
+                        >
+                          ✓ Chosen
+                        </span>
+                      ) : null}
                     </div>
-                    {chosen ? (
-                      <span
-                        className={cn(
-                          toneChip({ tone: 'blue', emphasis: 'soft' }),
-                          'mt-1 normal-case',
-                        )}
-                      >
-                        ✓ Chosen
-                      </span>
-                    ) : null}
                   </th>
                 );
               })}

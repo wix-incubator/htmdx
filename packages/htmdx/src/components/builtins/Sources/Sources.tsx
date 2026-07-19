@@ -25,7 +25,9 @@ export function Sources({ body = '', className, ...attributes }: StructuredBodyP
               key={index}
               className={cn(
                 toneChip({ tone: 'gray', emphasis: 'outline' }),
-                'px-2.5 py-0.5 text-xs font-medium tracking-normal',
+                // Border matches the text color (muted-foreground) rather than
+                // the default lighter --border.
+                'border-muted-foreground px-2.5 py-0.5 text-xs font-medium tracking-normal',
               )}
             >
               <span aria-hidden className="text-[10px] leading-none">

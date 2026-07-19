@@ -10,15 +10,15 @@ export function DecisionTable({ body = '', className, ...attributes }: Structure
   const items = parseComponentBody('DecisionTable', 'label-value-list', body);
   return (
     <StructuredBlock name="DecisionTable" className={className} {...attributes}>
-      <div className="rounded-lg border">
+      <div className="rounded-lg border bg-card">
         <Table>
           <TableBody>
             {items.map((item, index) => (
               <TableRow key={index}>
-                <TableHead className="w-1/3 align-top">
+                <TableHead className="w-1/3 align-middle">
                   <InlineMarkdown text={item.label} />
                 </TableHead>
-                <TableCell className="whitespace-normal text-muted-foreground">
+                <TableCell className="align-middle whitespace-normal text-muted-foreground">
                   <InlineMarkdown text={item.value} />
                 </TableCell>
               </TableRow>

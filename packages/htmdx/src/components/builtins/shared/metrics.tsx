@@ -11,7 +11,7 @@ const DIRECTIONS = {
 
 type Direction = keyof typeof DIRECTIONS;
 
-const trendGlyph = cva('mr-1.5 inline-block text-base font-bold leading-none', {
+const trendGlyph = cva('mr-1.5 inline-block text-base font-medium leading-none', {
   variants: {
     dir: {
       up: TONE_DOT.green,
@@ -51,9 +51,9 @@ export function MetricStripItems({ items }: { items: LabelValue[] }) {
               {dir ? <span className={trendGlyph({ dir })}>{DIRECTIONS[dir].glyph}</span> : null}
               <InlineMarkdown text={rest} />
             </div>
-            <div className="mt-1 text-2xl font-semibold text-card-foreground">
+            <h3 data-slot="metric-value" className="mt-1 text-2xl font-medium text-card-foreground">
               <InlineMarkdown text={headline} />
-            </div>
+            </h3>
             {caption ? (
               <div className="mt-1 text-xs text-muted-foreground">
                 <InlineMarkdown text={caption} />
@@ -71,9 +71,12 @@ export function StatItems({ items }: { items: LabelValue[] }) {
     <div className="flex flex-wrap gap-8">
       {items.map((item, index) => (
         <div key={index} className="flex flex-col">
-          <span className="text-3xl font-bold tracking-tight text-foreground">
+          <h3
+            data-slot="stat-value"
+            className="text-3xl font-medium tracking-tight text-foreground"
+          >
             <InlineMarkdown text={stripWrappingBold(item.value)} />
-          </span>
+          </h3>
           <span className="text-sm text-muted-foreground">
             <InlineMarkdown text={item.label} />
           </span>

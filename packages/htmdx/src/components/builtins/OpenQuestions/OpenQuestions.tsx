@@ -25,7 +25,7 @@ export function OpenQuestions({ body = '', className, ...attributes }: Structure
   const parsed = parseComponentBody('OpenQuestions', 'markdown-list-cards', body);
   return (
     <StructuredBlock name="OpenQuestions" className={className} {...attributes}>
-      <div className={cn('overflow-hidden rounded-lg border', TONE_BORDER.amber)}>
+      <div className={cn('overflow-hidden rounded-lg border bg-card', TONE_BORDER.amber)}>
         <div
           className={cn(
             'border-b px-4 py-2 text-sm font-semibold',

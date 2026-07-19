@@ -11,7 +11,7 @@ export function DataTable({ body = '', className, ...attributes }: StructuredBod
   const table = parseComponentBody('DataTable', 'gfm-table', body);
   return (
     <StructuredBlock name="DataTable" className={className} {...attributes}>
-      <div className="rounded-lg border">
+      <div className="rounded-lg border bg-card">
         <Table>
           <TableHeader>
             <TableRow>

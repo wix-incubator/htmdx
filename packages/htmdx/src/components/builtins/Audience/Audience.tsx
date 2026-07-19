@@ -1,6 +1,6 @@
 import { parseComponentBody } from '../../body-contracts';
 import { cn } from '../../shadcn/shared/utils';
-import { toneChip, TONE_SURFACE, type Tone } from '../shared/tones';
+import { toneChip, type Tone } from '../shared/tones';
 import {
   InlineMarkdown,
   splitFeature,
@@ -95,12 +95,7 @@ function Metrics({ metrics }: { metrics: Segment['metrics'] }) {
 
 function SegmentCard({ segment, hero }: { segment: Segment; hero: boolean }) {
   return (
-    <div
-      className={cn(
-        'flex flex-col rounded-xl border p-5',
-        hero ? cn('border-transparent', TONE_SURFACE[segment.type.tone]) : 'bg-card',
-      )}
-    >
+    <div className={cn('flex flex-col rounded-xl border bg-card p-5')}>
       <span className={toneChip({ tone: segment.type.tone, emphasis: 'outline' })}>
         {segment.type.label.toUpperCase()}
       </span>

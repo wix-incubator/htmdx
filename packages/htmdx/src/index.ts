@@ -883,11 +883,17 @@ const RUNTIME_CSS = `
   .htmdx-doc-section-card > h3,
   .htmdx-doc-section-card h3:not([data-slot]) {
     font-family: var(--md-ref-typeface-brand);
-    font-size: 1.375rem;
+    font-size: 1.58rem;
     line-height: 1.75rem;
     font-weight: 500;
     color: var(--md-sys-color-on-surface);
     margin: 20px 0;
+  }
+  /* A section title that is the first item in its section has no content above
+     it to separate from, so drop the top margin — only when it is first. */
+  .htmdx-doc-section-card > div:first-child > h3:first-child:not([data-slot]),
+  .htmdx-doc-section-card > h3:first-child:not([data-slot]) {
+    margin-top: 0;
   }
   .htmdx-doc-section-card > p,
   .htmdx-doc-section-card > ul,
@@ -939,7 +945,7 @@ const RUNTIME_CSS = `
     color: var(--md-sys-color-on-surface-variant);
     background: var(--md-sys-color-surface-container-high);
     padding: 10px 12px;
-    border-bottom: 1px solid var(--md-sys-color-outline);
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
     white-space: nowrap;
   }
   .htmdx-doc-section-card table:not([data-slot]) tbody th {
@@ -962,6 +968,23 @@ const RUNTIME_CSS = `
   }
   .htmdx-doc-section-card table:not([data-slot]) tbody tr:last-child td,
   .htmdx-doc-section-card table:not([data-slot]) tbody tr:last-child th { border-bottom: none; }
+  /* DecisionMatrix: vertical column separators matching the row borders. */
+  [data-htmdx-component="DecisionMatrix"] th:not(:last-child),
+  [data-htmdx-component="DecisionMatrix"] td:not(:last-child) {
+    border-right: 1px solid var(--md-sys-color-outline-variant);
+  }
+  /* Let DecisionMatrix headers wrap; the inherited markdown-table nowrap forced
+     the columns wider than the container, overflowing/clipping the last one. */
+  .htmdx-doc-section-card [data-htmdx-component="DecisionMatrix"] thead th:not([data-slot]) {
+    white-space: normal;
+  }
+  /* MetricStrip values render inline **bold** as <strong> (700); keep the big
+     card text at a cohesive medium weight (outranks .htmdx-doc-section-card
+     strong, 0,2,1). */
+  .htmdx-doc-section-card [data-htmdx-component="MetricStrip"] strong:not([data-slot]),
+  .htmdx-doc-section-card [data-htmdx-component="MetricStrip"] b:not([data-slot]) {
+    font-weight: 500;
+  }
   .htmdx-doc-section-card table:not([data-slot]) tbody tr:hover td,
   .htmdx-doc-section-card table:not([data-slot]) tbody tr:hover th {
     background: color-mix(in srgb, var(--md-sys-color-primary) calc(var(--md-sys-state-hover-opacity) * 100%), transparent);

@@ -12,6 +12,8 @@ export function Sources({ body = '', className, ...attributes }: StructuredBodyP
   const { items } = parseComponentBody('Sources', 'markdown-list-cards', body);
   return (
     <StructuredBlock name="Sources" className={className} {...attributes}>
+      {/* mb-[6px]! wins over the section-card `p` rule (margin 0 0 0.75rem). */}
+      <p className="mb-[6px]! text-sm text-muted-foreground">Sources:</p>
       <div className="flex flex-wrap gap-2">
         {items.map((item, index) => {
           const highlighted = item.trimStart().startsWith('**');
@@ -22,7 +24,7 @@ export function Sources({ body = '', className, ...attributes }: StructuredBodyP
               className={
                 highlighted
                   ? cn(
-                      'inline-flex w-fit items-center gap-1 rounded-full border px-3 py-1 text-sm font-medium tracking-normal whitespace-nowrap',
+                      'inline-flex w-fit items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium tracking-normal whitespace-nowrap',
                       // Icon + text follow the active theme's primary color; the
                       // border is the same primary at 70% opacity (30% more
                       // transparent) over a transparent background.
@@ -31,11 +33,11 @@ export function Sources({ body = '', className, ...attributes }: StructuredBodyP
                     )
                   : cn(
                       toneChip({ tone: 'gray', emphasis: 'outline' }),
-                      'px-3 py-1 text-sm font-medium tracking-normal',
+                      'px-2.5 py-0.5 text-xs font-medium tracking-normal',
                     )
               }
             >
-              <span aria-hidden className="text-xs">
+              <span aria-hidden className="text-[10px]">
                 ↗
               </span>
               <InlineMarkdown text={title ?? text} />

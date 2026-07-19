@@ -6,7 +6,7 @@ import {
   StructuredBlock,
   type StructuredBodyProps,
 } from '../shared/structured';
-import { feelingChip, toneChip, TONE_BAR, TONE_SOFT, type Tone } from '../shared/tones';
+import { feelingChip, TONE_BAR, TONE_SOFT, TONE_STRONG, type Tone } from '../shared/tones';
 
 // Priority tiers drive grouping order, the group badge tone, and each card's
 // left accent bar.
@@ -151,7 +151,12 @@ export function IntentList({ body = '', className, ...attributes }: StructuredBo
         {groups.map((group) => (
           <div key={group.key} className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
-              <span className={toneChip({ tone: group.spec.tone as Tone, emphasis: 'outline' })}>
+              <span
+                className={cn(
+                  'inline-flex w-fit items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold tracking-wide whitespace-nowrap',
+                  TONE_STRONG[group.spec.tone as Tone],
+                )}
+              >
                 {group.spec.label.toUpperCase()}
               </span>
               <span className="text-sm text-muted-foreground">

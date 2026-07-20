@@ -1,6 +1,7 @@
 // Built-in category barrel: the sole bundled inclusion point. The runtime
 // registry and manifest derive from these definitions.
 export { Audience } from './Audience';
+export { BulletList } from './BulletList';
 export { Callout } from './Callout';
 export { ChartArea } from './ChartArea';
 export { ChartBar } from './ChartBar';

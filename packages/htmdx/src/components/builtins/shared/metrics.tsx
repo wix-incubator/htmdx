@@ -68,9 +68,9 @@ export function MetricStripItems({ items }: { items: LabelValue[] }) {
 
 export function StatItems({ items }: { items: LabelValue[] }) {
   return (
-    <div className="flex flex-wrap gap-8">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-4">
       {items.map((item, index) => (
-        <div key={index} className="flex flex-col">
+        <div key={index} className="flex flex-col rounded-lg border bg-card px-4 py-3">
           <h3
             data-slot="stat-value"
             className="text-3xl font-medium tracking-tight text-foreground"

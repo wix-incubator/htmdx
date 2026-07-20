@@ -21,10 +21,12 @@ const preview: Preview = {
       // The runtime renders asynchronously and stamps the frontmatter theme
       // during render; re-apply the toolbar choice on its 'htmdx:rendered'
       // event so the dropdown always wins in preview.
-      el.addEventListener?.('htmdx:rendered', () => {
-        const target = el.querySelector?.('.htmdx-app') ?? el;
+      const applyTheme = () => {
+        const target = el.querySelector?.('.htmdx-app, .htmdx-error') ?? el;
         target.setAttribute('data-htmdx-theme', theme);
-      });
+      };
+      el.addEventListener?.('htmdx:rendered', applyTheme);
+      el.addEventListener?.('htmdx:error', applyTheme);
       return el;
     },
   ],

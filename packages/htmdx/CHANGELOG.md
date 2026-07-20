@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.3.0](https://github.com/wix-incubator/htmdx/compare/v4.2.0...v4.3.0) (2026-07-20)
+
+
+### Features
+
+* add runtime error fix requests ([#40](https://github.com/wix-incubator/htmdx/issues/40)) ([f4acb01](https://github.com/wix-incubator/htmdx/commit/f4acb0123b5cc3505df427fb8efc8f8c4049cfd8))
+
 ## [4.2.0](https://github.com/wix-incubator/htmdx/compare/v4.1.0...v4.2.0) (2026-07-20)
 
 

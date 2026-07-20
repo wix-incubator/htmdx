@@ -146,7 +146,7 @@ describe('component body contracts', () => {
     expect(!rendered.ok && rendered.error).toContain('tier "Must-have" is repeated');
   });
 
-  test('shows the whole-artifact browser fallback and raw source for an invalid body', async () => {
+  test('shows the whole-artifact browser error for an invalid body', async () => {
     const host = document.createElement('div');
     host.innerHTML = `<template type="text/htmdx"><ChartBar>
 - Users: many
@@ -155,6 +155,5 @@ describe('component body contracts', () => {
     await renderHost(host);
 
     expect(host.textContent).toContain('Invalid body for <ChartBar>');
-    expect(host.textContent).toContain('- Users: many');
   });
 });

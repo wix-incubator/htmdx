@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.2.0](https://github.com/wix-incubator/htmdx/compare/v4.1.0...v4.2.0) (2026-07-20)
+
+
+### Features
+
+* **components:** stretch/card Stat items; add BulletList built-in ([#37](https://github.com/wix-incubator/htmdx/issues/37)) ([781701a](https://github.com/wix-incubator/htmdx/commit/781701acc63f0250c7b35319c42e3dcadccb861a))
+
 ## [4.1.0](https://github.com/wix-incubator/htmdx/compare/v4.0.1...v4.1.0) (2026-07-19)
 
 

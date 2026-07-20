@@ -15,7 +15,7 @@ import { executiveSummaryStyles } from './components/builtins/ExecutiveSummary/E
 import { sourceQuoteStyles } from './components/builtins/SourceQuote/SourceQuote';
 import * as shadcnDefinitionExports from './components/shadcn';
 import { compileDocument, tokenizeSource } from './react';
-import { THEME_CSS } from './themes';
+import { THEME_CSS, THEME_IDS } from './themes';
 import { VERSION } from './version';
 
 export { THEME_IDS, type HtmdxThemeId } from './themes';
@@ -251,7 +251,12 @@ export async function renderHost(host: Element, options: HtmdxRegisterOptions = 
   const sourceResult = await resolveSource(host, options);
 
   if (!sourceResult.ok) {
-    reportHostError(host, errorDiagnostics('load', sourceResult.error), { phase: 'source' });
+    reportHostError(
+      host,
+      errorDiagnostics('load', sourceResult.error),
+      { phase: 'source' },
+      sourceResult.source,
+    );
     return;
   }
 
@@ -261,7 +266,7 @@ export async function renderHost(host: Element, options: HtmdxRegisterOptions = 
   try {
     doc = compileDocument(sourceResult.source, runtimeOptionsFor(options));
   } catch (error) {
-    reportHostError(host, errorDiagnostics('compile', error));
+    reportHostError(host, errorDiagnostics('compile', error), {}, sourceResult.source);
     return;
   }
 
@@ -291,7 +296,12 @@ export async function renderHost(host: Element, options: HtmdxRegisterOptions = 
     flushSync(() => hostRoot.root.render(doc.element));
     const captured = hostRoot.renderError.current as CapturedError | null;
     if (captured) {
-      reportHostError(host, errorDiagnostics('render', captured.error, captured.componentStack));
+      reportHostError(
+        host,
+        errorDiagnostics('render', captured.error, captured.componentStack),
+        {},
+        sourceResult.source,
+      );
       return;
     }
     activateSectionRail(host);
@@ -303,7 +313,7 @@ export async function renderHost(host: Element, options: HtmdxRegisterOptions = 
       }),
     );
   } catch (error) {
-    reportHostError(host, errorDiagnostics('render', error));
+    reportHostError(host, errorDiagnostics('render', error), {}, sourceResult.source);
   }
 }
 
@@ -515,6 +525,7 @@ function reportHostError(
   host: Element,
   diagnostics: ErrorDiagnostics,
   legacyDetail: Record<string, unknown> = {},
+  source = '',
 ) {
   const hostRoot = reactRoots.get(host);
   if (hostRoot) {
@@ -522,7 +533,7 @@ function reportHostError(
     hostRoot.root.unmount();
   }
 
-  renderError(host, diagnostics);
+  renderError(host, diagnostics, source);
   host.dispatchEvent(
     new CustomEvent('htmdx:error', {
       detail: {
@@ -538,12 +549,16 @@ function reportHostError(
   );
 }
 
-function renderError(host: Element, diagnostics: ErrorDiagnostics) {
+function renderError(host: Element, diagnostics: ErrorDiagnostics, source: string) {
   const fixRequest = buildFixRequest(host, diagnostics);
   host.replaceChildren();
 
   const panel = document.createElement('section');
   panel.className = 'htmdx-error';
+  const theme = themeFromSource(source);
+  if (theme) {
+    panel.setAttribute('data-htmdx-theme', theme);
+  }
   panel.setAttribute('role', 'alert');
   panel.setAttribute('aria-labelledby', 'htmdx-error-title');
 
@@ -601,6 +616,19 @@ function renderError(host: Element, diagnostics: ErrorDiagnostics) {
 
   panel.append(heading, body, actions, status, manualRequest, details);
   host.append(panel);
+}
+
+function themeFromSource(source: string) {
+  const frontmatter = source.match(/^\s*---\r?\n([\s\S]*?)\r?\n---/);
+  const themeField = frontmatter?.[1]
+    .split(/\r?\n/)
+    .map((line) => line.match(/^theme:\s*(.*)$/i)?.[1])
+    .find((value) => value !== undefined);
+  const theme = themeField
+    ?.trim()
+    .replace(/^["']|["']$/g, '')
+    .toLowerCase();
+  return theme && (THEME_IDS as readonly string[]).includes(theme) ? theme : undefined;
 }
 
 function formatErrorDetails(diagnostics: ErrorDiagnostics) {

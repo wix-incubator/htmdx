@@ -76,12 +76,13 @@ Built-ins ship in the default runtime.
       once: true,
     });
 
-    const host = mountArtifact('htmdx-react-c', '<Card>never closed');
+    const host = mountArtifact('htmdx-react-c', '---\ntheme: teal\n---\n\n<Card>never closed');
     await flush();
 
     expect(host.textContent).toContain('This page couldn’t be shown');
     expect(host.textContent).toContain('Copy fix request');
     expect(host.textContent).not.toContain('<Card>never closed');
+    expect(host.querySelector('.htmdx-error')?.getAttribute('data-htmdx-theme')).toBe('teal');
     expect(host.querySelector('details')?.open).toBe(false);
     expect(events[0].detail).toMatchObject({
       failedStep: 'compile',

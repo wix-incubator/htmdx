@@ -63,11 +63,22 @@ Adding an accordion item takes 91 tokens in HTMDX versus 434 in compiled HTML. P
 
 HTMDX uses familiar MDX-style syntax, but the browser runtime renders it in place without requiring build-time compilation or a generated output file:
 
-- Markdown prose, headings, lists, tables, and links.
+- Markdown prose, headings, lists, tables, links, and images.
 - HTML-like nested component tags such as `<Card><CardHeader>...</CardHeader></Card>`.
 - Standard Tailwind classes and declared props. Every component accepts `class`, `id`, `aria-*`, and `data-*`; other values parse by their declared string, number, boolean, or JSON type.
 
 The source remains declarative: imports, MDX `{expressions}`, and function-valued props are rejected. Registered React components provide interactivity. Unknown capitalized tags show an error with the raw source.
+
+Images work as Markdown or allowlisted HTML. Relative paths resolve from the
+artifact, and `http:`, `https:`, or supported `data:image/*` sources are
+accepted. HTML images allow `alt`, `title`, `width`, `height`, `loading`,
+`decoding`, and `class`; event handlers and unsafe URL schemes are dropped.
+
+```md
+![Build result](screenshots/result.png "Completed build")
+
+<img src="screenshots/result.png" alt="Build result" width="960" loading="lazy">
+```
 
 ## Components
 

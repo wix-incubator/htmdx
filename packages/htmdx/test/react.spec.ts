@@ -114,4 +114,18 @@ describe('React renderer definition boundary', () => {
     );
     expect(html).toContain('got:alpha');
   });
+
+  test('sanitizes HTML images nested in component bodies', () => {
+    const html = renderToStaticMarkup(
+      compileToReact(
+        '<CardFixture><img src="screenshots/result.png" alt="1 > 0" onerror="alert(1)"></CardFixture>',
+        { definitions },
+      ),
+    );
+
+    expect(html).toContain(
+      '<img src="screenshots/result.png" alt="1 &gt; 0" class="htmdx-image"/>',
+    );
+    expect(html).not.toContain('onerror');
+  });
 });

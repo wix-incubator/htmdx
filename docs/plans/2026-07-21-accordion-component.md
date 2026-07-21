@@ -1,8 +1,8 @@
-# Collapsible Component Implementation Plan
+# Foldout Component Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add a built-in `Collapsible` component — a single collapsible panel (titled header + purple chevron) that expands on click to reveal flexible nested content.
+**Goal:** Add a built-in `Foldout` component — a single collapsible panel (titled header + purple chevron) that expands on click to reveal flexible nested content.
 
 **Architecture:** A React component wrapping native `<details>`/`<summary>` (zero JS; works in both the live runtime and `compile()` static snapshots). `body: 'htmdx'`, so nested content arrives as `children`. `title` and `open` are declared props. Registered by exporting from the built-ins barrel, which auto-wires the runtime registry and manifest.
 
@@ -10,7 +10,7 @@
 
 ## Global Constraints
 
-- PR title / release type for this work: `feat(components): add Collapsible built-in` (a `feat` — adds public behavior).
+- PR title / release type for this work: `feat(components): add Foldout built-in` (a `feat` — adds public behavior).
 - Never edit package versions, release tags, or generated changelogs.
 - Styling is Tailwind utilities only — no new runtime CSS (consistent with `BulletList`, `Stat`).
 - The purple is `var(--md-sys-color-primary)`; its contrast color is `var(--md-sys-color-on-primary)`.
@@ -18,27 +18,27 @@
 
 ---
 
-### Task 1: Collapsible component, definition, and registration
+### Task 1: Foldout component, definition, and registration
 
 **Files:**
-- Create: `packages/htmdx/src/components/builtins/Collapsible/Collapsible.tsx`
-- Create: `packages/htmdx/src/components/builtins/Collapsible/index.ts`
-- Modify: `packages/htmdx/src/components/builtins/index.ts` (add one export, alphabetical — after `ChartPie`, before `Compare`)
-- Test: `packages/htmdx/test/react-builtins.spec.ts` (add a `describe('Collapsible', ...)` block)
+- Create: `packages/htmdx/src/components/builtins/Foldout/Foldout.tsx`
+- Create: `packages/htmdx/src/components/builtins/Foldout/index.ts`
+- Modify: `packages/htmdx/src/components/builtins/index.ts` (add one export, alphabetical — after `Finding`, before `IntentList`)
+- Test: `packages/htmdx/test/react-builtins.spec.ts` (add a `describe('Foldout', ...)` block)
 
 **Interfaces:**
 - Consumes: `StructuredBlock`, `InlineMarkdown` from `../shared/structured`; `HtmdxComponent` from `../../../component-definition`.
-- Produces: `export const Collapsible` (an `HtmdxComponent` definition) from `./Collapsible/index.ts`, re-exported by the built-ins barrel. Public tag: `<Collapsible title="..." [open]>...children...</Collapsible>`.
+- Produces: `export const Foldout` (an `HtmdxComponent` definition) from `./Foldout/index.ts`, re-exported by the built-ins barrel. Public tag: `<Foldout title="..." [open]>...children...</Foldout>`.
 
 - [ ] **Step 1: Write the failing tests**
 
 Add to the end of `packages/htmdx/test/react-builtins.spec.ts`, inside the existing top-level `describe('bundled definitions in the React path', ...)` block (i.e. before its closing `});`). It already imports `renderToStaticMarkup`, `compileToReact`, and `definitions`.
 
 ```ts
-  describe('Collapsible', () => {
+  describe('Foldout', () => {
     test('renders collapsed by default with the title in the summary', () => {
       const html = renderToStaticMarkup(
-        compileToReact('<Collapsible title="Title of accordion">\nHidden body text.\n</Collapsible>', {
+        compileToReact('<Foldout title="Title of accordion">\nHidden body text.\n</Foldout>', {
           definitions,
         }),
       );
@@ -51,7 +51,7 @@ Add to the end of `packages/htmdx/test/react-builtins.spec.ts`, inside the exist
 
     test('renders expanded when open is set', () => {
       const html = renderToStaticMarkup(
-        compileToReact('<Collapsible title="Shown" open>\nBody.\n</Collapsible>', { definitions }),
+        compileToReact('<Foldout title="Shown" open>\nBody.\n</Foldout>', { definitions }),
       );
       expect(html).toContain('<details open');
     });
@@ -59,15 +59,15 @@ Add to the end of `packages/htmdx/test/react-builtins.spec.ts`, inside the exist
     test('renders nested registered components as content', () => {
       const html = renderToStaticMarkup(
         compileToReact(
-          `<Collapsible title="With a metric">
+          `<Foldout title="With a metric">
 <MetricStrip>
 - Format: **HTML**
 </MetricStrip>
-</Collapsible>`,
+</Foldout>`,
           { definitions },
         ),
       );
-      expect(html).toContain('data-htmdx-component="Collapsible"');
+      expect(html).toContain('data-htmdx-component="Foldout"');
       // The nested MetricStrip rendered inside the accordion body.
       expect(html).toContain('<strong>HTML</strong>');
     });
@@ -77,26 +77,26 @@ Add to the end of `packages/htmdx/test/react-builtins.spec.ts`, inside the exist
 - [ ] **Step 2: Run the tests to verify they fail**
 
 Run: `yarn workspace @wix/htmdx test -- react-builtins`
-Expected: FAIL — the Collapsible cases throw `unknown component <Collapsible>` (the tag isn't registered yet).
+Expected: FAIL — the Foldout cases throw `unknown component <Foldout>` (the tag isn't registered yet).
 
 - [ ] **Step 3: Create the component**
 
-Create `packages/htmdx/src/components/builtins/Collapsible/Collapsible.tsx`:
+Create `packages/htmdx/src/components/builtins/Foldout/Foldout.tsx`:
 
 ```tsx
 import type { ReactNode } from 'react';
 import { InlineMarkdown, StructuredBlock } from '../shared/structured';
 
-type CollapsibleProps = {
+type FoldoutProps = {
   title?: string;
   open?: boolean;
   className?: string;
   children?: ReactNode;
 } & Record<string, unknown>;
 
-export function Collapsible({ title = '', open, className, children, ...attributes }: CollapsibleProps) {
+export function Foldout({ title = '', open, className, children, ...attributes }: FoldoutProps) {
   return (
-    <StructuredBlock name="Collapsible" className={className} {...attributes}>
+    <StructuredBlock name="Foldout" className={className} {...attributes}>
       <details open={open} className="group w-full overflow-hidden rounded-lg border bg-card">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
           <span className="font-bold text-card-foreground">
@@ -126,18 +126,18 @@ export function Collapsible({ title = '', open, className, children, ...attribut
 
 - [ ] **Step 4: Create the definition**
 
-Create `packages/htmdx/src/components/builtins/Collapsible/index.ts`:
+Create `packages/htmdx/src/components/builtins/Foldout/index.ts`:
 
 ```ts
 import type { HtmdxComponent } from '../../../component-definition';
-import { Collapsible as Component } from './Collapsible';
+import { Foldout as Component } from './Foldout';
 
-export const Collapsible = {
-  name: 'Collapsible',
+export const Foldout = {
+  name: 'Foldout',
   purpose:
     'A collapsible panel: a titled header that expands on click to reveal flexible content (text, tables, charts, or any nested component). Collapsed by default; stack multiple for a group.',
   example:
-    '<Collapsible title="Title of accordion">\nAny content — text, a table, a chart, or any nested component.\n</Collapsible>',
+    '<Foldout title="Title of accordion">\nAny content — text, a table, a chart, or any nested component.\n</Foldout>',
   body: 'htmdx',
   props: [
     {
@@ -158,27 +158,27 @@ export const Collapsible = {
 
 - [ ] **Step 5: Register in the built-ins barrel**
 
-In `packages/htmdx/src/components/builtins/index.ts`, add this line in alphabetical position — after `export { ChartPie } from './ChartPie';` and before `export { Compare } from './Compare';`:
+In `packages/htmdx/src/components/builtins/index.ts`, add this line in alphabetical position — after `export { Finding } from './Finding';` and before `export { IntentList } from './IntentList';`:
 
 ```ts
-export { Collapsible } from './Collapsible';
+export { Foldout } from './Foldout';
 ```
 
-- [ ] **Step 6: Run the Collapsible tests to verify they pass**
+- [ ] **Step 6: Run the Foldout tests to verify they pass**
 
 Run: `yarn workspace @wix/htmdx test -- react-builtins`
-Expected: PASS (all three Collapsible cases green).
+Expected: PASS (all three Foldout cases green).
 
 - [ ] **Step 7: Run the full package suite + typecheck**
 
 Run: `yarn workspace @wix/htmdx test && yarn workspace @wix/htmdx exec tsc --noEmit -p tsconfig.json`
-Expected: All tests pass (the canonical-example-validation and component-manifest specs pick up Collapsible automatically), `tsc` exits 0.
+Expected: All tests pass (the canonical-example-validation and component-manifest specs pick up Foldout automatically), `tsc` exits 0.
 
 - [ ] **Step 8: Commit**
 
 ```bash
-git add packages/htmdx/src/components/builtins/Collapsible packages/htmdx/src/components/builtins/index.ts packages/htmdx/test/react-builtins.spec.ts
-git commit -m "feat(components): add Collapsible built-in
+git add packages/htmdx/src/components/builtins/Foldout packages/htmdx/src/components/builtins/index.ts packages/htmdx/test/react-builtins.spec.ts
+git commit -m "feat(components): add Foldout built-in
 
 Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
@@ -188,15 +188,15 @@ Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ### Task 2: Storybook stories
 
 **Files:**
-- Create: `packages/htmdx/src/components/builtins/Collapsible/Collapsible.stories.ts`
+- Create: `packages/htmdx/src/components/builtins/Foldout/Foldout.stories.ts`
 
 **Interfaces:**
-- Consumes: `createComponentStory`, `createHtmdxHost`, `ComponentStoryArgs` from `../../../storybook/component-story`; the `Collapsible` definition from `./index`.
-- Produces: a Storybook `Components/Built-ins/Collapsible` entry with `Default` and `WithRichContent` stories.
+- Consumes: `createComponentStory`, `createHtmdxHost`, `ComponentStoryArgs` from `../../../storybook/component-story`; the `Foldout` definition from `./index`.
+- Produces: a Storybook `Components/Built-ins/Foldout` entry with `Default` and `WithRichContent` stories.
 
 - [ ] **Step 1: Create the stories file**
 
-Create `packages/htmdx/src/components/builtins/Collapsible/Collapsible.stories.ts`:
+Create `packages/htmdx/src/components/builtins/Foldout/Foldout.stories.ts`:
 
 ```ts
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
@@ -205,11 +205,11 @@ import {
   createHtmdxHost,
   type ComponentStoryArgs,
 } from '../../../storybook/component-story';
-import { Collapsible } from './index';
+import { Foldout } from './index';
 
 const meta = {
-  title: 'Components/Built-ins/Collapsible',
-  ...createComponentStory(Collapsible),
+  title: 'Components/Built-ins/Foldout',
+  ...createComponentStory(Foldout),
 } satisfies Meta<ComponentStoryArgs>;
 
 export default meta;
@@ -225,14 +225,14 @@ export const WithRichContent: Story = {
   render: () =>
     createHtmdxHost(
       [
-        '<Collapsible title="Quarterly revenue" open>',
+        '<Foldout title="Quarterly revenue" open>',
         '<ChartBar>',
         '- Q1: 120',
         '- Q2: 150',
         '- Q3: 170',
         '- Q4: 210',
         '</ChartBar>',
-        '</Collapsible>',
+        '</Foldout>',
       ].join('\n'),
     ),
 };
@@ -252,8 +252,8 @@ Expected: a card showing "Title of accordion" with a purple down-chevron button,
 - [ ] **Step 4: Commit**
 
 ```bash
-git add packages/htmdx/src/components/builtins/Collapsible/Collapsible.stories.ts
-git commit -m "test(components): add Collapsible storybook stories
+git add packages/htmdx/src/components/builtins/Foldout/Foldout.stories.ts
+git commit -m "test(components): add Foldout storybook stories
 
 Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```

@@ -1236,6 +1236,19 @@ const RUNTIME_CSS = `
     padding-left: 20px;
     padding-right: 20px;
   }
+  /* CardContent owns the layout of direct HTMDX blocks. Keep dense card
+     content spaced without adding utility classes to each artifact. */
+  .htmdx-doc-section-card [data-slot="card-content"] > [data-htmdx-component]:not(:last-child) {
+    margin-block-end: 16px;
+  }
+  /* Put space after each Badge rather than before the next one so a Badge that
+     wraps onto a new line stays aligned with the first Badge. */
+  .htmdx-doc-section-card [data-slot="card-content"] > [data-slot="badge"]:has(+ [data-slot="badge"]) {
+    margin-inline-end: 8px;
+  }
+  .htmdx-doc-section-card [data-slot="card-content"] > [data-slot="badge"] + :not([data-slot="badge"]) {
+    margin-block-start: 16px;
+  }
   .htmdx-doc-section-card table:not([data-slot]) { width: 100%; border-collapse: collapse; font-size: 0.9375rem; margin: 6px 0; }
   .htmdx-doc-section-card table:not([data-slot]) thead th {
     text-align: left;

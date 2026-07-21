@@ -36,3 +36,35 @@ export function Foldout({ title = '', open, className, children, ...attributes }
     </StructuredBlock>
   );
 }
+
+// Native <details> removes its content from layout when closed, so a height
+// transition can't run from the utilities alone. `::details-content` +
+// `interpolate-size: allow-keywords` animate block-size to/from `auto`, and the
+// discrete `content-visibility` transition keeps the panel visible for the
+// duration. Browsers without `::details-content` ignore this and toggle
+// instantly (the chevron still rotates). Scoped to Foldout via its section
+// marker so no other <details> is affected.
+export const foldoutStyles = `
+  [data-htmdx-component="Foldout"] details {
+    interpolate-size: allow-keywords;
+  }
+  [data-htmdx-component="Foldout"] details::details-content {
+    block-size: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition:
+      content-visibility 0.28s allow-discrete,
+      opacity 0.28s ease,
+      block-size 0.28s ease;
+  }
+  [data-htmdx-component="Foldout"] details[open]::details-content {
+    block-size: auto;
+    opacity: 1;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    [data-htmdx-component="Foldout"] details::details-content,
+    [data-htmdx-component="Foldout"] summary span {
+      transition: none;
+    }
+  }
+`;

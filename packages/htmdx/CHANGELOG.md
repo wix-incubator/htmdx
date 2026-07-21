@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.5.1](https://github.com/wix-incubator/htmdx/compare/v4.5.0...v4.5.1) (2026-07-21)
+
+
+### Bug Fixes
+
+* add automatic card content spacing ([#46](https://github.com/wix-incubator/htmdx/issues/46)) ([84aca2c](https://github.com/wix-incubator/htmdx/commit/84aca2cfecddb52c4582bd5c75c5350395fce016))
+
 ## [4.5.0](https://github.com/wix-incubator/htmdx/compare/v4.4.0...v4.5.0) (2026-07-21)
 
 

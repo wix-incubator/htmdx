@@ -59,4 +59,45 @@ Ship **one HTML file** with editable HTMDX source.
 
     expect(html).toContain('Artifacts should remain editable.');
   });
+
+  describe('Foldout', () => {
+    test('renders collapsed by default with the title in the summary', () => {
+      const html = renderToStaticMarkup(
+        compileToReact('<Foldout title="Title of accordion">\nHidden body text.\n</Foldout>', {
+          definitions,
+        }),
+      );
+      expect(html).toContain('<details');
+      // Collapsed: no `open` attribute on the details element.
+      expect(html).not.toContain('<details open');
+      expect(html).toContain('Title of accordion');
+      expect(html).toContain('Hidden body text.');
+    });
+
+    test('renders expanded when open is set', () => {
+      const html = renderToStaticMarkup(
+        compileToReact('<Foldout title="Shown" open>\nBody.\n</Foldout>', { definitions }),
+      );
+      expect(html).toContain('<details open');
+    });
+
+    test('renders nested registered components as content', () => {
+      const html = renderToStaticMarkup(
+        compileToReact(
+          `<Foldout title="With a metric">
+<MetricStrip>
+- Format: **HTML**
+</MetricStrip>
+</Foldout>`,
+          { definitions },
+        ),
+      );
+      expect(html).toContain('data-htmdx-component="Foldout"');
+      // The nested MetricStrip rendered inside the foldout body. MetricStrip
+      // strips the wrapping `**` and renders its value via CSS typography
+      // (not a literal <strong>), so assert on its actual markup instead.
+      expect(html).toContain('data-htmdx-component="MetricStrip"');
+      expect(html).toContain('>HTML<');
+    });
+  });
 });

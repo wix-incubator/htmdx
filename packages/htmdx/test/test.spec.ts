@@ -379,4 +379,79 @@ Context.</script>`;
     expect(rendered.ok && rendered.html).not.toContain('javascript:');
     expect(rendered.ok && rendered.html).toContain('<a href="https://wix.com">good</a>');
   });
+
+  test('renders Markdown images with safe attributes', () => {
+    const rendered = compile('![A "quoted" < B](screenshots/result.png "Full result")');
+    const container = document.createElement('div');
+    container.innerHTML = rendered.ok ? rendered.html : '';
+    const image = container.querySelector('img.htmdx-image');
+
+    expect(image?.getAttribute('src')).toBe('screenshots/result.png');
+    expect(image?.getAttribute('alt')).toBe('A "quoted" < B');
+    expect(image?.getAttribute('title')).toBe('Full result');
+  });
+
+  test('renders allowlisted HTML image attributes and drops event handlers', () => {
+    const rendered = compile(
+      '<IMG SRC="screenshots/result.png" ALT="Screenshot" WIDTH="640" LOADING="lazy" ONERROR="alert(1)">',
+    );
+    const container = document.createElement('div');
+    container.innerHTML = rendered.ok ? rendered.html : '';
+    const image = container.querySelector('img.htmdx-image');
+
+    expect(image?.getAttribute('src')).toBe('screenshots/result.png');
+    expect(image?.getAttribute('width')).toBe('640');
+    expect(image?.getAttribute('loading')).toBe('lazy');
+    expect(image?.hasAttribute('onerror')).toBe(false);
+  });
+
+  test('rejects unsafe image sources and preserves safe data images', () => {
+    const rendered = compile(`![Bad](javascript:alert(1))
+
+<img src="data:text/html;base64,PHNjcmlwdD4=" alt="Unsafe HTML">
+
+<img src="data:image/png;base64,iVBORw0KGgo=" alt="Embedded" onerror="alert(1)">`);
+    const html = rendered.ok ? rendered.html : '';
+
+    expect(html).not.toContain('javascript:');
+    expect(html).not.toContain('data:text/html');
+    expect(html).not.toContain('onerror');
+    expect(html).toContain('src="data:image/png;base64,iVBORw0KGgo="');
+  });
+
+  test('supports balanced parentheses in Markdown image sources', () => {
+    const rendered = compile('![Diagram](https://example.com/diagram_(final).png)');
+    const container = document.createElement('div');
+    container.innerHTML = rendered.ok ? rendered.html : '';
+
+    expect(container.querySelector('img')?.getAttribute('src')).toBe(
+      'https://example.com/diagram_(final).png',
+    );
+    expect(container.textContent).toBe('');
+  });
+
+  test('keeps images literal inside code fences containing blank lines', () => {
+    const rendered = compile(
+      '```md\nFirst example line.\n\n![Screenshot](screenshots/result.png)\n```',
+    );
+    const html = rendered.ok ? rendered.html : '';
+
+    expect(html).not.toContain('<img');
+    expect(html).toContain('![Screenshot](screenshots/result.png)');
+  });
+
+  test('keeps rendered images within the content width', async () => {
+    register({ automount: false });
+    const host = document.createElement('div');
+    host.innerHTML = '<script type="text/htmdx">![Screenshot](screenshots/result.png)</script>';
+    document.body.append(host);
+
+    await renderHost(host);
+
+    const image = host.querySelector('img.htmdx-image');
+    expect(image).not.toBeNull();
+    expect(getComputedStyle(image!).maxWidth).toBe('100%');
+    expect(getComputedStyle(image!).height).toBe('auto');
+    host.remove();
+  });
 });

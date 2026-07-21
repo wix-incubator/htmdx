@@ -1183,6 +1183,7 @@ const RUNTIME_CSS = `
     font-weight: 700;
     color: var(--md-sys-color-on-surface);
   }
+  .htmdx-image { display: block; max-width: 100%; height: auto; }
 
   .htmdx-card .htmdx-component-body {
     background: var(--md-sys-color-surface-container-lowest);

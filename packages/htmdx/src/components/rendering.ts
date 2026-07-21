@@ -11,6 +11,17 @@ export type RenderContext = {
   slugCounts: Map<string, number>;
 };
 
+export type SafeImageAttributes = {
+  src: string;
+  alt: string;
+  className: string;
+  title?: string;
+  width?: number;
+  height?: number;
+  loading?: 'eager' | 'lazy';
+  decoding?: 'async' | 'auto' | 'sync';
+};
+
 export function slugify(value: string) {
   const slug = value
     .toLowerCase()
@@ -50,6 +61,77 @@ export function safeHref(value: string): string | null {
 
   const allowedSchemes = new Set(['http', 'https', 'mailto']);
   return allowedSchemes.has(schemeMatch[1].toLowerCase()) ? decoded : null;
+}
+
+export function safeImageAttributes(
+  attributes: Record<string, string | undefined>,
+): SafeImageAttributes | null {
+  const normalized = new Map(
+    Object.entries(attributes).map(([name, value]) => [name.toLowerCase(), value]),
+  );
+  const src = safeImageSrc(normalized.get('src') || '');
+  if (!src) {
+    return null;
+  }
+
+  const className = ['htmdx-image', normalized.get('class'), normalized.get('classname')]
+    .filter(Boolean)
+    .join(' ');
+  const result: SafeImageAttributes = {
+    src,
+    alt: normalized.get('alt') || '',
+    className,
+  };
+
+  const title = normalized.get('title');
+  if (title) {
+    result.title = title;
+  }
+  const width = normalized.get('width');
+  if (width && /^\d+$/.test(width)) {
+    result.width = Number(width);
+  }
+  const height = normalized.get('height');
+  if (height && /^\d+$/.test(height)) {
+    result.height = Number(height);
+  }
+  const loading = normalized.get('loading');
+  if (loading === 'lazy' || loading === 'eager') {
+    result.loading = loading;
+  }
+  const decoding = normalized.get('decoding');
+  if (decoding === 'async' || decoding === 'auto' || decoding === 'sync') {
+    result.decoding = decoding;
+  }
+  return result;
+}
+
+function safeImageSrc(value: string) {
+  const decoded = value
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .trim();
+  const compact = Array.from(decoded)
+    .filter((char) => char.charCodeAt(0) > 31 && char.charCodeAt(0) !== 127 && !/\s/.test(char))
+    .join('');
+  if (!compact) {
+    return null;
+  }
+
+  const schemeMatch = compact.match(/^([a-z][a-z0-9+.-]*):/i);
+  if (!schemeMatch) {
+    return compact.startsWith('//') ? null : decoded;
+  }
+
+  const scheme = schemeMatch[1].toLowerCase();
+  if (scheme === 'http' || scheme === 'https') {
+    return decoded;
+  }
+  if (scheme !== 'data' || !/^data:image\/(png|jpe?g|gif|webp|avif|svg\+xml)[;,]/i.test(compact)) {
+    return null;
+  }
+  return decoded;
 }
 
 export function escapeHtml(value: string) {

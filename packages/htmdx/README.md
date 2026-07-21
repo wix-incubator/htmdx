@@ -67,6 +67,18 @@ whole compile, and browser hosts show the error with the raw source. Imports,
 exports, brace expressions, event handlers, and function-valued props cannot
 be expressed — the source is data, not code.
 
+Images can use Markdown or allowlisted HTML syntax:
+
+```md
+![Build result](screenshots/result.png 'Completed build')
+
+<img src="screenshots/result.png" alt="Build result" width="960" loading="lazy">
+```
+
+Relative, `http:`, `https:`, and supported `data:image/*` sources are accepted.
+HTML images allow `alt`, `title`, `width`, `height`, `loading`, `decoding`, and
+`class`; event handlers and unsafe URL schemes are dropped.
+
 Use `src` when the source should live next to the HTML, in either form:
 
 ```html

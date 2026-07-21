@@ -15,7 +15,7 @@ import {
   type HtmdxComponentDefinitions,
   type HtmdxProp,
 } from '../component-definition';
-import { uniqueSlug, type RenderContext } from '../components/rendering';
+import { safeImageAttributes, uniqueSlug, type RenderContext } from '../components/rendering';
 import { BUILT_IN_LOGOS } from '../logos';
 import { renderInline, renderMarkdown } from './markdown';
 import { THEME_IDS } from '../themes';
@@ -504,6 +504,15 @@ function nodeToReact(
 
   const element = node as Element;
   const lower = element.tagName.toLowerCase();
+  if (lower === 'img') {
+    const attributes = Object.fromEntries(
+      element.getAttributeNames().map((name) => [name, element.getAttribute(name) ?? '']),
+    );
+    const safeAttributes = safeImageAttributes(attributes);
+    return safeAttributes
+      ? createElement('img', { key, ...safeAttributes })
+      : attributes.alt || null;
+  }
   const canonical = catalog.names.get(lower);
   if (!canonical && /^[A-Z]/.test(element.tagName)) {
     throw new Error(`unknown component <${element.tagName}>`);
@@ -620,6 +629,9 @@ function tokenize(source: string, registry: Map<string, string>): Block[] {
     const [, rawName, attrs, selfClosing] = match;
     const canonical = registry.get(rawName.toLowerCase());
     if (!canonical) {
+      if (rawName.toLowerCase() === 'img') {
+        continue;
+      }
       // Capitalized tags are component syntax; an unregistered one is a
       // typo or a missing registration, not markdown — fail loudly so
       // agents get feedback instead of silently degraded output.

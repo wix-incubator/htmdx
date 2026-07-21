@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.4.0](https://github.com/wix-incubator/htmdx/compare/v4.3.0...v4.4.0) (2026-07-21)
+
+
+### Features
+
+* **components:** add Foldout built-in and BulletList/Stat UI finalizations ([#43](https://github.com/wix-incubator/htmdx/issues/43)) ([11236d9](https://github.com/wix-incubator/htmdx/commit/11236d9d3891df2470717d9f62bcf784b0790084))
+
 ## [4.3.0](https://github.com/wix-incubator/htmdx/compare/v4.2.0...v4.3.0) (2026-07-20)
 
 

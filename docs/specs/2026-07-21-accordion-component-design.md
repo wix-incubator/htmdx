@@ -1,7 +1,7 @@
 # Foldout component — design
 
 Date: 2026-07-21
-Status: approved (pending spec review)
+Status: approved and implemented (component name: Foldout)
 
 ## Summary
 

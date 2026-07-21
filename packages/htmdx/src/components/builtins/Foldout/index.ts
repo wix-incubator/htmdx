@@ -6,7 +6,7 @@ export const Foldout = {
   purpose:
     'A collapsible panel: a titled header that expands on click to reveal flexible content (text, tables, charts, or any nested component). Collapsed by default; stack multiple for a group.',
   example:
-    '<Foldout title="Title of accordion">\nAny content — text, a table, a chart, or any nested component.\n</Foldout>',
+    '<Foldout title="Additional details">\nAny content — text, a table, a chart, or any nested component.\n</Foldout>',
   body: 'htmdx',
   props: [
     {

@@ -246,7 +246,7 @@ Expected: exits 0.
 - [ ] **Step 3: Verify in Storybook (manual)**
 
 Run (if not already running): `yarn storybook`
-Open: `http://localhost:6006/?path=/story/components-built-ins-accordion--default`
+Open: `http://localhost:6006/?path=/story/components-built-ins-foldout--default`
 Expected: a card showing "Title of accordion" with a purple down-chevron button, collapsed. Clicking the header expands it (chevron flips to point up) and reveals the body text. The `WithRichContent` story starts expanded and shows a bar chart inside, with no error box. (The chart body uses `ChartBar`'s `- Label: value` row format, verified against its definition's `example`.)
 
 - [ ] **Step 4: Commit**

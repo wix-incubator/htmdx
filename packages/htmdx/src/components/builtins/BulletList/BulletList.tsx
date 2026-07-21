@@ -1,4 +1,5 @@
 import { parseComponentBody } from '../../body-contracts';
+import { slugify } from '../../rendering';
 import { InlineMarkdown, StructuredBlock, type StructuredBodyProps } from '../shared/structured';
 
 // Each row is `link - text`: the part before the first " - " renders as a
@@ -20,9 +21,12 @@ export function BulletList({ body = '', className, ...attributes }: StructuredBo
             const { link, text } = splitBullet(item);
             return (
               <li key={index} className="text-card-foreground marker:text-muted-foreground">
-                <span className="font-bold text-[var(--md-sys-color-primary)] underline">
+                <a
+                  href={`#${slugify(link)}`}
+                  className="font-bold text-[var(--md-sys-color-primary)]! underline underline-offset-2 hover:opacity-80"
+                >
                   <InlineMarkdown text={link} />
-                </span>
+                </a>
                 {text ? (
                   <span className="text-muted-foreground">
                     {' '}

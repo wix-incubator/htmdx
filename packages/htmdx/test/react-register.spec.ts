@@ -46,6 +46,39 @@ Built-ins ship in the default runtime.
     host.remove();
   });
 
+  test('in-page BulletList links smooth-scroll to the matching section', async () => {
+    // jsdom does not implement scrollIntoView, so install a mock to observe it.
+    const originalScrollIntoView = Element.prototype.scrollIntoView;
+    const scrollSpy = vi.fn();
+    Element.prototype.scrollIntoView = scrollSpy;
+    const host = mountArtifact(
+      'htmdx-react-anchor',
+      `<BulletList>
+- Catalog V3 Modifiers - only FREE_TEXT today
+</BulletList>
+
+## Catalog V3 Modifiers
+
+Details.`,
+    );
+    await flush();
+
+    const link = host.querySelector<HTMLAnchorElement>('[data-htmdx-component="BulletList"] a');
+    // The text before " - " is slugified into an in-page anchor.
+    expect(link?.getAttribute('href')).toBe('#catalog-v3-modifiers');
+    expect(host.querySelector('[id="catalog-v3-modifiers"]')).not.toBeNull();
+
+    // Clicking cancels native navigation (which breaks under a <base>) and
+    // scrolls the target into view instead.
+    const event = new MouseEvent('click', { bubbles: true, cancelable: true });
+    link?.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(true);
+    expect(scrollSpy).toHaveBeenCalled();
+
+    Element.prototype.scrollIntoView = originalScrollIntoView;
+    host.remove();
+  });
+
   test('dispatches htmdx:rendered with the component list', async () => {
     const events: CustomEvent[] = [];
     document.addEventListener('htmdx:rendered', (event) => events.push(event as CustomEvent), {

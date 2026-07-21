@@ -14,6 +14,7 @@ export { DecisionTable } from './DecisionTable';
 export { Evidence } from './Evidence';
 export { ExecutiveSummary } from './ExecutiveSummary';
 export { Finding } from './Finding';
+export { Foldout } from './Foldout';
 export { IntentList } from './IntentList';
 export { MetricStrip } from './MetricStrip';
 export { OpenQuestions } from './OpenQuestions';

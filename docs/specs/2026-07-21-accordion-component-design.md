@@ -1,13 +1,13 @@
-# Accordion component — design
+# Collapsible component — design
 
 Date: 2026-07-21
 Status: approved (pending spec review)
 
 ## Summary
 
-Add a new built-in component, `Accordion`: a single collapsible panel with a
+Add a new built-in component, `Collapsible`: a single collapsible panel with a
 bold title row and a purple chevron button. Closed by default; clicking the
-header expands it to reveal flexible content. Stack multiple `<Accordion>` tags
+header expands it to reveal flexible content. Stack multiple `<Collapsible>` tags
 to form a group.
 
 ## Motivation
@@ -19,9 +19,9 @@ built-in offers progressive disclosure.
 ## Public contract
 
 ```html
-<Accordion title="Title of accordion">
+<Collapsible title="Title of accordion">
 Any content — text, a <ChartBar>, a table, or any registered component.
-</Accordion>
+</Collapsible>
 ```
 
 - `body: 'htmdx'` — the nested content is handed to the React component as
@@ -43,7 +43,7 @@ Native `<details>`/`<summary>`. Consequences:
 ## Structure
 
 ```
-<section data-htmdx-component="Accordion" class="htmdx-component">   ← via StructuredBlock
+<section data-htmdx-component="Collapsible" class="htmdx-component">   ← via StructuredBlock
   <details class="group rounded-lg border bg-card">
     <summary> title (bold, left)  •  purple chevron button (right) </summary>
     <div class="border-t px-4 py-3">{children}</div>                 ← visible only when open
@@ -75,13 +75,13 @@ children it is given.
 
 ## Files
 
-- `src/components/builtins/Accordion/Accordion.tsx` — the React component.
-- `src/components/builtins/Accordion/index.ts` — the `HtmdxComponent` definition
+- `src/components/builtins/Collapsible/Collapsible.tsx` — the React component.
+- `src/components/builtins/Collapsible/index.ts` — the `HtmdxComponent` definition
   (name, purpose, example, `body: 'htmdx'`, props, Component).
-- `src/components/builtins/Accordion/Accordion.stories.ts` — `Default` (plain
+- `src/components/builtins/Collapsible/Collapsible.stories.ts` — `Default` (plain
   text) and `WithRichContent` (a nested chart) stories.
-- `src/components/builtins/index.ts` — one export line (alphabetical, before
-  `Audience`). This auto-registers the component into the runtime registry and
+- `src/components/builtins/index.ts` — one export line (alphabetical, after
+  `ChartPie`). This auto-registers the component into the runtime registry and
   the manifest; no manual manifest edits.
 
 ## Testing

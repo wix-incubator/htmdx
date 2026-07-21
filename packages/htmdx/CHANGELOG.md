@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.5.0](https://github.com/wix-incubator/htmdx/compare/v4.4.0...v4.5.0) (2026-07-21)
+
+
+### Features
+
+* render safe Markdown and HTML images ([#42](https://github.com/wix-incubator/htmdx/issues/42)) ([3abf2d0](https://github.com/wix-incubator/htmdx/commit/3abf2d0007bd6312d5faa3c94345ce80cf301e64))
+
 ## [4.4.0](https://github.com/wix-incubator/htmdx/compare/v4.3.0...v4.4.0) (2026-07-21)
 
 

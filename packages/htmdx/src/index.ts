@@ -306,6 +306,7 @@ export async function renderHost(host: Element, options: HtmdxRegisterOptions = 
     }
     activateSectionRail(host);
     activateStickyHeader(host);
+    activateInPageAnchors(host);
     host.dispatchEvent(
       new CustomEvent('htmdx:rendered', {
         detail: { source: sourceResult.kind, components: doc.components, version: VERSION },
@@ -346,6 +347,35 @@ export async function resolveSource(
   }
 
   return { ok: true, kind: 'embedded', source: readSourceElement(sourceElement) };
+}
+
+const inPageAnchorHosts = new WeakSet<Element>();
+
+// Component-generated and author-written in-page links (BulletList rows,
+// `[label](#slug)` markdown links, ...) are plain anchors, not TOC links.
+// Native `#hash` navigation is unreliable inside embedding iframes that carry a
+// <base> (Storybook's preview frame, some artifact hosts): the click resolves
+// against the base URL and loads a new page instead of scrolling. Delegate the
+// click on the host so any in-page anchor smooth-scrolls to its target, the
+// same treatment TOC links already get in activateSectionRail.
+function activateInPageAnchors(root: Element) {
+  if (!globalThis.document || inPageAnchorHosts.has(root)) {
+    return;
+  }
+  inPageAnchorHosts.add(root);
+  root.addEventListener('click', (event) => {
+    const anchor = (event.target as Element | null)?.closest?.('a[href^="#"]');
+    // TOC links keep their own scroll-spy handler; leave them alone.
+    if (!anchor || anchor.classList.contains('htmdx-toc-link')) {
+      return;
+    }
+    const id = decodeURIComponent((anchor.getAttribute('href') || '').slice(1));
+    const target = id ? root.querySelector<HTMLElement>(idSelector(id)) : null;
+    if (target) {
+      event.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
 }
 
 function activateSectionRail(root: Element) {

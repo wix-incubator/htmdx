@@ -13,9 +13,10 @@ export function createComponentStory(
   injectShadcnTheme();
   register();
 
+  const { openingTag, body: defaultBody, closingTag } = splitExample(component);
   return {
     args: {
-      body: canonicalBody(component),
+      body: defaultBody,
     },
     argTypes: {
       body: {
@@ -26,14 +27,29 @@ export function createComponentStory(
     parameters: {
       layout: 'fullscreen',
     },
-    render: ({ body }) => createHtmdxHost(`<${component.name}>\n${body}\n</${component.name}>`),
+    // Reuse the example's real opening tag so any props on it (e.g. Foldout's
+    // `title`) survive; the body remains the editable Storybook control.
+    render: ({ body }) =>
+      createHtmdxHost(closingTag ? `${openingTag}\n${body}\n${closingTag}` : openingTag),
   };
 }
 
-function canonicalBody(component: HtmdxComponent) {
-  const openingTag = `<${component.name}>`;
-  const closingTag = `</${component.name}>`;
-  return component.example.slice(openingTag.length, -closingTag.length).trim();
+// The canonical example may carry attributes on the opening tag
+// (e.g. `<Foldout title="...">`), so slice on the first `>` rather than assume
+// a bare `<Name>`; everything between the opening and closing tags is the body.
+function splitExample(component: HtmdxComponent): {
+  openingTag: string;
+  body: string;
+  closingTag: string;
+} {
+  const { example, name } = component;
+  const openEnd = example.indexOf('>');
+  const openingTag = example.slice(0, openEnd + 1);
+  const closingTag = openingTag.endsWith('/>') ? '' : `</${name}>`;
+  const body = closingTag
+    ? example.slice(openEnd + 1, example.length - closingTag.length).trim()
+    : '';
+  return { openingTag, body, closingTag };
 }
 
 export function createHtmdxHost(htmdx: string) {

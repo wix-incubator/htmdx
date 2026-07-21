@@ -4,6 +4,7 @@
 import { createElement, type ReactNode } from 'react';
 import { markdownSyntaxSource } from '../components/body-contracts';
 import {
+  decodeHtmlEntities,
   safeHref,
   safeImageAttributes,
   slugify,
@@ -293,10 +294,12 @@ function parseHtmlImage(source: string, start: number): ParsedImage | null {
 
 function parseHtmlAttributes(source: string) {
   const attributes = new Map<string, string>();
-  const pattern = /([A-Za-z][A-Za-z0-9-]*)(?:=(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g;
+  const pattern = /([A-Za-z][A-Za-z0-9-]*)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g;
   let match: RegExpExecArray | null;
   while ((match = pattern.exec(source))) {
-    attributes.set(match[1], match[2] ?? match[3] ?? match[4] ?? '');
+    const name = match[1];
+    const value = match[2] ?? match[3] ?? match[4] ?? '';
+    attributes.set(name, name.toLowerCase() === 'src' ? value : decodeHtmlEntities(value));
   }
   return Object.fromEntries(attributes);
 }

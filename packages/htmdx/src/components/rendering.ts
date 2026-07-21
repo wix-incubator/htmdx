@@ -107,11 +107,7 @@ export function safeImageAttributes(
 }
 
 function safeImageSrc(value: string) {
-  const decoded = value
-    .replace(/&amp;/g, '&')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .trim();
+  const decoded = decodeHtmlEntities(value).trim();
   const compact = Array.from(decoded)
     .filter((char) => char.charCodeAt(0) > 31 && char.charCodeAt(0) !== 127 && !/\s/.test(char))
     .join('');
@@ -132,6 +128,28 @@ function safeImageSrc(value: string) {
     return null;
   }
   return decoded;
+}
+
+export function decodeHtmlEntities(value: string) {
+  const named = new Map([
+    ['amp', '&'],
+    ['quot', '"'],
+    ['apos', "'"],
+    ['lt', '<'],
+    ['gt', '>'],
+  ]);
+  return value.replace(
+    /&(?:#(\d+)|#x([0-9a-f]+)|(amp|quot|apos|lt|gt));/gi,
+    (entity, decimal: string | undefined, hex: string | undefined, name: string | undefined) => {
+      if (name) {
+        return named.get(name.toLowerCase()) || entity;
+      }
+      const codePoint = Number.parseInt(decimal || hex || '', decimal ? 10 : 16);
+      return Number.isInteger(codePoint) && codePoint <= 0x10ffff
+        ? String.fromCodePoint(codePoint)
+        : entity;
+    },
+  );
 }
 
 export function escapeHtml(value: string) {

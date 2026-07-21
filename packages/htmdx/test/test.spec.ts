@@ -405,6 +405,27 @@ Context.</script>`;
     expect(image?.hasAttribute('onerror')).toBe(false);
   });
 
+  test('accepts whitespace around top-level HTML image assignments', () => {
+    const rendered = compile('<img src = "screenshots/result.png" alt = "Screenshot">');
+    const container = document.createElement('div');
+    container.innerHTML = rendered.ok ? rendered.html : '';
+
+    expect(container.querySelector('img')?.getAttribute('src')).toBe('screenshots/result.png');
+  });
+
+  test('decodes entities in top-level HTML image text attributes', () => {
+    const rendered = compile(
+      '<img src="screenshots/a&amp;b.png" alt="A &amp; B" title="T &quot; Q">',
+    );
+    const container = document.createElement('div');
+    container.innerHTML = rendered.ok ? rendered.html : '';
+    const image = container.querySelector('img');
+
+    expect(image?.getAttribute('src')).toBe('screenshots/a&b.png');
+    expect(image?.getAttribute('alt')).toBe('A & B');
+    expect(image?.getAttribute('title')).toBe('T " Q');
+  });
+
   test('rejects unsafe image sources and preserves safe data images', () => {
     const rendered = compile(`![Bad](javascript:alert(1))
 

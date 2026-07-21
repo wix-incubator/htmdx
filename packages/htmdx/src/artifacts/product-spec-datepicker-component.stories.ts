@@ -3,7 +3,7 @@ import { createArtifactStory, type ArtifactStoryArgs } from '../storybook/artifa
 import productSpecDatePickerHtml from './product-spec-datepicker-component.html?raw';
 
 const meta = {
-  title: 'Artifacts/Product Spec · DatePicker Component',
+  title: 'Artifacts/Product Spec',
   ...createArtifactStory(productSpecDatePickerHtml),
 } satisfies Meta<ArtifactStoryArgs>;
 

@@ -89,7 +89,7 @@ Use `src` when the source should live next to the HTML, in either form:
 Module API:
 
 ```ts
-import { compile, register } from '@wix/htmdx';
+import { compile, compileDocument, register } from '@wix/htmdx';
 
 register();
 const rendered = compile('# Title');

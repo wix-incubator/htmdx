@@ -132,6 +132,26 @@ layout: default
     host.remove();
   });
 
+  test('register reapplies layout options to hosts mounted by an earlier registration', async () => {
+    const tagName = 'htmdx-late-layout-option-fixture';
+    register({ tagName, automount: false });
+
+    const host = document.createElement(tagName);
+    host.innerHTML = '<script type="text/htmdx"># Late blank</script>';
+    document.body.append(host);
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(host.querySelector('.htmdx-hero')).not.toBeNull();
+
+    register({ tagName, layout: 'blank', automount: false });
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(host.querySelector('.htmdx-app--blank')).not.toBeNull();
+    expect(host.querySelector('.htmdx-hero')).toBeNull();
+    host.remove();
+  });
+
   test('registered layouts render from frontmatter in browser hosts', async () => {
     const layoutName = 'browser-decision-fixture';
     registerLayout(

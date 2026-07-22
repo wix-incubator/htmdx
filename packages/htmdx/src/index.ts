@@ -211,7 +211,8 @@ export function register(options: HtmdxRegisterOptions = {}) {
   const tagName = options.tagName || DEFAULT_TAG_NAME;
   registeredTagNames.add(tagName);
   registeredOptions.set(tagName.toLowerCase(), options);
-  if (!customElements.get(tagName)) {
+  const alreadyRegistered = Boolean(customElements.get(tagName));
+  if (!alreadyRegistered) {
     customElements.define(
       tagName,
       class HtmdxElement extends HTMLElement {
@@ -232,6 +233,9 @@ export function register(options: HtmdxRegisterOptions = {}) {
 
   if (options.automount !== false) {
     mountBareSources(tagName, options);
+  }
+  if (alreadyRegistered) {
+    void rerender({ tagName });
   }
 }
 

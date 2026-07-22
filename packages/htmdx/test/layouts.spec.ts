@@ -2,6 +2,7 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, test } from 'vitest';
 import { compile, register, registerLayout, rerender, type HtmdxLayoutProps } from '../src';
+import type { HtmdxComponent } from '../src/components';
 import { compileDocument } from '../src/react';
 
 const layoutFixtureComponent = ({ children, slots }: HtmdxLayoutProps) =>
@@ -149,6 +150,32 @@ layout: default
 
     expect(host.querySelector('.htmdx-app--blank')).not.toBeNull();
     expect(host.querySelector('.htmdx-hero')).toBeNull();
+    host.remove();
+  });
+
+  test('register preserves existing host options when applying a layout later', async () => {
+    const tagName = 'htmdx-merged-layout-options-fixture';
+    const Fixture: HtmdxComponent = {
+      name: 'MergedOptionsFixture',
+      purpose: 'Verify repeated host registration options.',
+      example: '<MergedOptionsFixture />',
+      body: 'none',
+      Component: () => createElement('output', null, 'preserved definition'),
+    };
+    register({ tagName, definitions: [Fixture], automount: false });
+
+    const host = document.createElement(tagName);
+    host.innerHTML = '<script type="text/htmdx"><MergedOptionsFixture /></script>';
+    document.body.append(host);
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(host.querySelector('output')?.textContent).toBe('preserved definition');
+
+    register({ tagName, layout: 'blank' });
+    await rerender({ tagName });
+
+    expect(host.querySelector('.htmdx-app--blank')).not.toBeNull();
+    expect(host.querySelector('output')?.textContent).toBe('preserved definition');
     host.remove();
   });
 

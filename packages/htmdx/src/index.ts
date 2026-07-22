@@ -209,15 +209,17 @@ export function register(options: HtmdxRegisterOptions = {}) {
   injectThemeStyle(options.theme);
 
   const tagName = options.tagName || DEFAULT_TAG_NAME;
+  const optionsKey = tagName.toLowerCase();
+  const mergedOptions = { ...registeredOptions.get(optionsKey), ...options, tagName };
   registeredTagNames.add(tagName);
-  registeredOptions.set(tagName.toLowerCase(), options);
+  registeredOptions.set(optionsKey, mergedOptions);
   const alreadyRegistered = Boolean(customElements.get(tagName));
   if (!alreadyRegistered) {
     customElements.define(
       tagName,
       class HtmdxElement extends HTMLElement {
         async connectedCallback() {
-          await renderHost(this, registeredOptions.get(tagName.toLowerCase()) || options);
+          await renderHost(this, registeredOptions.get(optionsKey) || mergedOptions);
         }
 
         disconnectedCallback() {
@@ -231,8 +233,8 @@ export function register(options: HtmdxRegisterOptions = {}) {
     );
   }
 
-  if (options.automount !== false) {
-    mountBareSources(tagName, options);
+  if (mergedOptions.automount !== false) {
+    mountBareSources(tagName, mergedOptions);
   }
   if (alreadyRegistered) {
     void rerender({ tagName });

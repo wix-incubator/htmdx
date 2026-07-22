@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { describe, expect, test, vi } from 'vitest';
 import { compile } from '../src';
 
-const examples = ['index.html', 'decision-brief.html', 'component-tour.html'];
+const examples = ['index.html', 'decision-brief.html', 'blank-layout.html', 'component-tour.html'];
 
 function readHtmdxSource(file: string): string {
   const html = readFileSync(resolve(import.meta.dirname, '../../../examples', file), 'utf8');

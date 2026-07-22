@@ -9,7 +9,7 @@
 - **Rich by default:** Use interactive components, themes, charts, and structured report elements.
 - **Safe by design:** Source cannot contain imports, JavaScript expressions, or function-valued props.
 
-**Examples:** [index](https://wix-incubator.github.io/htmdx/) · [decision brief](https://wix-incubator.github.io/htmdx/decision-brief.html) · [component tour](https://wix-incubator.github.io/htmdx/component-tour.html) · [Storybook](https://wix-incubator.github.io/htmdx/storybook/). View any example's source to see what an agent edits.
+**Examples:** [index](https://wix-incubator.github.io/htmdx/) · [decision brief](https://wix-incubator.github.io/htmdx/decision-brief.html) · [blank canvas](https://wix-incubator.github.io/htmdx/blank-layout.html) · [component tour](https://wix-incubator.github.io/htmdx/component-tour.html) · [Storybook](https://wix-incubator.github.io/htmdx/storybook/). View any example's source to see what an agent edits.
 
 ## One file, two audiences
 
@@ -115,6 +115,7 @@ logo-alt: Creator Kit
 
 | Field | Effect |
 | --- | --- |
+| `layout` | `default`, `blank`, or a trusted host-registered layout name. |
 | `title` | Hero and sticky-header title; overrides the first `# heading`. |
 | `project` | Project name in the hero and sticky header. |
 | `owner` | Owner label. |
@@ -125,6 +126,50 @@ logo-alt: Creator Kit
 | `logo-alt` | Logo alt text; omit for decorative images. |
 
 `logo: creator-kit` is built in for now; see [`adr/frontmatter-driven-nav-logo.md`](./adr/frontmatter-driven-nav-logo.md).
+
+## Layouts
+
+Omitting `layout` uses `default`, which preserves the existing hero, sticky header, section navigation, and automatic `##` section grouping. Use `blank` for source-order composition without that document chrome:
+
+```mdx
+---
+layout: blank
+---
+
+# Checkout migration
+```
+
+The blank layout keeps the stable HTMDX root, component catalog, theme, and Tailwind support. A host can override source frontmatter in every full-document renderer:
+
+```ts
+compile(source, { layout: 'blank' });
+register({ layout: 'blank' });
+compileDocument(source, { layout: 'blank' });
+```
+
+Trusted host code can register a custom React layout. Each named slot explicitly maps a presentation role to a flat frontmatter field:
+
+```js
+const { createElement } = window.Htmdx.React;
+
+window.Htmdx.registerLayout({
+  name: 'decision',
+  slots: {
+    eyebrow: { from: 'project' },
+    byline: { from: 'owner' },
+    status: { from: 'phase' },
+  },
+  Component: ({ children, slots }) =>
+    createElement(
+      'main',
+      null,
+      createElement('header', null, slots.eyebrow, slots.byline, slots.status),
+      createElement('article', null, children),
+    ),
+});
+```
+
+The layout receives only its declared slot keys. Missing fields are present with `undefined`; raw frontmatter is not passed. Layout names are case-insensitive, cannot replace `default` or `blank`, and unknown names fail compilation rather than falling back. Host `layout` options take precedence over frontmatter.
 
 ## Themes
 
@@ -183,7 +228,7 @@ const MyChart = {
 />;
 ```
 
-`compile(source)` from `@wix/htmdx` returns a static HTML snapshot of the same tree — useful for previews and validation. It needs a DOM (browser or jsdom).
+`compile(source)` from `@wix/htmdx` returns a static HTML snapshot of the same tree — useful for previews and validation. It needs a DOM (browser or jsdom). React hosts that need the full selected document layout can use `compileDocument(source).element`; `Htmdx` and `compileToReact()` remain the content-only React entrypoints.
 
 ## Package
 

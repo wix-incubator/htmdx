@@ -45,6 +45,7 @@ jobs:
         run: |
           mkdir -p site
           cp examples/*.html site/
+          cp packages/htmdx/dist/browser.js site/browser.js
           cp -r packages/htmdx/storybook-static site/storybook
           touch site/.nojekyll
 

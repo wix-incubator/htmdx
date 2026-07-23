@@ -2,7 +2,7 @@
 
 Render editable MDX-like source inside a plain HTML file. `@wix/htmdx@4.0.0` uses one component definition model for Built-ins, shadcn, and host extensions. HTMDX is built for artifacts that should be easy for people to view and easy for agents to edit.
 
-**Live examples:** [examples index](https://wix-incubator.github.io/htmdx/) · [decision brief](https://wix-incubator.github.io/htmdx/decision-brief.html) · [component tour](https://wix-incubator.github.io/htmdx/component-tour.html) · [Storybook](https://wix-incubator.github.io/htmdx/storybook/) — every page is itself an htmdx artifact; view source to see what an agent edits.
+**Live examples:** [examples index](https://wix-incubator.github.io/htmdx/) · [decision brief](https://wix-incubator.github.io/htmdx/decision-brief.html) · [blank canvas](https://wix-incubator.github.io/htmdx/blank-layout.html) · [component tour](https://wix-incubator.github.io/htmdx/component-tour.html) · [Storybook](https://wix-incubator.github.io/htmdx/storybook/) — every page is itself an htmdx artifact; view source to see what an agent edits.
 
 Start with one HTML file:
 
@@ -89,11 +89,46 @@ Use `src` when the source should live next to the HTML, in either form:
 Module API:
 
 ```ts
-import { compile, register } from '@wix/htmdx';
+import { compile, compileDocument, register } from '@wix/htmdx';
 
 register();
 const rendered = compile('# Title');
 ```
+
+Full-document layouts are selected by frontmatter or host options. Host options win:
+
+```mdx
+---
+layout: blank
+---
+
+# Source-order canvas
+```
+
+```ts
+compile(source, { layout: 'blank' });
+register({ layout: 'blank' });
+compileDocument(source, { layout: 'blank' });
+```
+
+Omitting `layout` uses `default`, preserving the existing document chrome and automatic `##` section grouping. `blank` omits the hero, sticky header, navigation, and grouping while retaining the stable root, catalog, theme, and Tailwind. `Htmdx` and `compileToReact()` remain content-only React entrypoints; use `compileDocument(source).element` for the selected full-document layout.
+
+Trusted hosts register custom React layouts with explicit frontmatter-backed slots:
+
+```js
+window.Htmdx.registerLayout({
+  name: 'decision',
+  slots: {
+    eyebrow: { from: 'project' },
+    byline: { from: 'owner' },
+    status: { from: 'phase' },
+  },
+  Component: ({ children, slots }) =>
+    window.Htmdx.React.createElement('main', null, slots.eyebrow, children),
+});
+```
+
+The `slots` record contains only declared keys; missing fields resolve to `undefined`, and raw frontmatter is not passed. Names collide case-insensitively, built-in names cannot be replaced, and unknown selected names fail clearly.
 
 Extension API. Trusted host code can contribute React components and theme
 CSS from an inline or external script:

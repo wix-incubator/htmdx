@@ -16,6 +16,7 @@ import { foldoutStyles } from './components/builtins/Foldout/Foldout';
 import { sourceQuoteStyles } from './components/builtins/SourceQuote/SourceQuote';
 import * as shadcnDefinitionExports from './components/shadcn';
 import { compileDocument, tokenizeSource } from './react';
+import { addLayout, type HtmdxLayoutDefinition } from './layout';
 import { THEME_CSS, THEME_IDS } from './themes';
 import { VERSION } from './version';
 
@@ -23,6 +24,8 @@ export { THEME_IDS, type HtmdxThemeId } from './themes';
 export { VERSION } from './version';
 export { injectShadcnTheme } from './components/shadcn/shared/theme';
 export { compileDocument, compileToReact, Htmdx, listComponents } from './react';
+export type { HtmdxDocument, HtmdxDocumentOptions, HtmdxReactOptions } from './react';
+export type { HtmdxLayoutDefinition, HtmdxLayoutProps, HtmdxLayoutSlot } from './layout';
 export type HtmdxToken =
   | { type: 'markdown'; value: string }
   | { type: 'component'; name: string; body: string };
@@ -38,6 +41,7 @@ export type HtmdxThemeDefinition = {
 
 export type HtmdxCompileOptions = {
   definitions?: HtmdxComponentDefinitions;
+  layout?: string;
 };
 
 export type HtmdxExtensionOptions = {
@@ -71,6 +75,7 @@ createDefinitionRegistry(bundledDefinitions);
 
 const globalDefinitions: HtmdxComponent[] = [];
 const registeredTagNames = new Set([DEFAULT_TAG_NAME]);
+const registeredOptions = new Map<string, HtmdxRegisterOptions>();
 const sourceCache = new WeakMap<Element, HtmdxSourceResult & { ok: true }>();
 
 type FailedStep = 'load' | 'compile' | 'render';
@@ -91,7 +96,7 @@ const stickyObservers = new WeakMap<Element, IntersectionObserver>();
 function runtimeOptionsFor(options: HtmdxCompileOptions) {
   const definitions = [...bundledDefinitions, ...globalDefinitions, ...(options.definitions || [])];
   createDefinitionRegistry(definitions);
-  return { definitions };
+  return { definitions, layout: options.layout };
 }
 
 export function compile(source: string, options: HtmdxCompileOptions = {}): HtmdxCompileResult {
@@ -163,6 +168,14 @@ export function registerTheme(theme: HtmdxThemeDefinition, options: HtmdxExtensi
   return Promise.resolve();
 }
 
+export function registerLayout(
+  definition: HtmdxLayoutDefinition,
+  options: HtmdxExtensionOptions = {},
+) {
+  addLayout(definition);
+  return options.rerender === false ? Promise.resolve() : rerender();
+}
+
 export function rerender(options: Pick<HtmdxRegisterOptions, 'tagName' | 'sourceSelector'> = {}) {
   if (!globalThis.document) {
     return Promise.resolve([]);
@@ -170,7 +183,14 @@ export function rerender(options: Pick<HtmdxRegisterOptions, 'tagName' | 'source
 
   const tagNames = options.tagName ? [options.tagName] : Array.from(registeredTagNames);
   const hosts = tagNames.flatMap((tagName) => Array.from(document.querySelectorAll(tagName)));
-  return Promise.all(hosts.map((host) => renderHost(host, options)));
+  return Promise.all(
+    hosts.map((host) =>
+      renderHost(host, {
+        ...registeredOptions.get(host.tagName.toLowerCase()),
+        ...options,
+      }),
+    ),
+  );
 }
 
 export function register(options: HtmdxRegisterOptions = {}) {
@@ -189,13 +209,17 @@ export function register(options: HtmdxRegisterOptions = {}) {
   injectThemeStyle(options.theme);
 
   const tagName = options.tagName || DEFAULT_TAG_NAME;
+  const optionsKey = tagName.toLowerCase();
+  const mergedOptions = { ...registeredOptions.get(optionsKey), ...options, tagName };
   registeredTagNames.add(tagName);
-  if (!customElements.get(tagName)) {
+  registeredOptions.set(optionsKey, mergedOptions);
+  const alreadyRegistered = Boolean(customElements.get(tagName));
+  if (!alreadyRegistered) {
     customElements.define(
       tagName,
       class HtmdxElement extends HTMLElement {
         async connectedCallback() {
-          await renderHost(this, options);
+          await renderHost(this, registeredOptions.get(optionsKey) || mergedOptions);
         }
 
         disconnectedCallback() {
@@ -209,8 +233,11 @@ export function register(options: HtmdxRegisterOptions = {}) {
     );
   }
 
-  if (options.automount !== false) {
-    mountBareSources(tagName, options);
+  if (mergedOptions.automount !== false) {
+    mountBareSources(tagName, mergedOptions);
+  }
+  if (alreadyRegistered) {
+    void rerender({ tagName });
   }
 }
 
@@ -941,6 +968,8 @@ const RUNTIME_CSS = `
     background: var(--md-sys-color-surface);
   }
   .htmdx-app--no-nav { grid-template-columns: minmax(0, 1fr); }
+  .htmdx-app--blank,
+  .htmdx-app--custom { display: block; }
 
   .htmdx-toc {
     position: sticky;

@@ -17,11 +17,16 @@ import {
 } from '../component-definition';
 import { safeImageAttributes, uniqueSlug, type RenderContext } from '../components/rendering';
 import { BUILT_IN_LOGOS } from '../logos';
+import { getLayout, resolveLayoutSlots } from '../layout';
 import { renderInline, renderMarkdown } from './markdown';
 import { THEME_IDS } from '../themes';
 
 export type HtmdxReactOptions = {
   definitions?: HtmdxComponentDefinitions;
+};
+
+export type HtmdxDocumentOptions = HtmdxReactOptions & {
+  layout?: string;
 };
 
 type RuntimeCatalog = {
@@ -49,13 +54,7 @@ export function compileToReact(source: string, options: HtmdxReactOptions = {}):
   const normalized = stripFrontmatterAndComments(source);
   const blocks = tokenize(normalized, catalog.names);
   const context: RenderContext = { headings: [], slugCounts: new Map() };
-
-  const children = blocks.map((block, index) => {
-    if (block.type === 'markdown') {
-      return createElement('div', { key: `md-${index}` }, renderMarkdown(block.value, context));
-    }
-    return renderComponentBlock(block, catalog, `c-${index}`);
-  });
+  const children = renderBlocks(blocks, catalog, context);
 
   return createElement(Fragment, null, ...children);
 }
@@ -72,10 +71,10 @@ export type HtmdxDocument = {
   meta: Record<string, string>;
 };
 
-// Full-document compile: article content wrapped in the hero + sticky header
-// + section rail shell (same class names the runtime CSS styles). Used by the
-// core register()/compile() so every host renders the complete page chrome.
-export function compileDocument(source: string, options: HtmdxReactOptions = {}): HtmdxDocument {
+// Full-document compile used by register()/compile(). The implicit default
+// preserves the existing page chrome; blank and registered layouts own their
+// composition around the same source content.
+export function compileDocument(source: string, options: HtmdxDocumentOptions = {}): HtmdxDocument {
   const catalog = createRuntimeCatalog(options);
   const meta = parseFrontmatter(source);
   const title = titleFromSource(source, meta);
@@ -83,6 +82,59 @@ export function compileDocument(source: string, options: HtmdxReactOptions = {})
   const blocks = tokenize(normalized, catalog.names);
   const context: RenderContext = { headings: [], slugCounts: new Map() };
 
+  const layout = (options.layout || meta.layout || 'default').trim().toLowerCase();
+  if (layout === 'blank') {
+    const theme = themeFromMeta(meta);
+    return {
+      element: createElement(
+        'div',
+        {
+          className: 'htmdx-app htmdx-app--blank',
+          ...(theme ? { 'data-htmdx-theme': theme } : {}),
+        },
+        createElement(
+          'main',
+          { className: 'htmdx-doc htmdx-page' },
+          createElement(
+            'article',
+            { className: 'htmdx-article' },
+            ...renderBlocks(blocks, catalog, context),
+          ),
+        ),
+      ),
+      title,
+      headings: context.headings,
+      components: blocks.filter((block) => block.type === 'component').map((block) => block.name),
+      meta,
+    };
+  }
+
+  if (layout !== 'default') {
+    const definition = getLayout(layout);
+    if (!definition) {
+      throw new Error(`unknown layout "${layout}"`);
+    }
+    const theme = themeFromMeta(meta);
+    const children = renderBlocks(blocks, catalog, context);
+    return {
+      element: createElement(
+        'div',
+        {
+          className: 'htmdx-app htmdx-app--custom',
+          'data-htmdx-layout': definition.name,
+          ...(theme ? { 'data-htmdx-theme': theme } : {}),
+        },
+        createElement(definition.Component, {
+          slots: resolveLayoutSlots(definition, meta),
+          children,
+        }),
+      ),
+      title,
+      headings: context.headings,
+      components: blocks.filter((block) => block.type === 'component').map((block) => block.name),
+      meta,
+    };
+  }
   const lead = title ? extractHeroContent(blocks) : '';
   const sections = groupSections(blocks, catalog, context);
 
@@ -131,6 +183,15 @@ export function compileDocument(source: string, options: HtmdxReactOptions = {})
     components: blocks.filter((block) => block.type === 'component').map((block) => block.name),
     meta,
   };
+}
+
+function renderBlocks(blocks: Block[], catalog: RuntimeCatalog, context: RenderContext) {
+  return blocks.map((block, index) => {
+    if (block.type === 'markdown') {
+      return createElement('div', { key: `md-${index}` }, renderMarkdown(block.value, context));
+    }
+    return renderComponentBlock(block, catalog, `c-${index}`);
+  });
 }
 
 type Section = {

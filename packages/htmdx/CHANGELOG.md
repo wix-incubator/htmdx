@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.6.0](https://github.com/wix-incubator/htmdx/compare/v4.5.1...v4.6.0) (2026-07-23)
+
+
+### Features
+
+* **layouts:** add document layout selection ([#49](https://github.com/wix-incubator/htmdx/issues/49)) ([b91d9ee](https://github.com/wix-incubator/htmdx/commit/b91d9eea5d46ff1a9eb01ea2b669f7c5e3e83434))
+
 ## [4.5.1](https://github.com/wix-incubator/htmdx/compare/v4.5.0...v4.5.1) (2026-07-21)
 
 

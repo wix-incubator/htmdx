@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>htmdx — live examples</title>
+    <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@4.0.0/dist/browser.js" defer></script>
+  </head>
+  <body>
+    <!-- prettier-ignore -->
+    <script type="text/htmdx">
+# htmdx live examples
+
+This page is itself an htmdx artifact: one HTML file, one runtime script,
+and an editable `<script type="text/htmdx">` source block. View source to
+see exactly what an agent edits.
+
+<ExecutiveSummary>
+htmdx renders **declarative, agent-editable source** with unified component
+definitions for Built-in reports and shadcn/ui, with no code execution in the
+source ("MDX minus JavaScript").
+</ExecutiveSummary>
+
+## Examples
+
+<Card>
+  <CardHeader>
+    <CardTitle>Decision brief</CardTitle>
+    <CardDescription>A realistic report artifact: narrative, metrics, tabs, risks</CardDescription>
+  </CardHeader>
+  <CardFooter>
+    <Button asChild="true" variant="outline" size="sm"><a href="./decision-brief.html">Open decision-brief.html</a></Button>
+  </CardFooter>
+</Card>
+
+<Card>
+  <CardHeader>
+    <CardTitle>Component tour</CardTitle>
+    <CardDescription>Every built-in and shadcn component the runtime ships</CardDescription>
+  </CardHeader>
+  <CardFooter>
+    <Button asChild="true" variant="outline" size="sm"><a href="./component-tour.html">Open component-tour.html</a></Button>
+  </CardFooter>
+</Card>
+
+<Card>
+  <CardHeader>
+    <CardTitle>Blank canvas</CardTitle>
+    <CardDescription>Source-order composition without document chrome or automatic section grouping</CardDescription>
+  </CardHeader>
+  <CardFooter>
+    <Button asChild="true" variant="outline" size="sm"><a href="./blank-layout.html">Open blank-layout.html</a></Button>
+  </CardFooter>
+</Card>
+
+## How these pages work
+
+<MetricStrip>
+- Runtime: **browser.js**
+- Components: **87**
+- Source: **editable**
+- Eval: **none**
+</MetricStrip>
+
+Each page loads the runtime and writes HTMDX between two script tags.
+The runtime injects React, the component catalog, the shadcn/ui pack,
+its theme, and Tailwind — then mounts the rendered document in place.
+
+<Callout>
+**Try it:** save any of these pages locally, edit the text inside the
+`<script type="text/htmdx">` block, and reload.
+</Callout>
+
+Docs and source: [github.com/wix-incubator/htmdx](https://github.com/wix-incubator/htmdx)
+    </script>
+  </body>
+</html>

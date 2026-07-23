@@ -1,0 +1,4 @@
+import{i as e}from"./preload-helper-CT_b8DTk.js";import{Jn as t,Yn as n,n as r,r as i,t as a}from"./component-story-DgKimuTq.js";var o,s,c,l;e((()=>{i(),n(),o={title:`Components/Built-ins/Foldout`,...a(t)},s={},c={render:()=>r([`<Foldout title="Quarterly revenue" open>`,`<ChartBar>`,`- Q1: 120`,`- Q2: 150`,`- Q3: 170`,`- Q4: 210`,`</ChartBar>`,`</Foldout>`].join(`
+`))},s.parameters={...s.parameters,docs:{...s.parameters?.docs,source:{originalSource:`{}`,...s.parameters?.docs?.source}}},c.parameters={...c.parameters,docs:{...c.parameters?.docs,source:{originalSource:`{
+  render: () => createHtmdxHost(['<Foldout title="Quarterly revenue" open>', '<ChartBar>', '- Q1: 120', '- Q2: 150', '- Q3: 170', '- Q4: 210', '</ChartBar>', '</Foldout>'].join('\\n'))
+}`,...c.parameters?.docs?.source}}},l=[`Default`,`WithRichContent`]}))();export{s as Default,c as WithRichContent,l as __namedExportsOrder,o as default};

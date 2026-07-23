@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>htmdx — component tour</title>
+    <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@4.0.0/dist/browser.js" defer></script>
+  </head>
+  <body>
+    <!-- prettier-ignore -->
+    <script type="text/htmdx">
+# Component tour
+
+Every component below renders from this page's own source block. The
+machine-readable contract lives in `dist/components.json`.
+
+## Narrative built-ins
+
+<ExecutiveSummary>
+Summarize the artifact's most important conclusion — this block is the
+**ExecutiveSummary** component with a markdown body.
+</ExecutiveSummary>
+
+<Callout>
+**Callout** emphasizes a note or warning. Its Markdown body supports prose,
+but rejects nested component tags.
+</Callout>
+
+Shadcn bodies use composable HTMDX instead. This Card nests a Badge:
+
+<Card class="max-w-xl">
+  <CardContent>
+    Release contract <Badge variant="secondary">verified</Badge>
+  </CardContent>
+</Card>
+
+<SourceQuote>
+"SourceQuote displays a quotation attributed in the surrounding content."
+</SourceQuote>
+
+## Metrics and stats
+
+<MetricStrip>
+- Format: **HTML**
+- Source: **HTMDX**
+- Components: **87**
+- Eval: **none**
+</MetricStrip>
+
+<Stat>
+- Adoption: **72%**
+- Retention: **91%**
+</Stat>
+
+## Charts
+
+<ChartBar>
+- Free users: 48
+- Paid users: 12
+- Trials: 26
+</ChartBar>
+
+<ChartLine>
+- Week 1: 8
+- Week 2: 13
+- Week 3: 21
+- Week 4: 34
+</ChartLine>
+
+<ChartPie>
+- Direct: 62
+- Referral: 38
+</ChartPie>
+
+## Tables and structured findings
+
+<DataTable>
+| Plan | Users | MRR |
+| --- | ---: | ---: |
+| Free | 48 | $0 |
+| Pro | 12 | $1,140 |
+| Team | 5 | $2,400 |
+</DataTable>
+
+<Compare>
+- **Current:** Manual component discovery
+- **Proposed:** Versioned manifest served next to the runtime
+</Compare>
+
+<Finding>
+- **Drift:** Runtime support is not machine-discoverable.
+- **Coverage:** Charts share one visualization style.
+</Finding>
+
+<Evidence>
+- **Runtime:** The allowlist currently lives in implementation code.
+</Evidence>
+
+<RiskTable>
+- **Must-have:** Publish exact-version metadata.
+- **Differentiator:** Describe props with allowed values.
+- **Not now:** Describe host components.
+</RiskTable>
+
+<DecisionTable>
+- Scope: Built-in components plus the shadcn pack
+- Delivery: Versioned manifest
+- Owner: Runtime team
+</DecisionTable>
+
+<Timeline>
+- July: Publish the manifest
+- August: Adopt it in validators
+- September: Ship editor hints
+</Timeline>
+
+## shadcn/ui pack
+
+<Card class="max-w-xl">
+  <CardHeader>
+    <CardTitle>Card composition</CardTitle>
+    <CardDescription>CardHeader, CardTitle, CardDescription, CardContent, CardFooter</CardDescription>
+  </CardHeader>
+  <CardContent>
+    Markdown works inside: **bold**, `code`, [links](https://github.com/wix-incubator/htmdx).
+    <Badge>default</Badge>
+    <Badge variant="secondary">secondary</Badge>
+    <Badge variant="destructive">destructive</Badge>
+    <Badge variant="outline">outline</Badge>
+  </CardContent>
+  <CardFooter>
+    <Button size="sm">default</Button>
+    <Button variant="secondary" size="sm">secondary</Button>
+    <Button variant="outline" size="sm">outline</Button>
+    <Button variant="ghost" size="sm">ghost</Button>
+  </CardFooter>
+</Card>
+
+<Tabs defaultValue="one" class="max-w-xl">
+  <TabsList>
+    <TabsTrigger value="one">Interactive</TabsTrigger>
+    <TabsTrigger value="two">Radix state</TabsTrigger>
+    <TabsTrigger value="three">No source code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="one">Tabs are real Radix primitives — click through them.</TabsContent>
+  <TabsContent value="two">State lives inside the component, never in the source.</TabsContent>
+  <TabsContent value="three">The source only declares structure and data.</TabsContent>
+</Tabs>
+
+<Accordion type="single" collapsible class="max-w-xl">
+  <AccordionItem value="a">
+    <AccordionTrigger>Accordion item one</AccordionTrigger>
+    <AccordionContent>Expands and collapses with Radix state.</AccordionContent>
+  </AccordionItem>
+  <AccordionItem value="b">
+    <AccordionTrigger>Accordion item two</AccordionTrigger>
+    <AccordionContent>type="single" collapsible comes straight from attributes.</AccordionContent>
+  </AccordionItem>
+</Accordion>
+
+## Alerts and separators
+
+<Alert>
+  <AlertTitle>Display-only components</AlertTitle>
+  <AlertDescription>Alert, Table, Avatar and Progress render statically — no interaction required.</AlertDescription>
+</Alert>
+
+<Alert variant="destructive">
+  <AlertTitle>Heads up</AlertTitle>
+  <AlertDescription>The destructive variant signals errors or blocked states.</AlertDescription>
+</Alert>
+
+<Separator orientation="horizontal" />
+
+## Tables
+
+<Table class="max-w-xl">
+  <TableCaption>Quarterly plan revenue</TableCaption>
+  <TableHeader>
+    <TableRow>
+      <TableHead>Plan</TableHead>
+      <TableHead>Users</TableHead>
+      <TableHead>MRR</TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    <TableRow>
+      <TableCell>Free</TableCell>
+      <TableCell>48</TableCell>
+      <TableCell>$0</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell>Pro</TableCell>
+      <TableCell>12</TableCell>
+      <TableCell>$1,140</TableCell>
+    </TableRow>
+  </TableBody>
+</Table>
+
+## Avatars and progress
+
+<Avatar>
+  <AvatarImage src="https://github.com/shadcn.png" alt="shadcn" />
+  <AvatarFallback>CN</AvatarFallback>
+</Avatar>
+
+<Progress value="72" class="max-w-xl" />
+
+## Breadcrumbs
+
+<Breadcrumb>
+  <BreadcrumbList>
+    <BreadcrumbItem>
+      <BreadcrumbLink href="./index.html">Examples</BreadcrumbLink>
+    </BreadcrumbItem>
+    <BreadcrumbSeparator />
+    <BreadcrumbItem>
+      <BreadcrumbPage>Component tour</BreadcrumbPage>
+    </BreadcrumbItem>
+  </BreadcrumbList>
+</Breadcrumb>
+
+## Markdown and HTML images
+
+![Mountain landscape](https://images.unsplash.com/photo-1535025183041-0991a977e25b?w=800 "Rendered from Markdown")
+
+<img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800" alt="Forest landscape" width="800" loading="lazy">
+
+## Aspect ratio
+
+<AspectRatio ratio="1.7778" class="max-w-md overflow-hidden rounded-lg border">
+  <img src="https://images.unsplash.com/photo-1535025183041-0991a977e25b?w=800" alt="Landscape" class="h-full w-full object-cover" />
+</AspectRatio>
+
+## Overlays: hover, click, and modal
+
+Tooltip and HoverCard open on hover; Popover and Dialog open on click. Each
+renders its floating content in a portal outside the source block.
+
+<Tooltip>
+  <TooltipTrigger asChild="true">
+    <Button variant="outline">Hover for a tooltip</Button>
+  </TooltipTrigger>
+  <TooltipContent>Portalled tooltip content.</TooltipContent>
+</Tooltip>
+
+<HoverCard>
+  <HoverCardTrigger asChild="true">
+    <Button variant="link">Hover for a card</Button>
+  </HoverCardTrigger>
+  <HoverCardContent>A richer preview shown on hover.</HoverCardContent>
+</HoverCard>
+
+<Popover>
+  <PopoverTrigger asChild="true">
+    <Button variant="outline">Open a popover</Button>
+  </PopoverTrigger>
+  <PopoverContent>Click-triggered floating panel.</PopoverContent>
+</Popover>
+
+<Dialog>
+  <DialogTrigger asChild="true">
+    <Button>Open a dialog</Button>
+  </DialogTrigger>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Real modal dialog</DialogTitle>
+      <DialogDescription>Opened by a real click; closes with the X or Escape.</DialogDescription>
+    </DialogHeader>
+    <DialogFooter>
+      <DialogClose asChild="true">
+        <Button variant="outline">Close</Button>
+      </DialogClose>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+
+## Collapsible
+
+<Collapsible class="max-w-xl">
+  <CollapsibleTrigger asChild="true">
+    <Button variant="outline">Toggle extra detail</Button>
+  </CollapsibleTrigger>
+  <CollapsibleContent>Revealed only when the collapsible is open.</CollapsibleContent>
+</Collapsible>
+
+Back to the [examples index](./index.html).
+    </script>
+  </body>
+</html>

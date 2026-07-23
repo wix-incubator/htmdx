@@ -1,0 +1,130 @@
+import{i as e}from"./preload-helper-CT_b8DTk.js";import{n as t,t as n}from"./artifact-story-CXtGmK-U.js";var r,i=e((()=>{r=`<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HTMDX Component Gallery</title>
+    <script src="../../dist/browser.js" defer><\/script>
+  </head>
+  <body>
+    <!-- prettier-ignore -->
+    <script
+      type="text/htmdx"
+      data-htmdx-edit-instruction="Edit only this script content. HTMDX format."
+    >
+# HTMDX Component Gallery
+
+A composed reference for reviewing the complete built-in Component set across page sizes.
+
+<ExecutiveSummary>
+This gallery brings every built-in Component into one Artifact so maintainers can assess hierarchy, rhythm, and responsive layout together.
+</ExecutiveSummary>
+
+<MetricStrip>
+- Components: **16 built-ins**
+- Format: **Standalone HTML**
+- Runtime: **Local build**
+</MetricStrip>
+
+## Narrative Components
+
+<Card>
+<CardHeader>
+<CardTitle>A complete visual workspace</CardTitle>
+<CardDescription>Review the built-in catalog as one composed deliverable.</CardDescription>
+</CardHeader>
+<CardContent>
+Use this page to compare isolated Component decisions in the context of a full deliverable.
+</CardContent>
+</Card>
+
+<Callout>
+**Try every viewport:** Review the gallery at desktop, tablet, and mobile widths before publishing layout changes.
+</Callout>
+
+<SourceQuote>
+“Components become a system when they work together on the same page.”
+</SourceQuote>
+
+## Metrics and trends
+
+<Stat>
+- Gallery coverage: **100%**
+</Stat>
+
+<ChartBar>
+- Narrative: 3
+- Metrics: 2
+- Charts: 4
+- Structured data: 7
+</ChartBar>
+
+<ChartArea>
+- January: 18
+- February: 27
+- March: 35
+- April: 48
+</ChartArea>
+
+<ChartLine>
+- Week 1: 8
+- Week 2: 13
+- Week 3: 21
+- Week 4: 34
+</ChartLine>
+
+<ChartPie>
+- Direct: 62
+- Referral: 23
+- Search: 15
+</ChartPie>
+
+## Structured information
+
+<DataTable>
+| Viewport | Width | Review focus |
+| --- | ---: | --- |
+| Desktop | 1280 px | Composition and density |
+| Tablet | 768 px | Reflow and spacing |
+| Mobile | 390 px | Readability and stacking |
+</DataTable>
+
+<Compare>
+- **Isolated stories:** Focused Component content and behavior
+- **Component Gallery:** Cross-component spacing and page composition
+</Compare>
+
+<Finding>
+- **Single source:** The committed HTML remains the gallery's source of truth.
+- **Fast feedback:** Storybook previews it with the TypeScript source runtime.
+</Finding>
+
+<Evidence>
+- **Real compiler:** Controlled edits follow the production compilation path.
+- **Real delivery:** The standalone file loads the repository's built browser bundle.
+</Evidence>
+
+<RiskTable>
+- **Must-have:** Keep every built-in Component represented.
+- **Differentiator:** Make the composition useful at every viewport.
+- **Not now:** Add automated visual regression coverage.
+- **Won't do:** Replace the standalone Artifact with a Storybook-only fixture.
+</RiskTable>
+
+<DecisionTable>
+- Artifact source: Committed HTML
+- Storybook runtime: TypeScript source
+- Standalone runtime: Local browser build
+- Editing surface: Embedded HTMDX only
+</DecisionTable>
+
+<Timeline>
+- Build: Generate the local browser runtime
+- Compose: Edit the embedded HTMDX
+- Preview: Inspect the Artifact in Storybook
+- Validate: Review desktop, tablet, and mobile layouts
+</Timeline>
+    <\/script>
+  </body>
+</html>
+`})),a,o,s;e((()=>{t(),i(),a={title:`Artifacts/Component Gallery`,...n(r)},o={},o.parameters={...o.parameters,docs:{...o.parameters?.docs,source:{originalSource:`{}`,...o.parameters?.docs?.source}}},s=[`Default`]}))();export{o as Default,s as __namedExportsOrder,a as default};

@@ -1,0 +1,512 @@
+import{i as e}from"./preload-helper-CT_b8DTk.js";import{n as t,t as n}from"./artifact-story-CXtGmK-U.js";var r,i=e((()=>{r=`<!doctype html>
+<!--
+  Creator Kit htmdx artifact. Before you edit ANY part of this document, you
+  MUST read ~/.agents/skills/ck-internal-htmdx/SKILL.md.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="ck-artifact-format" content="htmdx@2" />
+    <meta name="ck-renderer" content="@wix/htmdx@4.4.0" />
+    <meta name="ck-template-skill" content="ck-product-spec" />
+    <title>Product Spec · DatePicker Component</title>
+    <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@4.4.0/dist/browser.js" defer><\/script>
+  </head>
+  <body>
+    <!-- prettier-ignore -->
+    <script
+      type="text/htmdx"
+      data-ck-source="primary"
+      data-ck-format="htmdx@2"
+    >
+---
+title: Product Spec
+subtitle: "Wix Site Components"
+project: "DatePicker Component"
+owner: "Maksym Anisimov"
+phase: Product · Spec
+updated: "2026-07-21"
+theme: blue
+logo: creator-kit
+logo-alt: Creator Kit
+---
+
+## At a glance
+
+<Stat>
+- Functional requirements: **9** (8 specified · 1 deferred)
+- Blockers: **1**
+- Critical / Must-have: **5**
+- Non-functional requirements: **14**
+- Delta: **4 new · 5 modify** (assumption-based — no code analysis)
+- Release: **Phase 1 (6 FRs) · Phase 2 (2 FRs)**
+</Stat>
+
+## Contents
+
+<BulletList>
+- Overview - what we're building and why it matters
+- Problem to solve - the gap, root cause, and opportunity
+- Must-ship-first - the requirements that gate launch
+- Requirements summary - every FR in one table
+- Functional requirements - grouped by visitor entry, owner configuration, platform compatibility
+- Non-functional requirements - measurable quality constraints
+- Out of scope - deferred to a later release
+</BulletList>
+
+## Overview
+
+<ExecutiveSummary>
+**What ships —** A context-aware Wix DatePicker: it shows and parses dates in the visitor's locale, works by touch on mobile, is fully keyboard- and screen-reader-operable, and lets site owners restrict selection to valid dates (min/max, blackout days) while matching site locale and brand — without breaking existing sites that consume the component via Velo.
+
+**Why it matters —** Today's picker is a rigid US-only, single-date field that ignores locale, device, and valid-date context, creating date-entry friction that can cost site owners conversions across every form, booking, and checkout. Removing that friction lifts completion for the site owners who monetize those flows.
+</ExecutiveSummary>
+
+## Problem to solve
+
+<SignalGrid>
+- **The problem | red:** Visitors hit friction entering dates — wrong format, no range, clumsy on mobile — and some abandon the booking or form, costing the site owner the conversion they monetize.
+- **Root cause | gray:** The DatePicker was built as a minimal US-format, single-date field, so locale, device context, and valid-date rules were never designed in.
+- **The opportunity | green:** A context-aware DatePicker (locale, mobile, accessibility, owner-set valid-date rules) removes date-entry friction across every form, booking, and checkout.
+</SignalGrid>
+
+## Must-ship-first
+
+<!-- Derived from FR Priority: 1 Blocker + 5 Critical qualify; capped at 5 (FR-008 Critical omitted for space, still Phase 1). -->
+6 FRs qualify (1 Blocker + 5 Critical); showing the top 5. FR-008 (Critical, compatibility guardrail) is also Phase 1.
+
+<Finding>
+- **FR-001 · Blocker — Locale-aware format:** Visitors read and type dates in their own locale format; no more forced MM/DD/YYYY guesswork.
+- **FR-002 · Critical — Mobile-first touch calendar:** Visitors pick a date by tap on a phone without pinching, zooming, or mistyping.
+- **FR-003 · Critical — Valid-date constraints:** Owners restrict selection (min/max, blackout); visitors are offered only valid dates.
+- **FR-004 · Critical — Accessible operation:** Full keyboard and screen-reader date entry to WCAG 2.1 AA.
+- **FR-005 · Critical — Owner locale & brand configuration:** The picker matches the site's locale and brand so it feels native.
+</Finding>
+
+## Requirements summary
+
+Every FR in one index (jump to any via the left nav). Intents trace back to the strategy's Intents and feelings. Delta tags are assumption-based (no current-implementation code analysis was available).
+
+<DataTable>
+| FR | Title | Delta | Priority | Serves | Group |
+| --- | --- | --- | --- | --- | --- |
+| FR-001 | Locale-aware date format (display + input parsing) | MODIFY | Blocker | Visitor | Visitor date entry |
+| FR-002 | Mobile-first touch calendar | MODIFY | Critical | Visitor | Visitor date entry |
+| FR-003 | Owner-set valid-date constraints (min/max, blackout) | NEW | Critical | Visitor + Owner | Visitor date entry |
+| FR-004 | Accessible keyboard & screen-reader operation | MODIFY | Critical | Visitor | Visitor date entry |
+| FR-006 | Date-range selection in one motion | NEW | Nice to have | Visitor | Visitor date entry |
+| FR-005 | Owner locale & brand configuration | MODIFY | Critical | Owner | Owner configuration |
+| FR-007 | Configurable default format & first-day-of-week | NEW | Nice to have | Owner | Owner configuration |
+| FR-008 | Backward-compatible component / Velo API | MODIFY | Critical | Developer | Platform compatibility |
+</DataTable>
+
+## Functional requirements
+
+Contract-first: each FR opens with what it serves and its priority, then the acceptance criteria — the shipping contract. Open a panel for engineering detail or evidence.
+
+**Visitor date entry**
+
+### FR-001 — Locale-aware date format (display + input parsing)
+
+<Card>
+  <CardContent>
+<Badge variant="secondary">Serves: Visitor</Badge> <Badge variant="destructive">Blocker</Badge> <Badge variant="secondary">MODIFY</Badge> <Badge variant="outline">Phase 1</Badge>
+
+**Description**
+The DatePicker displays dates in the visitor's active locale format and parses dates typed in that same format, instead of forcing a single US MM/DD/YYYY pattern.
+
+**Why**
+Format is the root friction: a visitor who reads dates as DD/MM/YYYY second-guesses or mistypes a US-only field. Serving the locale format removes hesitation on the single most-used step (#V-int-001, the blocker intent).
+
+**Acceptance criteria**
+<DataTable>
+| Given | When | Then |
+| --- | --- | --- |
+| A visitor on a site with a non-US locale | The picker renders | The date displays in the locale's date format and calendar day/month names |
+| A visitor types a date in their locale format | Input loses focus / is submitted | The value is parsed correctly to the underlying date |
+| A visitor types a date whose meaning is ambiguous across formats | Input is validated | The value is interpreted by the active locale, and ambiguity is not silently guessed |
+</DataTable>
+
+**Edge cases**
+<DataTable>
+| Case | Severity | Expected behavior |
+| --- | --- | --- |
+| Ambiguous typed date (e.g. 03/04) where locale flips meaning | Critical | Interpret by active locale; if still unresolvable, reject with clear feedback |
+| Locale unsupported by the component | Important | Fall back to the site default locale, never to a hardcoded US pattern |
+| Pasted date string in a different format | Important | Attempt locale parse; reject with actionable message if unparseable |
+| Two-digit vs four-digit year entered | Nice-to-Have | Normalize per locale convention |
+</DataTable>
+
+<Foldout title="Engineering detail">
+Assumption-based (no current-implementation code analysis). Depends on Wix i18n/locale infrastructure to resolve the active locale, format tokens, and calendar names. Display formatting and input parsing must share one locale source of truth to avoid render/parse drift. Modifies the existing format layer (today hardcoded to US MM/DD/YYYY). No new PII — dates are user input already collected today; permission model unchanged. Verify concrete i18n APIs against the platform before implementation; do not assume endpoint shapes.
+</Foldout>
+
+<Foldout title="Evidence and links">
+Current product forces MM/DD/YYYY (see reference screenshot). Strategy names this the blocker intent.
+<Sources>
+- [Current-product reference](../../ck-references/datepicker-reference.png)
+- [Product Strategy](./product-strategy-datepicker-component.html)
+</Sources>
+</Foldout>
+  </CardContent>
+</Card>
+
+### FR-002 — Mobile-first touch calendar
+
+<Card>
+  <CardContent>
+<Badge variant="secondary">Serves: Visitor</Badge> <Badge variant="default">Critical</Badge> <Badge variant="secondary">MODIFY</Badge> <Badge variant="outline">Phase 1</Badge>
+
+**Description**
+The DatePicker offers a touch-optimized calendar so a visitor can select a date by tapping, without pinching, zooming, or manual typing on a phone.
+
+**Why**
+Mobile is the fastest-growing traffic and the highest-friction surface for the current field; a touch-first calendar turns an anxious, error-prone step into an at-ease one (#V-int-002).
+
+**Acceptance criteria**
+<DataTable>
+| Given | When | Then |
+| --- | --- | --- |
+| A visitor on a small-viewport device | The picker opens | A touch-sized calendar renders with tap-selectable days |
+| A visitor taps a day | Selection is made | The date is set without requiring keyboard entry |
+| A visitor rotates the device mid-selection | The layout reflows | The current selection and open state are preserved |
+</DataTable>
+
+**Edge cases**
+<DataTable>
+| Case | Severity | Expected behavior |
+| --- | --- | --- |
+| Very small viewport / landscape rotation | Important | Calendar reflows; selection preserved; no clipped controls |
+| Slow network on popup open | Important | Show a loading state; taps are not dropped or double-registered |
+| On-screen keyboard overlaps calendar | Important | Calendar remains fully reachable / scrollable |
+</DataTable>
+
+<Foldout title="Engineering detail">
+Assumption-based. Modifies the existing calendar popup (present today on desktop) for touch ergonomics and responsive layout. Reuse the Wix design-system responsive primitives where they fit. No data-model or permission change; no new PII. Coordinate with FR-004 so touch and keyboard/SR paths share one state model.
+</Foldout>
+
+<Foldout title="Evidence and links">
+<Sources>
+- [Current-product reference](../../ck-references/datepicker-reference.png)
+- [Product Strategy](./product-strategy-datepicker-component.html)
+</Sources>
+</Foldout>
+  </CardContent>
+</Card>
+
+### FR-003 — Owner-set valid-date constraints (min/max, blackout)
+
+<Card>
+  <CardContent>
+<Badge variant="secondary">Serves: Visitor + Owner</Badge> <Badge variant="default">Critical</Badge> <Badge variant="outline">NEW</Badge> <Badge variant="outline">Phase 1</Badge>
+
+**Description**
+Site owners define which dates are selectable — minimum/maximum bounds and blackout days — and the picker offers visitors only valid dates, blocking invalid ones from selection and submission.
+
+**Why**
+This is a guardrail: invalid bookings create refunds and support load downstream. It reassures the visitor (#V-int-003 — only valid dates) and protects the owner (#O-int-002 — restrict selectable dates) with one capability.
+
+**Acceptance criteria**
+<DataTable>
+| Given | When | Then |
+| --- | --- | --- |
+| An owner has set min/max bounds and blackout days | A visitor opens the picker | Out-of-bound and blackout dates are non-selectable |
+| A visitor types a date that violates a constraint | Input is validated | The value is rejected with a reason, not silently accepted |
+| Constraints change after the page loaded | The visitor submits | The date is re-validated at submission against current rules |
+| An owner enters min greater than max | The configuration is saved | The invalid configuration is rejected with an error |
+</DataTable>
+
+**Edge cases**
+<DataTable>
+| Case | Severity | Expected behavior |
+| --- | --- | --- |
+| All dates in the visible month are blocked | Critical | Month remains navigable; a clear "no valid dates" state is shown |
+| Timezone differs between visitor and site | Critical | Constraints evaluate against a defined reference timezone (assumed: site timezone) |
+| Typed date violates a constraint | Critical | Reject with the specific reason (out of range / blacked out) |
+| Blackout set overlaps the only valid range | Important | Warn the owner at configuration time |
+| Constraint config missing / empty | Important | All dates selectable (no constraint) — safe default |
+</DataTable>
+
+<Foldout title="Engineering detail">
+Assumption-based; net-new capability to build. Needs a constraint model (min, max, blackout set) persisted with the owner's component configuration, plus enforcement on both the client (non-selectable UI) and at submission (re-validation). Timezone reference must be explicit — assumed site timezone; confirm with platform before build. Permission implications: constraint config is an owner-authored setting — write access gated to site editors; no visitor write path. No new PII (dates + rule config only). Do not assume storage endpoints; verify the component-settings persistence surface.
+</Foldout>
+
+<Foldout title="Evidence and links">
+Strategy marks this the owner guardrail (invalid bookings → refunds + support load).
+<Sources>
+- [Product Strategy](./product-strategy-datepicker-component.html)
+</Sources>
+</Foldout>
+  </CardContent>
+</Card>
+
+### FR-004 — Accessible keyboard & screen-reader operation
+
+<Card>
+  <CardContent>
+<Badge variant="secondary">Serves: Visitor</Badge> <Badge variant="default">Critical</Badge> <Badge variant="secondary">MODIFY</Badge> <Badge variant="outline">Phase 1</Badge>
+
+**Description**
+A visitor can complete date entry entirely by keyboard and via a screen reader, with selected, disabled, and focused dates announced.
+
+**Why**
+Accessibility is table stakes for a horizontal component embedded across every form and checkout; it also underwrites the confidence and reassurance outcomes across #V-int-001/002/003.
+
+**Acceptance criteria**
+<DataTable>
+| Given | When | Then |
+| --- | --- | --- |
+| A keyboard-only visitor | The picker is focused | The calendar opens and days are reachable/selectable via keyboard |
+| A screen-reader visitor navigates days | Focus moves across dates | The reader announces the date and whether it is selected or disabled |
+| The calendar is open | The visitor presses Escape | The calendar closes and focus returns to the field |
+</DataTable>
+
+**Edge cases**
+<DataTable>
+| Case | Severity | Expected behavior |
+| --- | --- | --- |
+| Focus escapes the open calendar | Critical | Focus is trapped within the open calendar until closed |
+| Disabled (constrained) date reached by keyboard | Critical | Announced as unavailable; not selectable |
+| Range/second-value entry (with FR-006) | Important | Both endpoints are keyboard-reachable and announced |
+</DataTable>
+
+<Foldout title="Engineering detail">
+Assumption-based ([MODIFY] assumes a partial current baseline; confirm). Requires ARIA roles/labels for the grid, managed focus, Escape/arrow-key handling, and announced state. Shares one interaction state model with FR-002 (touch) and FR-003 (disabled dates). No data or PII change. Validate against WCAG 2.1 AA (see NFR-A1).
+</Foldout>
+
+<Foldout title="Evidence and links">
+<Sources>
+- [Product Strategy](./product-strategy-datepicker-component.html)
+</Sources>
+</Foldout>
+  </CardContent>
+</Card>
+
+### FR-006 — Date-range selection in one motion
+
+<Card>
+  <CardContent>
+<Badge variant="secondary">Serves: Visitor</Badge> <Badge variant="outline">Nice to have</Badge> <Badge variant="outline">NEW</Badge> <Badge variant="outline">Phase 2</Badge>
+
+**Description**
+A visitor selects a start and end date in one continuous interaction, so booking a stay or trip feels natural.
+
+**Why**
+Range is a fast-follow that makes multi-day booking flows feel smooth rather than tedious (#V-int-004); deferred to Phase 2 behind the single-date blockers.
+
+**Acceptance criteria**
+<DataTable>
+| Given | When | Then |
+| --- | --- | --- |
+| A visitor in range mode | They pick a start then an end day | Both endpoints and the span between are set and shown |
+| A visitor picks an end earlier than the start | Selection completes | Endpoints are auto-swapped or the second pick is rejected per rule |
+</DataTable>
+
+**Edge cases**
+<DataTable>
+| Case | Severity | Expected behavior |
+| --- | --- | --- |
+| End date before start date | Important | Auto-swap or reject with feedback (one defined rule) |
+| Range spans a blocked/blackout date | Important | Reject the span or apply the defined split rule |
+| Only start selected, then dismissed | Nice-to-Have | Defined behavior: clear partial or keep pending |
+</DataTable>
+
+<Foldout title="Engineering detail">
+Assumption-based; net-new. Extends the value model from a single date to a start/end pair and adds range-hover/selection state. Interacts with FR-003 constraint enforcement across the span. No PII change.
+</Foldout>
+
+<Foldout title="Evidence and links">
+<Sources>
+- [Product Strategy](./product-strategy-datepicker-component.html)
+</Sources>
+</Foldout>
+  </CardContent>
+</Card>
+
+**Owner configuration**
+
+### FR-005 — Owner locale & brand configuration
+
+<Card>
+  <CardContent>
+<Badge variant="secondary">Serves: Owner</Badge> <Badge variant="default">Critical</Badge> <Badge variant="secondary">MODIFY</Badge> <Badge variant="outline">Phase 1</Badge>
+
+**Description**
+A site owner sets the site locale that drives the picker's format and applies their brand theme so the component feels native to their visitors.
+
+**Why**
+Owners worry the picker won't match their site; locale + brand alignment turns that into confidence and pride (#O-int-001), and the owner's locale choice is what feeds FR-001 for visitors.
+
+**Acceptance criteria**
+<DataTable>
+| Given | When | Then |
+| --- | --- | --- |
+| An owner has set the site locale | Visitors load the picker | Format, first-day-of-week, and day/month names follow that locale |
+| An owner has a brand theme | The picker renders | It inherits brand theme tokens (color, typography, radius) |
+| A brand theme token is missing | The picker renders | It falls back to the Wix design-system default, not a broken style |
+</DataTable>
+
+**Edge cases**
+<DataTable>
+| Case | Severity | Expected behavior |
+| --- | --- | --- |
+| Site locale unset | Important | Use a defined default locale |
+| Brand theme token missing/invalid | Important | Fall back to design-system default |
+| Owner locale differs from visitor browser locale | Important | Owner/site locale wins (defined precedence) |
+</DataTable>
+
+<Foldout title="Engineering detail">
+Assumption-based ([MODIFY] assumes existing theming infra to reuse; confirm). Binds the component to the site locale setting and design-system theme tokens. Permission: locale/brand are owner-authored settings, gated to site editors; no visitor write path. No new PII. Verify the theming/token and site-locale surfaces before build.
+</Foldout>
+
+<Foldout title="Evidence and links">
+<Sources>
+- [Product Strategy](./product-strategy-datepicker-component.html)
+</Sources>
+</Foldout>
+  </CardContent>
+</Card>
+
+### FR-007 — Configurable default format & first-day-of-week
+
+<Card>
+  <CardContent>
+<Badge variant="secondary">Serves: Owner</Badge> <Badge variant="outline">Nice to have</Badge> <Badge variant="outline">NEW</Badge> <Badge variant="outline">Phase 2</Badge>
+
+**Description**
+A site owner overrides the default display format and the first day of the week to fit their audience's conventions.
+
+**Why**
+A fast-follow that gives owners flexibility beyond locale defaults (#O-int-003); deferred to Phase 2.
+
+**Acceptance criteria**
+<DataTable>
+| Given | When | Then |
+| --- | --- | --- |
+| An owner sets a custom default format | Visitors load the picker | Dates display in that format by default |
+| An owner sets the first day of week | The calendar renders | Weeks start on the chosen day |
+| An owner enters an invalid/unsupported format | Config is saved | It is rejected and the prior valid setting is kept |
+</DataTable>
+
+**Edge cases**
+<DataTable>
+| Case | Severity | Expected behavior |
+| --- | --- | --- |
+| Invalid/unsupported format string | Important | Reject; retain the previous valid value |
+| First-day override conflicts with locale default | Nice-to-Have | Owner override wins |
+</DataTable>
+
+<Foldout title="Engineering detail">
+Assumption-based; net-new owner settings layered over the locale defaults from FR-005. Owner-authored, editor-gated; no PII. Validate format strings against the supported token set.
+</Foldout>
+
+<Foldout title="Evidence and links">
+<Sources>
+- [Product Strategy](./product-strategy-datepicker-component.html)
+</Sources>
+</Foldout>
+  </CardContent>
+</Card>
+
+**Platform compatibility**
+
+### FR-008 — Backward-compatible component / Velo API
+
+<Card>
+  <CardContent>
+<Badge variant="secondary">Serves: Developer</Badge> <Badge variant="default">Critical</Badge> <Badge variant="secondary">MODIFY</Badge> <Badge variant="outline">Phase 1</Badge>
+
+**Description**
+Existing sites that consume the DatePicker via Velo/APIs keep working after the rebuild — the public value shape and props remain compatible, with a documented migration path for any change.
+
+**Why**
+The strategy flags this as the key delivery risk: changing the component API could break live site code. A compatibility guardrail protects the Developer segment and owner sites during rollout.
+
+**Acceptance criteria**
+<DataTable>
+| Given | When | Then |
+| --- | --- | --- |
+| A live site reads/sets the date value via Velo | The rebuilt component ships | The existing value contract still works |
+| A prop is deprecated | The rebuild ships | A shim or documented migration keeps existing references from crashing at runtime |
+| A breaking change is unavoidable | It is introduced | It is versioned and documented with a migration guide (NFR-B3, NFR-X5) |
+</DataTable>
+
+**Edge cases**
+<DataTable>
+| Case | Severity | Expected behavior |
+| --- | --- | --- |
+| Live Velo code reads the old value shape | Critical | Maintain contract or provide a versioned shim |
+| Removed/renamed prop referenced by a live site | Critical | No runtime crash; deprecation path applied |
+| New required behavior with no old equivalent | Important | Additive, defaulted so existing sites are unaffected |
+</DataTable>
+
+<Foldout title="Engineering detail">
+Assumption-based ([MODIFY]/guardrail). Preserve the public component/Velo prop and value contract; prefer additive, defaulted props. Where a change is unavoidable, gate behind versioning with a shim and migration guide. No PII change. Validate the actual public API surface against the component's current contract before locking — do not assume prop names.
+</Foldout>
+
+<Foldout title="Evidence and links">
+Strategy Open Questions flag API compatibility as a required guardrail.
+<Sources>
+- [Product Strategy](./product-strategy-datepicker-component.html)
+</Sources>
+</Foldout>
+  </CardContent>
+</Card>
+
+## Non-functional requirements
+
+**14 requirements** — all must-build or must-verify. Implementation status is omitted because no current-implementation analysis was available (assumption noted); confirm parity items against the shipped component. \`[COVERED]\`/\`[PARTIAL]\` could not be assigned without code evidence.
+
+<Foldout title="Visitor experience · 5">
+<DataTable>
+| Requirement | Applies | Target | Validation |
+| --- | --- | --- | --- |
+| NFR-A1 Accessibility (Delta-only) | FR-001,002,003,004,006 | WCAG 2.1 AA; keyboard-operable; SR-announced selected/disabled/focus; contrast ≥ 4.5:1 | Automated a11y scan + manual SR/keyboard audit |
+| NFR-A2 Performance (Delta-only) | FR-002,003 | Calendar popup interaction ≤ 100ms INP; CLS ≈ 0 on open | Web-vitals field/lab measurement per surface |
+| NFR-A3 Usability (Delta-only) | FR-002 | Mobile tap target ≥ 44×44px; date-entry time ≤ current baseline | Usability test + interaction telemetry |
+| NFR-A4 Error messages (Delta-only) | FR-001,003 | Invalid / out-of-range / ambiguous → specific, actionable message at the field | Content review + edge-case QA |
+| NFR-A5 Localization (Delta-only) | FR-001,005 | Locale-correct format, first-day-of-week, month/day names; RTL calendar layout | Locale matrix + RTL visual QA |
+</DataTable>
+</Foldout>
+
+<Foldout title="Owner control & configuration · 4">
+<DataTable>
+| Requirement | Applies | Target | Validation |
+| --- | --- | --- | --- |
+| NFR-B1 Reliability (Delta-only) | FR-003 | Constraints enforced on client + at submission; 0 invalid dates accepted | Constraint edge-case test suite |
+| NFR-B2 Localization (Delta-only) | FR-005,007 | Owner locale drives format/week-start/names for all downstream visitors | Locale-propagation integration test |
+| NFR-B3 Supportability (Project-wide) | FR-008 | API extensibility + versioning; no breaking change without a migration path | API contract test + changelog review |
+| NFR-B4 Usability (Delta-only) | FR-003,005,007 | Owner configures constraints/locale/brand without code | Self-Creator task test |
+</DataTable>
+</Foldout>
+
+<Foldout title="Platform, security & operability · 5">
+<DataTable>
+| Requirement | Applies | Target | Validation |
+| --- | --- | --- | --- |
+| NFR-X1 Reliability (Project-wide) | All | Gradual rollout + rollback for the component swap; interaction error rate ≤ current baseline (KPI guardrail) | Staged rollout + error-rate monitoring |
+| NFR-X2 Security (Project-wide) | FR-001,003,007 | Typed/pasted date and format-string input sanitized; no injection | Security review + input fuzzing |
+| NFR-X3 Legal / Privacy (Project-wide) | All | No new PII collected or stored by the rebuild (dates are existing user input) | Privacy/data-flow review |
+| NFR-X4 Performance (Project-wide) | All | Component bundle within budget; no host-page LCP regression across Forms/Bookings/Events/checkout | Bundle-size + per-surface LCP check |
+| NFR-X5 Documentation & Education (Project-wide) | FR-008,003 | Velo API docs + migration guide for changed props; KB article for owner constraint config | Docs review + Customer Care readiness |
+</DataTable>
+</Foldout>
+
+## Out of scope
+
+<Finding>
+- **FR-009 · Optional time selection:** Deferred to a later release (strategy roadmap); the picker ships date-only for V1/Phase 2.
+- **Funnel instrumentation / KPI baselines:** All KPI baselines are TBD pending telemetry; measurement setup is out of this spec's scope.
+</Finding>
+
+## Sources
+
+<Sources>
+- [Product Strategy](./product-strategy-datepicker-component.html)
+- [Current-product reference (screenshot)](../../ck-references/datepicker-reference.png)
+</Sources>
+    <\/script>
+  </body>
+</html>
+`})),a,o,s;e((()=>{t(),i(),a={title:`Artifacts/Product Spec`,...n(r)},o={},o.parameters={...o.parameters,docs:{...o.parameters?.docs,source:{originalSource:`{}`,...o.parameters?.docs?.source}}},s=[`Default`]}))();export{o as Default,s as __namedExportsOrder,a as default};

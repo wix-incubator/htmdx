@@ -68,6 +68,10 @@ describe('validate', () => {
       expect(diagnostics.map(({ code, severity }) => ({ code, severity }))).toEqual([
         { code: 'invalid-html-nesting', severity: 'warning' },
       ]);
+      // React passes its substitutions as separate console.error arguments;
+      // a raw "%s cannot be a descendant of <%s>" message names nothing.
+      expect(diagnostics[0].message).not.toContain('%s');
+      expect(diagnostics[0].message).toContain('<div>');
     } finally {
       consoleError.mockRestore();
     }

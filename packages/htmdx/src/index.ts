@@ -136,14 +136,20 @@ export function validate(source: string, options: HtmdxCompileOptions = {}): Htm
 // React reports invalid nesting through console.error during render and
 // nowhere else, so the only way to surface it is to listen while rendering.
 // Anything else React logs is passed through untouched.
+//
+// React also remembers which nesting warnings it has already logged, in
+// react-dom module state that no API resets. Validating several sources in one
+// process therefore reports each distinct violation once, on the first source
+// that has it; a fresh process sees it again.
 function captureNestingWarnings(render: () => void): string[] {
   const captured: string[] = [];
   // oxlint-disable no-console
   const consoleError = console.error;
   console.error = (...args: unknown[]) => {
-    const message = args.map(String).join(' ');
+    const [format, ...substitutions] = args;
+    const message = String(format);
     if (/cannot be a child|cannot be a descendant|validateDOMNesting/.test(message)) {
-      captured.push(message.split('\n')[0]);
+      captured.push(formatConsoleMessage(message, substitutions).split('\n')[0]);
       return;
     }
     consoleError(...args);
@@ -157,6 +163,15 @@ function captureNestingWarnings(render: () => void): string[] {
   // oxlint-enable no-console
 
   return captured;
+}
+
+// React logs through console's format-string protocol, so the tag names live
+// in the trailing arguments rather than the message.
+function formatConsoleMessage(format: string, substitutions: unknown[]): string {
+  let index = 0;
+  return format.replace(/%[sdo]/g, (token) =>
+    index < substitutions.length ? String(substitutions[index++]) : token,
+  );
 }
 
 // Static snapshot through the client renderer on a detached container.

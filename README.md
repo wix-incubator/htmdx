@@ -232,8 +232,9 @@ const MyChart = {
 
 ## Package
 
-- npm: `@wix/htmdx` · CDN entry: `dist/browser.js` (~138KB gzip) · module entries: `.`, `./react`, `./components`, `./components/builtins`, `./components/shadcn`
+- npm: `@wix/htmdx` · CDN entry: `dist/browser.js` (~138KB gzip) · module entries: `.`, `./react`, `./testing`, `./components`, `./components/builtins`, `./components/shadcn`
 - custom element: `<htmdx-code>` · browser API: `window.Htmdx`
+- linting: `validate()` from `@wix/htmdx`, or `npx @wix/htmdx-cli lint <files...>` ([`packages/htmdx-cli`](./packages/htmdx-cli))
 - component contract: `dist/components.json`
 - architecture decisions: [`adr/`](./adr/)
 

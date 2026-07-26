@@ -268,3 +268,52 @@ Security note: the React runtime runs the registered component code with
 agent-authored props (`compile()` can still emit a static HTML snapshot of the
 same tree). Components are host-owned and whitelisted; the source still cannot
 express code, only data.
+
+## Validating source
+
+`compile()` stops at the first failure. `validate()` reports every independent
+problem at once, each anchored to a position in the source:
+
+```ts
+import { validate } from '@wix/htmdx';
+
+for (const { line, column, severity, code, message } of validate(source)) {
+  console.log(`${line}:${column} ${severity} ${code} — ${message}`);
+}
+// 3:1  error    unknown-component — unknown component <Nope>
+// 5:10 error    unknown-prop — unknown prop "tone" for <Callout>
+// 9:1  warning  image-missing-alt — image has no alt text
+```
+
+Positions are 1-based `line`/`column` plus a 0-based `offset` and `length`, so
+editors and language servers can underline the exact span. An empty array means
+the source is clean. Like `compile()`, this needs a DOM (a browser or jsdom).
+
+To lint files from a terminal or CI, use
+[`@wix/htmdx-cli`](https://github.com/wix-incubator/htmdx/tree/master/packages/htmdx-cli):
+
+```bash
+npx @wix/htmdx-cli lint report.html
+```
+
+## Testing documents
+
+`@wix/htmdx/testing` covers the two things a consumer's test suite needs: get
+the source out of a shipped artifact, and snapshot it.
+
+```ts
+import { extractSource, snapshot } from '@wix/htmdx/testing';
+
+const source = extractSource(readFileSync('report.html', 'utf8'));
+
+expect(snapshot(source)).toMatchInlineSnapshot(`
+  markdown "# Report"
+  <Callout>
+    text "Ship it."
+`);
+```
+
+`snapshot()` defaults to `mode: 'structure'` — the component tree as written,
+so upgrading the runtime does not churn every snapshot. Pass `mode: 'html'` to
+snapshot the rendered markup instead. Either mode throws if the source has
+errors, rather than recording the breakage as expected output.

@@ -13,7 +13,7 @@ Start with one HTML file:
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@4.0.0/dist/browser.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@4.6.0/dist/browser.js" defer></script>
   </head>
   <body>
     <!-- prettier-ignore -->
@@ -53,7 +53,7 @@ Every release includes its machine-readable component contract at:
 <!-- x-release-please-start-version -->
 
 ```text
-https://cdn.jsdelivr.net/npm/@wix/htmdx@4.0.0/dist/components.json
+https://cdn.jsdelivr.net/npm/@wix/htmdx@4.6.0/dist/components.json
 ```
 
 <!-- x-release-please-end-version -->
@@ -355,7 +355,7 @@ against exactly what ships:
 
 ```bash
 npx @wix/htmdx lint report.html
-npx @wix/htmdx@4.5.1 lint docs/*.htmdx --strict
+npx @wix/htmdx@4.6.0 lint docs/*.htmdx --strict
 ```
 
 <!-- x-release-please-end-version -->

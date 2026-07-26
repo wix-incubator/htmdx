@@ -20,7 +20,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@4.0.0/dist/browser.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@4.6.0/dist/browser.js" defer></script>
   </head>
   <body>
     <!-- prettier-ignore -->
@@ -186,7 +186,7 @@ Host code registers standard React components and themes through `window.Htmdx`;
 <!-- x-release-please-start-version -->
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@4.0.0/dist/browser.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@4.6.0/dist/browser.js" defer></script>
 <script>
   window.addEventListener('htmdx:ready', () => {
     const { createElement } = window.Htmdx.React;

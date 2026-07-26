@@ -272,7 +272,8 @@ function splitTableLine(line: string) {
   return cells;
 }
 
-export function markdownSyntaxSource(source: string) {
+export function markdownSyntaxSource(source: string, options: { indentedCode?: boolean } = {}) {
+  const { indentedCode = true } = options;
   const syntax = source.split('');
   const lines = source.matchAll(/.*(?:\r?\n|$)/g);
   let fence: { marker: string; length: number } | null = null;
@@ -308,7 +309,7 @@ export function markdownSyntaxSource(source: string) {
       mask(lineStart, lineStart + line.length);
       continue;
     }
-    if (/^(?: {4}|\t)/.test(line)) {
+    if (indentedCode && /^(?: {4}|\t)/.test(line)) {
       mask(lineStart, lineStart + line.length);
       continue;
     }
@@ -344,6 +345,35 @@ export function markdownSyntaxSource(source: string) {
     }
   }
   return syntax.join('');
+}
+
+const XML_ENTITIES: Record<string, string> = { '<': '&lt;', '>': '&gt;', '&': '&amp;' };
+const XML_CHARACTERS: Record<string, string> = { lt: '<', gt: '>', amp: '&' };
+
+// Indented code is excluded: nested bodies are dedented on the way down, so an
+// indented region stops being code at the next level and the escape could not
+// be reversed. Fences, inline spans, and escapes survive dedenting.
+const dedentSafeSyntax = (source: string) => markdownSyntaxSource(source, { indentedCode: false });
+
+// Markup detection runs on the masked source, so the parser must not read code
+// spans as markup either. Entity-escaping the masked regions keeps them literal
+// for DOMParser; escaping `&` as well is what makes the pass reversible.
+export function escapeCodeSpans(source: string, syntax = dedentSafeSyntax(source)) {
+  let escaped = '';
+  for (let index = 0; index < source.length; index += 1) {
+    const character = source[index];
+    escaped += syntax[index] === character ? character : (XML_ENTITIES[character] ?? character);
+  }
+  return escaped;
+}
+
+// Serializing a parsed element back to `innerHTML` re-encodes the characters
+// DOMParser decoded, so nested bodies carry exactly one escape layer from
+// `escapeCodeSpans`. Strip it so each level sees the authored source again.
+export function unescapeCodeSpans(source: string, syntax = dedentSafeSyntax(source)) {
+  return source.replace(/&(lt|gt|amp);/g, (entity, name: string, index: number) =>
+    syntax[index] === '&' ? entity : XML_CHARACTERS[name],
+  );
 }
 
 function firstMatch(source: string, pattern: RegExp) {

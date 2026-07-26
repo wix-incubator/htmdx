@@ -7,7 +7,11 @@
 // parsing when the body is not well-formed.
 
 import { createElement, Fragment, type ReactElement, type ReactNode } from 'react';
-import { markdownSyntaxSource } from '../components/body-contracts';
+import {
+  escapeCodeSpans,
+  markdownSyntaxSource,
+  unescapeCodeSpans,
+} from '../components/body-contracts';
 import {
   createDefinitionRegistry,
   validateConstraints,
@@ -591,7 +595,7 @@ function nodeToReact(
     return renderDefinition(
       definition,
       definitionPropsFromAttributes(definition, attributes),
-      element.innerHTML.trim(),
+      unescapeCodeSpans(element.innerHTML).trim(),
       catalog,
       key,
     );
@@ -630,12 +634,13 @@ function parseBodyNodes(body: string): {
   nodes: Node[];
   sourceAttributes: WeakMap<Element, SourceAttribute[]>;
 } {
-  const xml = new DOMParser().parseFromString(`<htmdx-body>${body}</htmdx-body>`, 'text/xml');
+  const source = escapeCodeSpans(body);
+  const xml = new DOMParser().parseFromString(`<htmdx-body>${source}</htmdx-body>`, 'text/xml');
   const nodes = !xml.querySelector('parsererror')
     ? Array.from(xml.documentElement.childNodes)
-    : Array.from(new DOMParser().parseFromString(body, 'text/html').body.childNodes);
+    : Array.from(new DOMParser().parseFromString(source, 'text/html').body.childNodes);
 
-  return { nodes, sourceAttributes: mapSourceAttributes(body, nodes) };
+  return { nodes, sourceAttributes: mapSourceAttributes(source, nodes) };
 }
 
 // DOMParser exposes both `enabled` and `enabled=""` as an empty attribute.

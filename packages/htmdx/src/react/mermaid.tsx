@@ -11,6 +11,7 @@
 // library emits. Anything that fails leaves the fence text on screen.
 import { createElement, useEffect, useState, type ReactNode } from 'react';
 import { SVG_ELEMENTS, safeSvgProps } from '../components/svg-elements';
+import { CodeBlock } from './CodeBlock';
 
 export type HtmdxMermaidOptions = boolean | { src?: string };
 
@@ -85,11 +86,7 @@ export function MermaidDiagram({ source: diagramSource }: { source: string }) {
   }, [diagramSource]);
 
   if (!diagram) {
-    return createElement(
-      'pre',
-      null,
-      createElement('code', { className: 'language-mermaid' }, diagramSource),
-    );
+    return createElement(CodeBlock, { code: diagramSource, language: 'mermaid' });
   }
 
   return createElement(

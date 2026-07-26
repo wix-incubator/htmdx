@@ -186,11 +186,14 @@ describe('raw HTML', () => {
 
   test('keeps HTML inside code fences and spans literal', () => {
     const rendered = compile('```html\n<p>hi</p>\n```\n\nInline `<video controls>` stays text.');
+    const container = document.createElement('div');
+    container.innerHTML = rendered.ok ? rendered.html : '';
 
-    expect(rendered.ok && rendered.html).toContain(
-      '<code class="language-html">&lt;p&gt;hi&lt;/p&gt;</code>',
+    expect(container.querySelector('pre')?.textContent).toBe('<p>hi</p>');
+    expect(container.querySelector('p')?.innerHTML).toContain(
+      '<code>&lt;video controls&gt;</code>',
     );
-    expect(rendered.ok && rendered.html).toContain('<code>&lt;video controls&gt;</code>');
+    expect(container.querySelector('pre > code')?.className).toBe('language-html');
   });
 
   test('renders inline HTML inside list items and headings', () => {

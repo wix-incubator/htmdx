@@ -122,7 +122,10 @@ describe('React renderer definition boundary', () => {
         },
       ),
     );
-    expect(html).toContain('&lt;CardFixture&gt;sample&lt;/CardFixture&gt;');
+    const container = document.createElement('div');
+    container.innerHTML = html;
+
+    expect(container.querySelector('pre')?.textContent).toBe('<CardFixture>sample</CardFixture>');
     expect(html).toContain('<mark>real</mark>');
     expect(() => compileToReact('<CardFixture>never closed', { definitions })).toThrow(
       'unclosed component <CardFixture>',

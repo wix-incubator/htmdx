@@ -7,11 +7,16 @@ const mermaidLike = (body: string, style = '#htmdx-mermaid-1 .node rect{fill:#ee
   `<svg id="htmdx-mermaid-1" xmlns="http://www.w3.org/2000/svg" class="flowchart" viewBox="0 0 100 50" role="graphics-document document" aria-roledescription="flowchart-v2"><style>${style}</style>${body}</svg>`;
 
 describe('mermaid fences', () => {
+  // Until mermaid loads the fence is a code block like any other, chrome
+  // included, so a diagram that never upgrades does not read as a broken one.
   test('compiles synchronously to the diagram source', () => {
     const rendered = compile('```mermaid\nflowchart LR\n  A --> B\n```');
+    const container = document.createElement('div');
+    container.innerHTML = rendered.ok ? rendered.html : '';
 
-    expect(rendered.ok && rendered.html).toContain(
-      '<pre><code class="language-mermaid">flowchart LR\n  A --&gt; B</code></pre>',
+    expect(container.querySelector('.htmdx-code-block code')?.className).toBe('language-mermaid');
+    expect(container.querySelector('.htmdx-code-block')?.textContent).toBe(
+      'flowchart LR\n  A --> B',
     );
   });
 });

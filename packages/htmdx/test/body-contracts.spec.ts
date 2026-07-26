@@ -90,12 +90,20 @@ describe('component body contracts', () => {
     ['\\{name\\}', '\\{name\\}'],
     ['`<Card>`', '<code>&lt;Card&gt;</code>'],
     ['<https://wix.com>', '&lt;https://wix.com&gt;'],
-    ['```tsx\n<Card />\n```', '&lt;Card /&gt;'],
   ])('allows Markdown literal syntax in component bodies: %j', (body, renderedText) => {
     const rendered = compile(`<Card>\n${body}\n</Card>`);
 
     expect(rendered).toMatchObject({ ok: true });
     expect(rendered.ok && rendered.html).toContain(renderedText);
+  });
+
+  test('keeps a fenced component tag literal in a component body', () => {
+    const rendered = compile('<Card>\n```tsx\n<Card />\n```\n</Card>');
+    const container = document.createElement('div');
+    container.innerHTML = rendered.ok ? rendered.html : '';
+
+    expect(rendered).toMatchObject({ ok: true });
+    expect(container.querySelector('pre')?.textContent).toBe('<Card />');
   });
 
   test.each([

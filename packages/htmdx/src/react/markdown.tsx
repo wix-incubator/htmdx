@@ -12,6 +12,7 @@ import {
   uniqueSlug,
   type RenderContext,
 } from '../components/rendering';
+import { CodeBlock } from './CodeBlock';
 import { MermaidDiagram } from './mermaid';
 
 const INLINE = /\*\*([^*]+)\*\*|`([^`]+)`|\[([^\]]+)\]\(([^)]+)\)/g;
@@ -181,7 +182,7 @@ function splitMarkdownBlocks(markdown: string) {
 
 function renderFencedCode(block: string, key: number) {
   const lines = block.split(/\r?\n/);
-  const opening = lines[0]?.match(/^ {0,3}(`{3,}|~{3,})/);
+  const opening = lines[0]?.match(/^ {0,3}(`{3,}|~{3,})(.*)$/);
   if (!opening) {
     return null;
   }
@@ -190,7 +191,7 @@ function renderFencedCode(block: string, key: number) {
   const closing = new RegExp(`^ {0,3}${marker[0]}{${marker.length},}\\s*$`);
   const codeLines = closing.test(lines.at(-1) || '') ? lines.slice(1, -1) : lines.slice(1);
   const code = codeLines.join('\n');
-  const language = fenceLanguage(lines[0].slice(lines[0].indexOf(marker) + marker.length));
+  const language = fenceLanguage(opening[2]);
 
   // The diagram renders itself into the same fence markup until mermaid has
   // loaded, so compile() stays synchronous and an artifact that never reaches
@@ -199,18 +200,14 @@ function renderFencedCode(block: string, key: number) {
     return createElement(MermaidDiagram, { key, source: code });
   }
 
-  return createElement(
-    'pre',
-    { key },
-    createElement('code', language ? { className: `language-${language}` } : null, code),
-  );
+  return createElement(CodeBlock, { key, code, language });
 }
 
 // Only the first word of the info string, and only when it is a bare language
 // name. CommonMark lets the rest carry anything, and it lands in a class
 // attribute, so a value that is not a plain identifier is dropped rather than
 // escaped.
-function fenceLanguage(info: string) {
+export function fenceLanguage(info: string) {
   const word = info.trim().split(/\s+/)[0]?.toLowerCase() || '';
   return /^[a-z][a-z0-9+#._-]*$/.test(word) ? word : '';
 }

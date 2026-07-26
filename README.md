@@ -238,11 +238,40 @@ const MyChart = {
 
 `compile(source)` from `@wix/htmdx` returns a static HTML snapshot of the same tree — useful for previews and validation. It needs a DOM (browser or jsdom). React hosts that need the full selected document layout can use `compileDocument(source).element`; `Htmdx` and `compileToReact()` remain the content-only React entrypoints.
 
+## Validation and linting
+
+`compile()` stops at the first failure. `validate(source)` reports every independent problem at once, each anchored to a 1-based `line`/`column` plus a 0-based `offset`/`length` so editors can underline the exact span. An empty array means the source is clean; like `compile()`, it needs a DOM.
+
+```ts
+import { validate } from '@wix/htmdx';
+
+for (const { line, column, severity, code, message } of validate(source)) {
+  console.log(`${line}:${column} ${severity} ${code} — ${message}`);
+}
+// 3:1  error    unknown-component — unknown component <Nope>
+// 9:1  warning  image-missing-alt — image has no alt text
+```
+
+The same checks run from a terminal or CI through the `htmdx` bin the package ships — no separate install. Pin the invocation to the version an artifact declares and you lint against exactly what ships:
+
+<!-- x-release-please-start-version -->
+
+```bash
+npx @wix/htmdx lint report.html
+npx @wix/htmdx@4.6.0 lint docs/*.htmdx --strict
+```
+
+<!-- x-release-please-end-version -->
+
+It accepts an HTML artifact — the source comes from its `<script type="text/htmdx">` block and positions are reported against the artifact — or a bare source file. `--format json` emits a machine-readable report and `--strict` treats warnings as failures. Exit codes are `0` clean, `1` problems found, `2` could not run.
+
+Two findings exist only at the artifact level: `unpinned-runtime` (the runtime `<script>` has no pinned version, so a future release can change the artifact) and `runtime-version-mismatch` (the artifact pins a version other than the one linting it). This repo lints its own examples this way in CI. See the [package README](./packages/htmdx/README.md#validating-source) for the full behavior, including how `invalid-html-nesting` dedupes across files in one run.
+
 ## Package
 
 - npm: `@wix/htmdx` · CDN entry: `dist/browser.js` (~145KB gzip) · module entries: `.`, `./react`, `./testing`, `./components`, `./components/builtins`, `./components/shadcn`
 - custom element: `<htmdx-code>` · browser API: `window.Htmdx`
-- linting: `validate()` from `@wix/htmdx`, or the bundled `htmdx` bin — `npx @wix/htmdx lint <files...>`
+- linting: [`validate()` and the bundled `htmdx` bin](#validation-and-linting) — `npx @wix/htmdx lint <files...>`
 - component contract: `dist/components.json`
 - architecture decisions: [`adr/`](./adr/)
 

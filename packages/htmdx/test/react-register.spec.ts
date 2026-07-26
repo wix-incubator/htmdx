@@ -114,7 +114,9 @@ Details.`,
 
     expect(host.textContent).toContain('This page couldn’t be shown');
     expect(host.textContent).toContain('Copy fix request');
-    expect(host.textContent).not.toContain('<Card>never closed');
+    // The source travels inside the fix request as an excerpt now, so the
+    // claim worth holding is that none of it renders as artifact content.
+    expect(host.querySelector('.htmdx-article')).toBeNull();
     expect(host.querySelector('.htmdx-error')?.getAttribute('data-htmdx-theme')).toBe('teal');
     expect(host.querySelector('details')?.open).toBe(false);
     expect(events[0].detail).toMatchObject({
@@ -160,10 +162,13 @@ Details.`,
     );
     await flush();
 
-    const details = host.querySelector('details')?.textContent ?? '';
+    // The rest of the page survives, so the contract is reported on the card
+    // that replaced the block. The artifact position only reaches the copied
+    // fix request, which is the surface that scans the surrounding source.
+    const details = host.querySelector('.htmdx-block-error details')?.textContent ?? '';
     expect(details).toContain('Component: <RiskTable>');
     expect(details).toContain('Received (untrusted input): - Missing tier');
-    expect(details).toContain('Location: artifact line 5, component body line 2');
+    expect(details).toContain('Location: component body line 2');
     expect(details).toContain('- **Must-have:** Describe the required capability.');
 
     const copyButton = Array.from(host.querySelectorAll('button')).find(
@@ -181,6 +186,141 @@ Details.`,
     );
     expect(request).toContain('"artifactLine": 5');
     expect(request).toContain('A component body broke its contract.');
+
+    host.remove();
+  });
+
+  test('carries every artifact diagnostic with a numbered excerpt', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText },
+    });
+
+    const host = mountArtifact(
+      'htmdx-react-failures',
+      `# Importer Rollout
+
+<RiskTable>
+- **Must-have:** Ship the importer.
+- Ship a dry-run mode
+</RiskTable>
+
+<ChartBar unit="stores">
+- Wave 1: 120
+</ChartBar>`,
+    );
+    await flush();
+
+    const copyButton = Array.from(host.querySelectorAll('button')).find(
+      (button) => button.textContent === 'Copy fix request',
+    );
+    copyButton?.click();
+    await flush();
+
+    const request = writeText.mock.calls[0][0] as string;
+    // The page stopped on the ChartBar prop, but the RiskTable row is broken
+    // too and one copy has to be enough to fix both.
+    expect(request).toContain('"errorMessage": "unknown prop \\"unit\\" for <ChartBar>"');
+    expect(request).toContain('"sourceOrigin": "embedded-script"');
+    expect(request).toContain('"code": "body-contract"');
+    expect(request).toContain('"code": "unknown-prop"');
+    expect(request).toContain('"> 5 | - Ship a dry-run mode"');
+    expect(request).toContain('"  3 | <RiskTable>"');
+    // The gutter pads to the widest line number inside each window.
+    expect(request).toContain('">  8 | <ChartBar unit=\\"stores\\">"');
+    expect(request).toContain('positions in the HTMDX source');
+
+    host.remove();
+  });
+
+  test('caps the failure list and says how much it dropped', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText },
+    });
+
+    const images = Array.from({ length: 25 }, (_, index) => `![](shot-${index}.png)`).join('\n\n');
+    const host = mountArtifact('htmdx-react-capped', `${images}\n\n<Card>never closed`);
+    await flush();
+
+    const copyButton = Array.from(host.querySelectorAll('button')).find(
+      (button) => button.textContent === 'Copy fix request',
+    );
+    copyButton?.click();
+    await flush();
+
+    const request = writeText.mock.calls[0][0] as string;
+    expect(request.match(/"code": "image-missing-alt"/g)).toHaveLength(20);
+    expect(request).toContain('"truncated": {\n    "failures": 6\n  }');
+
+    host.remove();
+  });
+
+  test('keeps the page and banners the blocks that failed', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText },
+    });
+    const events: CustomEvent[] = [];
+    document.addEventListener('htmdx:rendered', (event) => events.push(event as CustomEvent), {
+      once: true,
+    });
+
+    const host = mountArtifact(
+      'htmdx-react-degraded',
+      `# Importer Rollout
+
+<ExecutiveSummary>
+The pilot shipped.
+</ExecutiveSummary>
+
+## Priorities
+
+<RiskTable>
+- **Must-have:** Ship the importer.
+- Ship a dry-run mode
+</RiskTable>
+
+## Rollout
+
+<ChartBar unit="stores">
+- Wave 1: 120
+</ChartBar>
+
+<Callout>
+The last word still reaches the reader.
+</Callout>`,
+    );
+    await flush();
+
+    expect(host.textContent).toContain('The pilot shipped.');
+    expect(host.textContent).toContain('The last word still reaches the reader.');
+    expect(host.querySelector('.htmdx-error:not(.htmdx-degraded)')).toBeNull();
+    expect(events[0].detail).toMatchObject({ partial: true });
+
+    const banner = host.querySelector('.htmdx-degraded');
+    expect(banner?.querySelector('h1')?.textContent).toBe('2 blocks on this page didn’t render');
+
+    const cards = host.querySelectorAll('.htmdx-block-error');
+    expect(Array.from(cards, (card) => card.querySelector('p')?.textContent)).toEqual([
+      '<RiskTable> did not render',
+      '<ChartBar> did not render',
+    ]);
+
+    // Each card copies its own failure, resolved through the delegated handler
+    // on the host rather than a listener per card.
+    const cardButton = cards[1].querySelector<HTMLButtonElement>('[data-htmdx-fix]');
+    cardButton?.click();
+    await flush();
+
+    const request = writeText.mock.calls[0][0] as string;
+    expect(request).toContain('"errorMessage": "unknown prop \\"unit\\" for <ChartBar>"');
+    // The scan still reports every other problem, so one copy fixes both.
+    expect(request).toContain('"code": "body-contract"');
+    expect(cardButton?.textContent).toBe('Copied');
 
     host.remove();
   });

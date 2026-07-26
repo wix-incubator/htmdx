@@ -6,7 +6,7 @@
 // parsed as XML first (preserves tag/attribute case), falling back to HTML
 // parsing when the body is not well-formed.
 
-import { createElement, Fragment, type ReactElement, type ReactNode } from 'react';
+import { Component, createElement, Fragment, type ReactElement, type ReactNode } from 'react';
 import {
   escapeCodeSpans,
   HtmdxBodyContractError,
@@ -33,6 +33,7 @@ import { BUILT_IN_LOGOS } from '../logos';
 import { getLayout, resolveLayoutName, resolveLayoutSlots } from '../layout';
 import { CodeBlock } from './CodeBlock';
 import { fenceLanguage, renderInline, renderMarkdown, type HtmlRenderer } from './markdown';
+import { COPY_LABEL, errorDiagnostics, formatErrorDetails } from '../fix-request';
 import { THEME_IDS } from '../themes';
 import {
   HtmdxSourceError,
@@ -45,8 +46,23 @@ export type HtmdxReactOptions = {
   definitions?: HtmdxComponentDefinitions;
 };
 
+export type HtmdxBlockFailure = {
+  /** Offset of the block's opening tag inside the tokenized source. */
+  offset: number;
+  name: string;
+  error: unknown;
+  componentStack?: string;
+};
+
 export type HtmdxDocumentOptions = HtmdxReactOptions & {
   layout?: string;
+  /**
+   * Opt into degraded rendering: a block that fails to build or to render is
+   * replaced by an error card and reported here instead of failing the
+   * document. Without it a block failure still throws, so compile() keeps
+   * refusing to emit a half-broken page.
+   */
+  onBlockError?: (failure: HtmdxBlockFailure) => void;
 };
 
 type RuntimeCatalog = {
@@ -100,7 +116,27 @@ export function compileDocument(source: string, options: HtmdxDocumentOptions = 
   const meta = parseFrontmatter(source);
   const title = titleFromSource(source, meta);
   const normalized = stripFrontmatterAndComments(source);
-  const blocks = tokenize(normalized, catalog.names);
+  const { onBlockError } = options;
+  // An unrecognised tag is caught by the tokenizer, before there is a block to
+  // wrap. Degraded mode leaves it as literal text and counts it as a failure so
+  // the page still says something went wrong.
+  const blocks = tokenize(
+    normalized,
+    catalog.names,
+    onBlockError &&
+      ((error) => {
+        // An unclosed tag leaves no reliable body boundary, so everything after
+        // it is guesswork. That is a document-level failure, not a block one.
+        if (error.code === 'unclosed-component') {
+          throw error;
+        }
+        onBlockError({
+          offset: error.offset ?? 0,
+          name: error.message.match(/<([A-Za-z][A-Za-z0-9]*)>/)?.[1] ?? 'unknown',
+          error,
+        });
+      }),
+  );
   const context: RenderContext = { headings: [], slugCounts: new Map() };
 
   const layout = resolveLayoutName(options.layout || meta.layout || 'default');
@@ -119,7 +155,7 @@ export function compileDocument(source: string, options: HtmdxDocumentOptions = 
           createElement(
             'article',
             { className: 'htmdx-article' },
-            ...renderBlocks(blocks, catalog, context),
+            ...renderBlocks(blocks, catalog, context, options.onBlockError),
           ),
         ),
       ),
@@ -136,7 +172,7 @@ export function compileDocument(source: string, options: HtmdxDocumentOptions = 
       throw new HtmdxSourceError('unknown-layout', `unknown layout "${layout}"`);
     }
     const theme = themeFromMeta(meta);
-    const children = renderBlocks(blocks, catalog, context);
+    const children = renderBlocks(blocks, catalog, context, options.onBlockError);
     return {
       element: createElement(
         'div',
@@ -157,7 +193,7 @@ export function compileDocument(source: string, options: HtmdxDocumentOptions = 
     };
   }
   const lead = title ? extractHeroContent(blocks) : '';
-  const sections = groupSections(blocks, catalog, context);
+  const sections = groupSections(blocks, catalog, context, options.onBlockError);
   const inlineHtml = inlineHtmlRenderer(catalog);
 
   const sectionElements = sections
@@ -211,7 +247,12 @@ export function compileDocument(source: string, options: HtmdxDocumentOptions = 
   };
 }
 
-function renderBlocks(blocks: Block[], catalog: RuntimeCatalog, context: RenderContext) {
+function renderBlocks(
+  blocks: Block[],
+  catalog: RuntimeCatalog,
+  context: RenderContext,
+  onBlockError?: BlockErrorHandler,
+) {
   const html = inlineHtmlRenderer(catalog);
   return blocks.map((block, index) => {
     if (block.type === 'markdown') {
@@ -222,10 +263,141 @@ function renderBlocks(blocks: Block[], catalog: RuntimeCatalog, context: RenderC
       );
     }
     if (block.type === 'html') {
-      return renderHtmlFragment(block.value, catalog, `html-${index}`, true);
+      return guardBlock(block, `html-${index}`, onBlockError, () =>
+        renderHtmlFragment(block.value, catalog, `html-${index}`, true),
+      );
     }
-    return renderComponentBlock(block, catalog, `c-${index}`);
+    return guardBlock(block, `c-${index}`, onBlockError, () =>
+      renderComponentBlock(block, catalog, `c-${index}`),
+    );
   });
+}
+
+type BlockErrorHandler = (failure: HtmdxBlockFailure) => void;
+type GuardedBlock = Exclude<Block, { type: 'markdown' }>;
+
+// Without a handler a failing block throws and takes the document with it,
+// which is what compile() wants. With one, everything that still compiles
+// renders and each casualty becomes a card in its own place. A block can fail
+// while the tree is built (unknown component, malformed body) or later, inside
+// React's render (a component rejecting its own body), so both are covered.
+function guardBlock(
+  block: GuardedBlock,
+  key: string,
+  onBlockError: BlockErrorHandler | undefined,
+  render: () => ReactNode,
+): ReactNode {
+  if (!onBlockError) {
+    return render();
+  }
+
+  try {
+    return createElement(
+      HtmdxBlockBoundary,
+      { key, block, onBlockError, resetKey: blockSource(block) },
+      render(),
+    );
+  } catch (error) {
+    onBlockError({ offset: block.offset, name: blockLabel(block), error });
+    return blockErrorCard(block, error, key);
+  }
+}
+
+type BoundaryProps = {
+  block: GuardedBlock;
+  onBlockError: BlockErrorHandler;
+  resetKey: string;
+  children?: ReactNode;
+};
+
+class HtmdxBlockBoundary extends Component<BoundaryProps, { error: unknown; resetKey: string }> {
+  state = { error: null as unknown, resetKey: this.props.resetKey };
+
+  static getDerivedStateFromError(error: unknown) {
+    return { error };
+  }
+
+  // A rerender with new source must clear a stale failure; React keeps
+  // boundary state until the instance unmounts, and the key is positional.
+  static getDerivedStateFromProps(props: BoundaryProps, state: { resetKey: string }) {
+    return props.resetKey === state.resetKey ? null : { error: null, resetKey: props.resetKey };
+  }
+
+  componentDidCatch(error: unknown, info: { componentStack?: string | null }) {
+    this.props.onBlockError({
+      offset: this.props.block.offset,
+      name: blockLabel(this.props.block),
+      error,
+      ...(info.componentStack ? { componentStack: info.componentStack } : {}),
+    });
+  }
+
+  render() {
+    if (!this.state.error) {
+      return this.props.children;
+    }
+    return blockErrorCard(this.props.block, this.state.error);
+  }
+}
+
+function blockSource(block: GuardedBlock) {
+  return block.type === 'html' ? block.value : `${block.attrs} ${block.body}`;
+}
+
+function blockLabel(block: GuardedBlock) {
+  if (block.type === 'component') {
+    return block.name;
+  }
+  return block.value.match(/^<\s*([A-Za-z][A-Za-z0-9-]*)/)?.[1] ?? 'html';
+}
+
+// The card stands in for the block, so it says what broke and offers the same
+// copy action as the whole-page error. `data-htmdx-block` ties it back to the
+// failure the handler recorded, which is what the copy handler reads.
+function blockErrorCard(block: GuardedBlock, error: unknown, key?: string): ReactNode {
+  const label = blockLabel(block);
+  const message = error instanceof Error ? error.message : String(error);
+  const receivedInput =
+    error instanceof HtmdxBodyContractError ? error.contract.receivedInput : undefined;
+
+  return createElement(
+    'div',
+    {
+      className: 'htmdx-block-error',
+      'data-htmdx-block': String(block.offset),
+      role: 'note',
+      ...(key ? { key } : {}),
+    },
+    createElement('p', { className: 'htmdx-block-error-title' }, `<${label}> did not render`),
+    createElement('p', { className: 'htmdx-block-error-message' }, message),
+    receivedInput
+      ? createElement('pre', { className: 'htmdx-block-error-input' }, receivedInput)
+      : null,
+    createElement(
+      'button',
+      {
+        type: 'button',
+        className: 'htmdx-block-error-fix',
+        'data-htmdx-fix': String(block.offset),
+      },
+      COPY_LABEL,
+    ),
+    createElement(
+      'details',
+      null,
+      createElement('summary', null, 'Error details'),
+      // Same shape as the whole-page panel, minus the artifact position: only
+      // the runtime scans the surrounding source, and the copied fix request
+      // is where that position belongs.
+      createElement(
+        'pre',
+        null,
+        formatErrorDetails(
+          errorDiagnostics(error instanceof HtmdxSourceError ? 'compile' : 'render', error),
+        ),
+      ),
+    ),
+  );
 }
 
 // Inline HTML sits inside a Markdown line, so its text nodes stay inline;
@@ -262,6 +434,7 @@ function groupSections(
   blocks: Block[],
   catalog: RuntimeCatalog,
   context: RenderContext,
+  onBlockError?: BlockErrorHandler,
 ): Section[] {
   const sections: Section[] = [{ heading: null, children: [] }];
   let current = sections[0];
@@ -280,7 +453,9 @@ function groupSections(
         createElement(
           'div',
           { className: 'htmdx-content-component', key: `h-${index}` },
-          renderHtmlFragment(block.value, catalog, `h-${index}-content`, true),
+          guardBlock(block, `h-${index}-content`, onBlockError, () =>
+            renderHtmlFragment(block.value, catalog, `h-${index}-content`, true),
+          ),
         ),
       );
       continue;
@@ -293,7 +468,9 @@ function groupSections(
         createElement(
           'div',
           { className: 'htmdx-content-component', key: `c-${index}` },
-          renderComponentBlock(block, catalog, `c-${index}-content`),
+          guardBlock(block, `c-${index}-content`, onBlockError, () =>
+            renderComponentBlock(block, catalog, `c-${index}-content`),
+          ),
         ),
       );
       continue;

@@ -1,4 +1,5 @@
-// htmdx <command> — validates, compiles, and describes HTMDX artifacts.
+// htmdx <command> — validates, compiles, and describes HTMDX artifacts, and
+// prints the authoring guidance shipped with this runtime.
 // The build prepends the shebang and sets the executable bit; see rollup.config.js.
 //
 // Exit codes: 0 clean, 1 problems found, 2 the command could not run.
@@ -14,6 +15,15 @@ import {
   suggestNames,
 } from './components';
 import { lintFile, summarize, type LintDiagnostic, type LintReport } from './lint';
+import {
+  DEFAULT_SKILL_TOPIC,
+  formatTopicList,
+  formatTopics,
+  readAllSkillTopics,
+  readSkillTopic,
+  toJson,
+  UnknownSkillTopicError,
+} from './skill';
 
 const USAGE = `Usage: htmdx <command> [options]
 
@@ -22,12 +32,14 @@ Commands:
   validate <files...>  Alias for lint
   compile <file>       Print the static HTML snapshot
   components [name]    List the component catalog, or describe one component
+  skill [topic]        Print the authoring guidance for this runtime
 
 Options:
   --format <pretty|json>  Output format for lint and components (default: pretty)
   --strict                Treat lint warnings as failures
   -o, --out <file>        Write compile output to a file instead of stdout
   --layout <name>         Document layout for compile
+  --list, --full, --json  Topic selection and format for skill
   -h, --help              Show this message
 
 Run against the version an artifact pins: npx @wix/htmdx@<version> lint <file>`;
@@ -47,6 +59,12 @@ async function main(argv: string[]): Promise<number> {
   }
 
   const [command, ...rest] = argv;
+  // skill owns its own flags, so it takes the raw arguments; parseArgs would
+  // read --list and --full as file paths.
+  if (command === 'skill') {
+    return runSkill(rest);
+  }
+
   const args = parseArgs(rest);
 
   if (command === 'lint' || command === 'validate') {
@@ -153,6 +171,42 @@ async function runComponents(args: Args): Promise<number> {
     args.format === 'json' ? `${JSON.stringify(entry, null, 2)}\n` : formatComponent(entry),
   );
   return 0;
+}
+
+const SKILL_FLAGS = new Set(['--list', '--full', '--json']);
+
+async function runSkill(argv: string[]): Promise<number> {
+  const flags = new Set(argv.filter((argument) => argument.startsWith('--')));
+  const [requested] = argv.filter((argument) => !argument.startsWith('--'));
+
+  // Printing the default topic for a mistyped flag looks like an answer.
+  const unknown = [...flags].find((flag) => !SKILL_FLAGS.has(flag));
+  if (unknown) {
+    process.stderr.write(
+      `unknown option "${unknown}"; expected one of ${[...SKILL_FLAGS].join(', ')}\n`,
+    );
+    return 2;
+  }
+
+  if (flags.has('--list')) {
+    process.stdout.write(formatTopicList());
+    return 0;
+  }
+
+  try {
+    const topics = flags.has('--full')
+      ? await readAllSkillTopics()
+      : [await readSkillTopic(requested ?? DEFAULT_SKILL_TOPIC)];
+    process.stdout.write(flags.has('--json') ? toJson(topics) : formatTopics(topics));
+    return 0;
+  } catch (error) {
+    const message =
+      error instanceof UnknownSkillTopicError
+        ? error.message
+        : `cannot read the guidance shipped with this package: ${(error as Error).message}`;
+    process.stderr.write(`${message}\n`);
+    return 2;
+  }
 }
 
 async function read(file: string): Promise<string | undefined> {

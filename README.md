@@ -90,6 +90,8 @@ The runtime ships 87 components. Its `htmdx@2` exact-version `dist/components.js
 
 **Report Built-ins** cover summaries, callouts, metrics, charts, tables, timelines, findings, evidence, and risks. Their `markdown` bodies reject nested tags, and each definition's purpose and example state any stricter list or table grammar. Components with `htmdx` bodies accept Markdown, HTML, and nested registered tags; components with `none` bodies accept only empty or self-closing tags.
 
+The grammar itself is not restated here — `npx @wix/htmdx skill components` prints it per component family, with a worked example that the test suite validates against this runtime.
+
 **shadcn/ui pack** provides 16 vendored families on real Radix state with a bundled Tailwind v4 theme — `Card` (with `CardHeader`, `CardTitle`, `CardContent`, …), `Badge`, `Button`, `Tabs`, `Accordion`, `Alert`, `Avatar`, `Breadcrumb`, `Dialog`, `HoverCard`, `Popover`, `Progress`, `Separator`, `Table`, `Tooltip`, and `AspectRatio`. `Card` is provided exclusively by the shadcn pack.
 
 ## Source blocks
@@ -262,6 +264,7 @@ The package ships an `htmdx` bin, so `npx` runs the toolchain without an install
 npx @wix/htmdx@4.8.0 lint docs/*.htmdx --strict
 npx @wix/htmdx@4.8.0 compile report.htmdx --out report-body.html
 npx @wix/htmdx@4.8.0 components Callout
+npx @wix/htmdx@4.8.0 skill
 ```
 
 <!-- x-release-please-end-version -->
@@ -271,6 +274,7 @@ npx @wix/htmdx@4.8.0 components Callout
 | `lint <files...>` | Report every problem in artifacts and source files. `validate` is an alias. |
 | `compile <file>` | Print the `htmdx-app` markup, the same output `compile()` returns to a caller. |
 | `components [name]` | List the component catalog, or describe one component's props and example. |
+| `skill [topic]` | Print the authoring guidance that ships with this runtime. |
 
 Exit codes are `0` clean, `1` problems found, `2` could not run. `--format json` makes `lint` and `components` machine-readable; `--strict` turns lint warnings into failures; `-o, --out` writes compile output to a file and `--layout` picks a document layout.
 
@@ -278,12 +282,19 @@ Exit codes are `0` clean, `1` problems found, `2` could not run. `--format json`
 
 `components` reads the manifest built next to the bin, so the catalog it prints is the one that version renders — the thing to ask before writing a document rather than guessing at prop names. See the [package README](./packages/htmdx/README.md#command-line) for the full behavior, including how `invalid-html-nesting` dedupes across files in one run.
 
+## Agent skill
+
+The authoring guidance ships with the runtime and is printed by `htmdx skill`, so an agent always reads the contract, component grammar, and verification steps for the exact version an artifact pins. `skill --list` names the topics, `skill --full` streams all of them, and `--json` wraps them with the runtime version.
+
+[`skills/htmdx/`](./skills/htmdx/SKILL.md) is the installable skill that routes an agent to those commands — copy it into a skills directory (`~/.claude/skills/htmdx` for Claude Code, `~/.agents/skills/htmdx` for Codex). The topic files themselves live in [`packages/htmdx/skill/`](./packages/htmdx/skill/); their examples are validated against this runtime on every test run.
+
 ## Package
 
 - npm: `@wix/htmdx` · CDN entry: `dist/browser.js` (~145KB gzip) · module entries: `.`, `./react`, `./testing`, `./components`, `./components/builtins`, `./components/shadcn`
 - custom element: `<htmdx-code>` · browser API: `window.Htmdx`
 - linting: [`validate()`](#validation-and-linting) · CLI: [`lint`, `compile`, `components`](#command-line) — `npx @wix/htmdx lint <files...>`
 - component contract: `dist/components.json`
+- agent guidance: `npx @wix/htmdx skill` (topics in [`packages/htmdx/skill/`](./packages/htmdx/skill/)), installable skill in [`skills/htmdx/`](./skills/htmdx/SKILL.md)
 - architecture decisions: [`adr/`](./adr/)
 
 ## Development

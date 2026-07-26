@@ -1,11 +1,13 @@
 import { execFile } from 'node:child_process';
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readdirSync, readFileSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { promisify } from 'node:util';
 import { beforeAll, describe, expect, test } from 'vitest';
+import { SKILL_TOPICS } from '../src/cli/skill';
 
 const run = promisify(execFile);
+const packageDir = resolve(import.meta.dirname, '..');
 const CLI = resolve(import.meta.dirname, '../dist/cli.js');
 const fixtures = mkdtempSync(join(tmpdir(), 'htmdx-cli-'));
 
@@ -272,5 +274,124 @@ describe('htmdx components', () => {
 
     expect(result.code).toBe(1);
     expect(result.stderr).toContain('unknown component');
+  });
+});
+
+describe('htmdx skill', () => {
+  test('prints the authoring topic by default', async () => {
+    const result = await cli('skill');
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain('# HTMDX authoring');
+  });
+
+  test('lists the topics with --list', async () => {
+    const result = await cli('skill', '--list');
+
+    expect(result.code).toBe(0);
+    for (const topic of ['authoring', 'components', 'integration', 'starter']) {
+      expect(result.stdout).toContain(topic);
+    }
+  });
+
+  test('prints a named topic', async () => {
+    const result = await cli('skill', 'components');
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain('# Component grammar');
+  });
+
+  test('leaves the release and formatter bookkeeping out of the output', async () => {
+    const result = await cli('skill', 'components');
+
+    expect(result.stdout).not.toContain('x-release-please');
+    expect(result.stdout).not.toMatch(/^<!-- prettier-ignore -->$/m);
+    expect(result.stdout).toContain('```mdx');
+  });
+
+  test('writes a usable artifact with the starter topic', async () => {
+    const starter = await cli('skill', 'starter');
+    const linted = await cli('lint', fixture('starter.html', starter.stdout), '--strict');
+
+    expect(starter.stdout).toContain('<script type="text/htmdx"');
+    expect(linted.code).toBe(0);
+  });
+
+  test('concatenates every topic with --full', async () => {
+    const result = await cli('skill', '--full');
+
+    expect(result.stdout).toContain('<!-- BEGIN authoring.md -->');
+    expect(result.stdout).toContain('<!-- END artifact.html -->');
+  });
+
+  test('reports the runtime alongside the topics with --json', async () => {
+    const result = await cli('skill', '--full', '--json');
+
+    const payload = JSON.parse(result.stdout);
+    expect(payload.runtime).toMatch(/^@wix\/htmdx@\d+\.\d+\.\d+/);
+    expect(payload.topics.map((topic: { name: string }) => topic.name)).toEqual([
+      'authoring',
+      'components',
+      'integration',
+      'starter',
+    ]);
+  });
+
+  // A typo'd flag that quietly prints the default topic reads as an answer.
+  test('exits 2 for an unknown flag instead of falling back to a topic', async () => {
+    const result = await cli('skill', '--topics');
+
+    expect(result.code).toBe(2);
+    expect(result.stderr).toContain('unknown option "--topics"');
+  });
+
+  test('exits 2 and names the valid topics for an unknown one', async () => {
+    const result = await cli('skill', 'nope');
+
+    expect(result.code).toBe(2);
+    expect(result.stderr).toContain('unknown skill topic "nope"');
+    expect(result.stderr).toContain('components');
+  });
+});
+
+// `skill` reads its topics from ../skill relative to dist/cli.js, so an agent
+// only gets the guidance if the bin and the topic files both survive `npm
+// pack`. Nothing else in the suite exercises the published layout, and the
+// failure mode — dropping the files entry, moving the bundle — is silent until
+// someone runs the command off npm. Pack for real and run it out of the
+// extracted tarball.
+describe('published package', () => {
+  let published: string;
+
+  beforeAll(async () => {
+    const destination = mkdtempSync(join(tmpdir(), 'htmdx-pack-'));
+    const { stdout } = await run('npm', ['pack', '--pack-destination', destination], {
+      cwd: packageDir,
+      shell: true,
+    });
+    const tarball = join(destination, stdout.trim().split('\n').at(-1) ?? '');
+    await run('tar', ['-xzf', tarball, '-C', destination]);
+    published = join(destination, 'package');
+    // The tarball carries no node_modules, and the bin imports jsdom. Point it
+    // at the installed tree so the run exercises the packed file layout rather
+    // than npm's install step.
+    symlinkSync(resolve(packageDir, '../../node_modules'), join(published, 'node_modules'), 'dir');
+  }, 300_000);
+
+  test('ships every guidance topic alongside the bin', () => {
+    expect(readdirSync(join(published, 'dist'))).toContain('cli.js');
+    expect(readdirSync(join(published, 'skill'))).toEqual(
+      expect.arrayContaining(SKILL_TOPICS.map((topic) => topic.file)),
+    );
+  });
+
+  test('serves the guidance from the published layout', async () => {
+    const { stdout } = await run(process.execPath, [
+      join(published, 'dist/cli.js'),
+      'skill',
+      'components',
+    ]);
+
+    expect(stdout).toContain('# Component grammar');
   });
 });

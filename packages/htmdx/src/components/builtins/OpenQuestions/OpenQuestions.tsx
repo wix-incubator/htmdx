@@ -21,8 +21,10 @@ function labelToneOf(label: string): Tone {
   return LABEL_TONES[label.trim().toLowerCase()] ?? 'gray';
 }
 
+export const bodyFormat = 'markdown-list-cards';
+
 export function OpenQuestions({ body = '', className, ...attributes }: StructuredBodyProps) {
-  const parsed = parseComponentBody('OpenQuestions', 'markdown-list-cards', body);
+  const parsed = parseComponentBody('OpenQuestions', bodyFormat, body);
   return (
     <StructuredBlock name="OpenQuestions" className={className} {...attributes}>
       <div className={cn('overflow-hidden rounded-lg border bg-card', TONE_BORDER.amber)}>

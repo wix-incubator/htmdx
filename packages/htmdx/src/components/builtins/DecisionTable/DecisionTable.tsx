@@ -6,8 +6,10 @@ import { TableHead } from '../../shadcn/TableHead/TableHead';
 import { TableRow } from '../../shadcn/TableRow/TableRow';
 import { InlineMarkdown, StructuredBlock, type StructuredBodyProps } from '../shared/structured';
 
+export const bodyFormat = 'label-value-list';
+
 export function DecisionTable({ body = '', className, ...attributes }: StructuredBodyProps) {
-  const items = parseComponentBody('DecisionTable', 'label-value-list', body);
+  const items = parseComponentBody('DecisionTable', bodyFormat, body);
   return (
     <StructuredBlock name="DecisionTable" className={className} {...attributes}>
       <div className="rounded-lg border bg-card">

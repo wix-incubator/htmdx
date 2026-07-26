@@ -1,9 +1,10 @@
 import type { HtmdxComponent } from '../../../component-definition';
-import { DecisionTable as Component } from './DecisionTable';
+import { DecisionTable as Component, bodyFormat } from './DecisionTable';
 
 export const DecisionTable = {
   name: 'DecisionTable',
   body: 'markdown',
+  bodyFormat,
   purpose:
     "Present decision criteria and outcomes written as '- label: value' rows, splitting each row at its first colon.",
   example:

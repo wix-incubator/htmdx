@@ -2,6 +2,9 @@ import { createElement, forwardRef, memo, type ReactNode } from 'react';
 import { describe, expect, test } from 'vitest';
 import { compile, registerComponent, registerComponents } from '../src';
 import type { HtmdxComponent } from '../src/components';
+import * as builtinDefinitions from '../src/components/builtins';
+import * as shadcnDefinitions from '../src/components/shadcn';
+import { bodyFormatExpectation } from '../src/components/body-contracts';
 
 const definition = (
   value: Pick<HtmdxComponent, 'name' | 'body' | 'Component'> &
@@ -400,5 +403,78 @@ friend
     expect(() => registerComponent(GlobalCollision, { rerender: false })).toThrow(
       'collides with <DefinitionGlobalOne>',
     );
+  });
+
+  test('rejects a declared body format on a component that takes no Markdown body', () => {
+    const Mismatched = {
+      ...definition({ name: 'FormatOnHtmdxBody', body: 'htmdx', Component: () => null }),
+      bodyFormat: 'gfm-table',
+    } as HtmdxComponent;
+
+    expect(compile('<FormatOnHtmdxBody />', { definitions: [Mismatched] })).toMatchObject({
+      ok: false,
+      error: expect.stringContaining('declares body format "gfm-table" without a markdown body'),
+    });
+  });
+
+  test('rejects an unknown body format', () => {
+    const Unknown = {
+      ...definition({ name: 'UnknownFormatFixture', body: 'markdown', Component: () => null }),
+      bodyFormat: 'label-list',
+    } as unknown as HtmdxComponent;
+
+    expect(compile('<UnknownFormatFixture />', { definitions: [Unknown] })).toMatchObject({
+      ok: false,
+      error: expect.stringContaining('has invalid body format "label-list"'),
+    });
+  });
+});
+
+// A single non-list, non-table line: valid Markdown, invalid for every stricter
+// grammar. Compiling it proves the runtime enforces the format the definition
+// declares, so the two cannot drift apart unnoticed.
+const NEUTRAL_BODY = 'One plain sentence.';
+
+const bundledDefinitions: readonly HtmdxComponent[] = [
+  ...Object.values(builtinDefinitions),
+  ...Object.values(shadcnDefinitions),
+];
+
+const markdownBodyDefinitions = bundledDefinitions.filter(
+  (candidate) => candidate.body === 'markdown',
+);
+
+const requiredAttributes = (candidate: HtmdxComponent) =>
+  (candidate.props ?? [])
+    .filter((prop) => prop.required)
+    .map((prop) => {
+      const value = prop.default ?? prop.values?.[0] ?? (prop.type === 'number' ? 1 : 'value');
+      return ` ${prop.name}="${typeof value === 'object' ? JSON.stringify(value) : String(value)}"`;
+    })
+    .join('');
+
+const compileNeutralBody = (candidate: HtmdxComponent) =>
+  compile(
+    `<${candidate.name}${requiredAttributes(candidate)}>\n${NEUTRAL_BODY}\n</${candidate.name}>`,
+  );
+
+describe('declared body formats match what the runtime enforces', () => {
+  test.each(
+    markdownBodyDefinitions
+      .filter((candidate) => candidate.bodyFormat && candidate.bodyFormat !== 'markdown')
+      .map((candidate) => [candidate.name, candidate] as const),
+  )('%s rejects a body that violates its declared format', (_name, candidate) => {
+    expect(compileNeutralBody(candidate)).toMatchObject({
+      ok: false,
+      error: expect.stringContaining(bodyFormatExpectation(candidate.bodyFormat!)),
+    });
+  });
+
+  test.each(
+    markdownBodyDefinitions
+      .filter((candidate) => (candidate.bodyFormat ?? 'markdown') === 'markdown')
+      .map((candidate) => [candidate.name, candidate] as const),
+  )('%s accepts plain Markdown as its declared format promises', (_name, candidate) => {
+    expect(compileNeutralBody(candidate)).toMatchObject({ ok: true });
   });
 });

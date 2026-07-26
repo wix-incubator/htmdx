@@ -1,9 +1,10 @@
 import type { HtmdxComponent } from '../../../component-definition';
-import { RiskTable as Component } from './RiskTable';
+import { RiskTable as Component, bodyFormat } from './RiskTable';
 
 export const RiskTable = {
   name: 'RiskTable',
   body: 'markdown',
+  bodyFormat,
   purpose:
     "Classify priorities written as Markdown list rows. Each row must start with one unique, case-sensitive bold tier—`Must-have`, `Differentiator`, `Not now`, or `Won't do`—followed by non-empty text.",
   example:

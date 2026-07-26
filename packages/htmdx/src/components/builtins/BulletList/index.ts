@@ -1,5 +1,5 @@
 import type { HtmdxComponent } from '../../../component-definition';
-import { BulletList as Component } from './BulletList';
+import { BulletList as Component, bodyFormat } from './BulletList';
 
 export const BulletList = {
   name: 'BulletList',
@@ -8,5 +8,6 @@ export const BulletList = {
   example:
     '<BulletList>\n- Catalog V3 Modifiers - support only FREE_TEXT and choice types today\n- Media Manager - already exposes upload URLs the runtime can reuse\n- Storefront FileUploader - exists but is not wired into product options\n</BulletList>',
   body: 'markdown',
+  bodyFormat,
   Component,
 } as const satisfies HtmdxComponent;

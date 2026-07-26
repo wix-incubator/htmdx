@@ -136,8 +136,10 @@ function IntentCard({ intent }: { intent: Intent }) {
   );
 }
 
+export const bodyFormat = 'markdown-list-cards';
+
 export function IntentList({ body = '', className, ...attributes }: StructuredBodyProps) {
-  const parsed = parseComponentBody('IntentList', 'markdown-list-cards', body);
+  const parsed = parseComponentBody('IntentList', bodyFormat, body);
   const intents = parsed.items.map(parseIntent);
   const groups = PRIORITY_ORDER.map((key) => ({
     key,

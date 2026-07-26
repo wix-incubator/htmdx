@@ -1,9 +1,10 @@
 import type { HtmdxComponent } from '../../../component-definition';
-import { ChartPie as Component } from './ChartPie';
+import { ChartPie as Component, bodyFormat } from './ChartPie';
 
 export const ChartPie = {
   name: 'ChartPie',
   body: 'markdown',
+  bodyFormat,
   purpose:
     "Compare non-negative numeric values written as '- label: number' rows; currently rendered with the shared bar-chart visualization.",
   example: '<ChartPie>\n- Direct: 62\n- Referral: 38\n</ChartPie>',

@@ -115,8 +115,10 @@ function SegmentCard({ segment, hero }: { segment: Segment; hero: boolean }) {
   );
 }
 
+export const bodyFormat = 'markdown-list-cards';
+
 export function Audience({ body = '', className, ...attributes }: StructuredBodyProps) {
-  const { items } = parseComponentBody('Audience', 'markdown-list-cards', body);
+  const { items } = parseComponentBody('Audience', bodyFormat, body);
   const segments = items.map(parseSegment);
   const heroIndex = segments.findIndex((segment) => segment.type.primary);
   const hero = heroIndex >= 0 ? segments[heroIndex] : undefined;

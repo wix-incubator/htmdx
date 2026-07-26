@@ -1,9 +1,10 @@
 import type { HtmdxComponent } from '../../../component-definition';
-import { SignalGrid as Component } from './SignalGrid';
+import { SignalGrid as Component, bodyFormat } from './SignalGrid';
 
 export const SignalGrid = {
   name: 'SignalGrid',
   body: 'markdown',
+  bodyFormat,
   purpose:
     'A grid of category cards with a colored top accent — for Why-Now signals or a Problem / Root cause / Opportunity trio. Item title is `Category | tone` (tone: blue/green/amber/red/gray/purple); the text is an optional `Headline — ` followed by the body.',
   example:

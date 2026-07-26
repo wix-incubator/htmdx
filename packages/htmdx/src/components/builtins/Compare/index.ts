@@ -1,5 +1,5 @@
 import type { HtmdxComponent } from '../../../component-definition';
-import { Compare as Component } from './Compare';
+import { Compare as Component, bodyFormat } from './Compare';
 
 export const Compare = {
   name: 'Compare',
@@ -8,5 +8,6 @@ export const Compare = {
   example:
     '<Compare>\n- **Current:** Manual component discovery\n- **Proposed:** Versioned manifest\n</Compare>',
   body: 'markdown',
+  bodyFormat,
   Component,
 } as const satisfies HtmdxComponent;

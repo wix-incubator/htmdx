@@ -1,9 +1,10 @@
 import type { HtmdxComponent } from '../../../component-definition';
-import { Timeline as Component } from './Timeline';
+import { Timeline as Component, bodyFormat } from './Timeline';
 
 export const Timeline = {
   name: 'Timeline',
   body: 'markdown',
+  bodyFormat,
   purpose:
     "Describe milestones as labeled points in time written as '- label: value' rows, splitting each row at its first colon.",
   example:

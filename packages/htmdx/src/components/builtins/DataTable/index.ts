@@ -1,9 +1,10 @@
 import type { HtmdxComponent } from '../../../component-definition';
-import { DataTable as Component } from './DataTable';
+import { DataTable as Component, bodyFormat } from './DataTable';
 
 export const DataTable = {
   name: 'DataTable',
   body: 'markdown',
+  bodyFormat,
   purpose:
     'Display structured records written as a GFM table with a non-empty header, separator row, and at least one consistently sized data row.',
   example:

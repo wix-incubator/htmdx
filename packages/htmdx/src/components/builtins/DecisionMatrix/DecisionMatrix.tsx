@@ -29,8 +29,10 @@ function Cell({ raw }: { raw: string }) {
   );
 }
 
+export const bodyFormat = 'gfm-table';
+
 export function DecisionMatrix({ body = '', className, ...attributes }: StructuredBodyProps) {
-  const table = parseComponentBody('DecisionMatrix', 'gfm-table', body);
+  const table = parseComponentBody('DecisionMatrix', bodyFormat, body);
   const [corner = '', ...optionHeaders] = table.header;
   const chosenCol = optionHeaders.findIndex(isChosen);
 

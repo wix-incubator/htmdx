@@ -1,9 +1,10 @@
 import type { HtmdxComponent } from '../../../component-definition';
-import { DecisionMatrix as Component } from './DecisionMatrix';
+import { DecisionMatrix as Component, bodyFormat } from './DecisionMatrix';
 
 export const DecisionMatrix = {
   name: 'DecisionMatrix',
   body: 'markdown',
+  bodyFormat,
   purpose:
     'Compare options as GFM-table columns against criteria as rows. Put a ✓ in the chosen option header to highlight it. A body cell may start with `[blue]`, `[green]`, `[amber]`, `[red]`, `[gray]`, or `[purple]` to show a colored status dot.',
   example:

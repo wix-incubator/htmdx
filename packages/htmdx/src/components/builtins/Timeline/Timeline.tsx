@@ -1,8 +1,10 @@
 import { parseComponentBody } from '../../body-contracts';
 import { InlineMarkdown, StructuredBlock, type StructuredBodyProps } from '../shared/structured';
 
+export const bodyFormat = 'label-value-list';
+
 export function Timeline({ body = '', className, ...attributes }: StructuredBodyProps) {
-  const items = parseComponentBody('Timeline', 'label-value-list', body);
+  const items = parseComponentBody('Timeline', bodyFormat, body);
   return (
     <StructuredBlock name="Timeline" className={className} {...attributes}>
       <div className="w-full rounded-[var(--md-sys-shape-corner-large)] border border-[var(--md-sys-color-outline-variant)] bg-[var(--md-sys-color-surface-container-lowest)] px-5 py-4">

@@ -10,8 +10,10 @@ function splitBullet(item: string): { link: string; text: string } {
   return { link: item.slice(0, sep).trim(), text: item.slice(sep + 3).trim() };
 }
 
+export const bodyFormat = 'markdown-list-cards';
+
 export function BulletList({ body = '', className, ...attributes }: StructuredBodyProps) {
-  const { items } = parseComponentBody('BulletList', 'markdown-list-cards', body);
+  const { items } = parseComponentBody('BulletList', bodyFormat, body);
   return (
     <StructuredBlock name="BulletList" className={className} {...attributes}>
       <div className="w-full rounded-lg border bg-card p-4">

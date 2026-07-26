@@ -2,6 +2,16 @@ import type { ComponentType, ExoticComponent } from 'react';
 
 export type HtmdxPropType = 'string' | 'number' | 'boolean' | 'json';
 
+export const HTMDX_BODY_FORMATS = [
+  'markdown',
+  'label-value-list',
+  'label-number-list',
+  'gfm-table',
+  'markdown-list-cards',
+] as const;
+
+export type HtmdxBodyFormat = (typeof HTMDX_BODY_FORMATS)[number];
+
 export type HtmdxJsonValue =
   | null
   | boolean
@@ -38,6 +48,9 @@ export type HtmdxComponent = {
   purpose: string;
   example: string;
   body: 'markdown' | 'htmdx' | 'none';
+  // The Markdown grammar the implementation parses the body with. Declared here
+  // so the manifest publishes what the runtime enforces instead of just `markdown`.
+  bodyFormat?: HtmdxBodyFormat;
   props?: readonly HtmdxProp[];
   // Component prop shapes are definition-owned and checked when authored.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -84,6 +97,18 @@ export function validateDefinition(definition: HtmdxComponent): void {
   }
   if (!['markdown', 'htmdx', 'none'].includes(definition.body)) {
     throw new Error(`component <${definition.name}> has invalid body mode "${definition.body}"`);
+  }
+  if (definition.bodyFormat !== undefined) {
+    if (!HTMDX_BODY_FORMATS.includes(definition.bodyFormat)) {
+      throw new Error(
+        `component <${definition.name}> has invalid body format "${definition.bodyFormat}"`,
+      );
+    }
+    if (definition.body !== 'markdown') {
+      throw new Error(
+        `component <${definition.name}> declares body format "${definition.bodyFormat}" without a markdown body`,
+      );
+    }
   }
   if (!isExecutableReactComponent(definition.Component)) {
     throw new Error(`component <${definition.name}> requires a React Component`);

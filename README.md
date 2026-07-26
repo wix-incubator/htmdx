@@ -82,9 +82,9 @@ accepted. HTML images allow `alt`, `title`, `width`, `height`, `loading`,
 
 ## Components
 
-The runtime ships 87 components. Its `htmdx@2` exact-version `dist/components.json` manifest documents every component's purpose, canonical example, body mode, props, and source.
+The runtime ships 89 components. Its `htmdx@2` exact-version `dist/components.json` manifest documents every component's purpose, canonical example, body mode, body grammar, props, and source. Every entry lists its props, and an empty list means the component accepts no component-specific props.
 
-**Report Built-ins** cover summaries, callouts, metrics, charts, tables, timelines, findings, evidence, and risks. Their `markdown` bodies reject nested tags, and each definition's purpose and example state any stricter list or table grammar. Components with `htmdx` bodies accept Markdown, HTML, and nested registered tags; components with `none` bodies accept only empty or self-closing tags.
+**Report Built-ins** cover summaries, callouts, metrics, charts, tables, timelines, findings, evidence, and risks. Their `markdown` bodies reject nested tags, and each one publishes the grammar its body is parsed with as `bodyFormat` — `markdown`, `label-value-list`, `label-number-list`, `gfm-table`, or `markdown-list-cards` — plus a `bodyExpectation` describing what a valid body looks like. Components with `htmdx` bodies accept Markdown, HTML, and nested registered tags; components with `none` bodies accept only empty or self-closing tags.
 
 **shadcn/ui pack** provides 16 vendored families on real Radix state with a bundled Tailwind v4 theme — `Card` (with `CardHeader`, `CardTitle`, `CardContent`, …), `Badge`, `Button`, `Tabs`, `Accordion`, `Alert`, `Avatar`, `Breadcrumb`, `Dialog`, `HoverCard`, `Popover`, `Progress`, `Separator`, `Table`, `Tooltip`, and `AspectRatio`. `Card` is provided exclusively by the shadcn pack.
 

@@ -3,6 +3,7 @@ import packageJson from '../package.json';
 import * as builtinDefinitions from '../src/components/builtins';
 import * as shadcnDefinitions from '../src/components/shadcn';
 import { createComponentManifest } from '../src/component-manifest';
+import { bodyFormatExpectation } from '../src/components/body-contracts';
 import { VERSION } from '../src';
 
 const definitions = [
@@ -21,12 +22,15 @@ describe('component manifest', () => {
     for (const { definition: rawDefinition, source } of definitions) {
       const definition = rawDefinition as import('../src/component-definition').HtmdxComponent;
       const entry = manifest.components.find((candidate) => candidate.name === definition.name);
+      const bodyFormat =
+        definition.body === 'markdown' ? (definition.bodyFormat ?? 'markdown') : null;
       expect(entry).toEqual({
         name: definition.name,
         purpose: definition.purpose,
         example: definition.example,
         body: definition.body,
-        ...(definition.props ? { props: definition.props } : {}),
+        ...(bodyFormat ? { bodyFormat, bodyExpectation: bodyFormatExpectation(bodyFormat) } : {}),
+        props: definition.props ?? [],
         source,
       });
       expect(Object.keys(entry || {})).toEqual([
@@ -34,10 +38,41 @@ describe('component manifest', () => {
         'purpose',
         'example',
         'body',
-        ...(definition.props ? ['props'] : []),
+        ...(bodyFormat ? ['bodyFormat', 'bodyExpectation'] : []),
+        'props',
         'source',
       ]);
     }
+  });
+
+  test('publishes the stricter body grammar the runtime actually enforces', () => {
+    const components = createComponentManifest().components;
+    const formatOf = (name: string) =>
+      components.find((component) => component.name === name)?.bodyFormat;
+
+    expect(formatOf('MetricStrip')).toBe('label-value-list');
+    expect(formatOf('ChartBar')).toBe('label-number-list');
+    expect(formatOf('DataTable')).toBe('gfm-table');
+    expect(formatOf('Sources')).toBe('markdown-list-cards');
+    expect(formatOf('Callout')).toBe('markdown');
+    expect(formatOf('Card')).toBeUndefined();
+  });
+
+  test('states the body grammar an author has to satisfy alongside the format name', () => {
+    const metricStrip = createComponentManifest().components.find(
+      (component) => component.name === 'MetricStrip',
+    );
+
+    expect(metricStrip?.bodyExpectation).toBe(
+      "one or more '- label: value' rows with non-empty labels and values",
+    );
+  });
+
+  test('declares an empty prop list instead of omitting the key', () => {
+    const components = createComponentManifest().components;
+
+    expect(components.every((component) => Array.isArray(component.props))).toBe(true);
+    expect(components.find((component) => component.name === 'Callout')?.props).toEqual([]);
   });
 
   test('uses the package version for the manifest and exported runtime version', () => {
@@ -65,6 +100,9 @@ describe('component manifest', () => {
       'imports',
       'expressions',
       'function-valued props',
+      'bodyFormat',
+      'bodyExpectation',
+      'empty props',
     ]) {
       expect(note).toContain(phrase);
     }

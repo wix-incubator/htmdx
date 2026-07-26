@@ -1,9 +1,10 @@
 import type { HtmdxComponent } from '../../../component-definition';
-import { MetricStrip as Component } from './MetricStrip';
+import { MetricStrip as Component, bodyFormat } from './MetricStrip';
 
 export const MetricStrip = {
   name: 'MetricStrip',
   body: 'markdown',
+  bodyFormat,
   purpose:
     "Show a compact set of labeled headline values written as '- label: value' rows. A leading trend glyph (↑ up/green, ↓ down/red, ⊘ guardrail/amber) is colored automatically; an ` — ` or ` · ` in the value renders the remainder as a muted caption.",
   example:

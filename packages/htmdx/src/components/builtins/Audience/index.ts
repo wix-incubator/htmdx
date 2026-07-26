@@ -1,5 +1,5 @@
 import type { HtmdxComponent } from '../../../component-definition';
-import { Audience as Component } from './Audience';
+import { Audience as Component, bodyFormat } from './Audience';
 
 export const Audience = {
   name: 'Audience',
@@ -8,5 +8,6 @@ export const Audience = {
   example:
     '<Audience>\n- **Self-Creator · Custom Goods Merchant — Primary:** Sells made-to-order products and needs a file from the shopper at purchase. · metrics: ~19.8K — stores above $50K GPV; 4.85% — of ~408K active stores · priority: High\n- **Partner / Freelancer — Secondary:** Hits the upload gap on every relevant client build. · priority: Medium\n</Audience>',
   body: 'markdown',
+  bodyFormat,
   Component,
 } as const satisfies HtmdxComponent;

@@ -39,8 +39,10 @@ function columnsFor(count: number): string {
   return 'sm:grid-cols-2 lg:grid-cols-3';
 }
 
+export const bodyFormat = 'markdown-list-cards';
+
 export function SignalGrid({ body = '', className, ...attributes }: StructuredBodyProps) {
-  const parsed = parseComponentBody('SignalGrid', 'markdown-list-cards', body);
+  const parsed = parseComponentBody('SignalGrid', bodyFormat, body);
   const signals = parsed.items.map(parseSignal);
   return (
     <StructuredBlock name="SignalGrid" className={className} {...attributes}>

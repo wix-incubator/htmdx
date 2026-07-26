@@ -7,8 +7,10 @@ import { TableHeader } from '../../shadcn/TableHeader/TableHeader';
 import { TableRow } from '../../shadcn/TableRow/TableRow';
 import { InlineMarkdown, StructuredBlock, type StructuredBodyProps } from '../shared/structured';
 
+export const bodyFormat = 'gfm-table';
+
 export function DataTable({ body = '', className, ...attributes }: StructuredBodyProps) {
-  const table = parseComponentBody('DataTable', 'gfm-table', body);
+  const table = parseComponentBody('DataTable', bodyFormat, body);
   return (
     <StructuredBlock name="DataTable" className={className} {...attributes}>
       <div className="rounded-lg border bg-card">

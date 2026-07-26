@@ -2,6 +2,7 @@ export {
   createDefinitionRegistry,
   validateConstraints,
   validateDefinition,
+  type HtmdxBodyFormat,
   type HtmdxBooleanProp,
   type HtmdxComponent,
   type HtmdxComponentDefinitions,

@@ -8,8 +8,10 @@ import {
   type StructuredBodyProps,
 } from '../shared/structured';
 
+export const bodyFormat = 'markdown-list-cards';
+
 export function Sources({ body = '', className, ...attributes }: StructuredBodyProps) {
-  const { items } = parseComponentBody('Sources', 'markdown-list-cards', body);
+  const { items } = parseComponentBody('Sources', bodyFormat, body);
   // Emphasized (**bold**) sources are intentionally dropped; only plain (grey)
   // sources render as chips.
   const sources = items.filter((item) => !item.trimStart().startsWith('**'));

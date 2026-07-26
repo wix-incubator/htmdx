@@ -1,14 +1,9 @@
+import type { HtmdxBodyFormat } from '../component-definition';
+
 export type LabelValue = { label: string; value: string };
 export type LabelNumber = { label: string; value: number };
 export type GfmTable = { header: string[]; rows: string[][] };
 export type MarkdownListCards = { items: string[]; lines: number[] };
-
-type HtmdxBodyFormat =
-  | 'markdown'
-  | 'label-value-list'
-  | 'label-number-list'
-  | 'gfm-table'
-  | 'markdown-list-cards';
 
 type ParsedBodyByFormat = {
   markdown: string;
@@ -39,6 +34,10 @@ const EXPECTED = {
   'gfm-table': 'a GFM table with a header, separator, and at least one consistently sized data row',
   'markdown-list-cards': "one or more non-empty '- item' rows",
 } as const satisfies Record<HtmdxBodyFormat, string>;
+
+export function bodyFormatExpectation(format: HtmdxBodyFormat): string {
+  return EXPECTED[format];
+}
 
 export function parseComponentBody<F extends HtmdxBodyFormat>(
   componentName: string,

@@ -79,8 +79,10 @@ function tierOf(item: string): Tier {
   return name ? TIERS[name as keyof typeof TIERS] : 'wont-do';
 }
 
+export const bodyFormat = 'markdown-list-cards';
+
 export function RiskTable({ body = '', className, ...attributes }: StructuredBodyProps) {
-  const parsed = parseComponentBody('RiskTable', 'markdown-list-cards', body, validateRiskTable);
+  const parsed = parseComponentBody('RiskTable', bodyFormat, body, validateRiskTable);
   return (
     <StructuredBlock name="RiskTable" className={className} {...attributes}>
       <div className="flex flex-col gap-2">

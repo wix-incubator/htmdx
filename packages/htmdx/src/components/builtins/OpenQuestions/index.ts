@@ -1,9 +1,10 @@
 import type { HtmdxComponent } from '../../../component-definition';
-import { OpenQuestions as Component } from './OpenQuestions';
+import { OpenQuestions as Component, bodyFormat } from './OpenQuestions';
 
 export const OpenQuestions = {
   name: 'OpenQuestions',
   body: 'markdown',
+  bodyFormat,
   purpose:
     'An amber-framed panel of open questions and assumptions, each row carrying a labeled badge. Item title is the label (Assumption = blue, Risk = red, Open = amber); the text is the note.',
   example:

@@ -1,9 +1,10 @@
 import type { HtmdxComponent } from '../../../component-definition';
-import { IntentList as Component } from './IntentList';
+import { IntentList as Component, bodyFormat } from './IntentList';
 
 export const IntentList = {
   name: 'IntentList',
   body: 'markdown',
+  bodyFormat,
   purpose:
     'Group user intents by priority (Blocker/Critical/Nice to have) with a persona · type header, the intent quote, and current → expected feeling chips (red → green). Each item title is `#id · Priority · Persona · Type`; the text is the quote followed by `negative, negative → positive, positive`. Append an optional `· note: …` to flag an intent with a caution strip (e.g. a guardrail) inside its card.',
   example:

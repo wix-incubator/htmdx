@@ -1,5 +1,5 @@
 import type { HtmdxComponent } from '../../../component-definition';
-import { Evidence as Component } from './Evidence';
+import { Evidence as Component, bodyFormat } from './Evidence';
 
 export const Evidence = {
   name: 'Evidence',
@@ -8,5 +8,6 @@ export const Evidence = {
   example:
     '<Evidence>\n- **Runtime:** The allowlist currently lives in implementation code.\n</Evidence>',
   body: 'markdown',
+  bodyFormat,
   Component,
 } as const satisfies HtmdxComponent;

@@ -31,22 +31,30 @@ independent of the HTML one:
 - Attributes: globals, `aria-*`, `data-*`, the shared presentation attributes,
   and a per-element geometry set. `on*` fails the compile.
 - Values: a `url()` must be a same-document `url(#id)` reference. `href` is
-  accepted only where an element needs one to function — `textPath` — and only
-  as a `#fragment`.
+  accepted only where an element needs one to function — `textPath` and
+  `mpath` — and only as a `#fragment`. `attributeName` is pinned to `transform`,
+  `gradientTransform`, and `patternTransform`.
 
 The allowlist is keyed by lowercase and resolves to canonical casing, so both
 parse paths land on the same element and `<lineargradient>` is corrected rather
 than rejected.
 
 Not allowlisted: `<script>`, `<foreignObject>`, `<use>`, `<image>`, `<feImage>`,
-`<a>`, `<style>`, and the animation elements (`animate`, `animateTransform`,
-`animateMotion`, `set`). Each is a way out of the graphic. They degrade to the
-text they were written as, matching what a non-allowlisted HTML tag does at the
-top level.
+`<a>`, `<style>`, `<animate>`, and `<set>`. Each is a way out of the graphic.
+They degrade to the text they were written as, matching what a non-allowlisted
+HTML tag does at the top level.
 
 `<feImage>` is the line inside the filter set: every other primitive reads the
 source graphic and its sibling results, while `<feImage>` loads a document.
 DOMPurify allows it; this allowlist does not.
+
+`attributeName` is the line inside the animation set. It retargets what an
+element writes to, so an unrestricted one could aim at an `href` and rewrite it
+after the compile has already checked the value. `<animateTransform>` and
+`<animateMotion>` are useful with a target set of exactly three transform
+properties, so they get that set. `<animate>` and `<set>` are only useful with a
+free-form target, so they stay out rather than becoming a narrower version of
+themselves. DOMPurify draws the same line and guards the same attribute.
 
 Inside an `<svg>` subtree, SVG's element space wins over both HTML and the
 component catalog: `<text>` and `<path>` are SVG, whatever else is registered
@@ -83,6 +91,8 @@ Purely additive: SVG was literal text before, so no existing document changes
 meaning. `HtmdxDiagnosticCode` gains no new member — a component inside a
 graphic reports the existing `html-element-not-allowed`.
 
-Deliberately out of scope: `<use>`, `<image>`, animation, `<foreignObject>`,
-and SVG inside a `srcdoc` or an external file. Filters are included but
-`<feImage>` is not, because it loads an external document.
+Deliberately out of scope: `<use>`, `<image>`, `<foreignObject>`, and SVG inside
+a `srcdoc` or an external file. Filters are included but `<feImage>` is not,
+because it loads an external document. Transform and motion animation are
+included but `<animate>` and `<set>` are not, because they need a free-form
+`attributeName`.

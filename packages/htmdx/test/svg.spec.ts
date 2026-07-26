@@ -291,4 +291,104 @@ describe('inline SVG', () => {
     // is an `feImage` element that would fetch it.
     expect(rendered.ok && rendered.html).not.toContain('<feImage');
   });
+
+  test('renders a transform animation', () => {
+    const rendered = compile(
+      '<svg viewBox="0 0 40 40"><rect x="10" y="10" width="20" height="20"><animateTransform attributeName="transform" type="rotate" from="0 20 20" to="360 20 20" dur="4s" repeatCount="indefinite"></animateTransform></rect></svg>',
+    );
+
+    expect(rendered.ok && rendered.html).toContain(
+      '<animateTransform attributeName="transform" type="rotate" from="0 20 20" to="360 20 20" dur="4s" repeatCount="indefinite">',
+    );
+  });
+
+  test('renders motion along a path referenced by <mpath>', () => {
+    const rendered = compile(
+      '<svg viewBox="0 0 100 40"><path id="track" d="M0 20 H100" fill="none"></path><circle r="4"><animateMotion dur="3s" repeatCount="indefinite" rotate="auto"><mpath href="#track"></mpath></animateMotion></circle></svg>',
+    );
+
+    expect(rendered.ok && rendered.html).toContain('<animateMotion dur="3s"');
+    expect(rendered.ok && rendered.html).toContain('rotate="auto"');
+    expect(rendered.ok && rendered.html).toContain('<mpath href="#track">');
+  });
+
+  test('renders motion from an inline path', () => {
+    const rendered = compile(
+      '<svg viewBox="0 0 100 40"><circle r="4"><animateMotion path="M0 20 Q50 0 100 20" dur="3s" keyPoints="0;1" keyTimes="0;1" calcMode="linear"></animateMotion></circle></svg>',
+    );
+
+    expect(rendered.ok && rendered.html).toContain(
+      '<animateMotion path="M0 20 Q50 0 100 20" dur="3s" keyPoints="0;1" keyTimes="0;1" calcMode="linear">',
+    );
+  });
+
+  // `attributeName` is the one attribute in SVG that retargets what an element
+  // writes to. Left open, an animation could aim at an `href` and turn a static
+  // reference into a moving one after the compile has already checked it. It is
+  // pinned to the three transform properties, so the retarget has nowhere to go.
+  test.each(['href', 'xlink:href', 'fill', 'class', 'style'])(
+    'drops attributeName="%s"',
+    (target) => {
+      const rendered = compile(
+        `<svg viewBox="0 0 10 10"><rect width="10" height="10"><animateTransform attributeName="${target}" to="x" dur="1s"></animateTransform></rect></svg>`,
+      );
+
+      expect(rendered.ok && rendered.html).toContain('<animateTransform');
+      expect(rendered.ok && rendered.html).not.toContain('attributeName');
+    },
+  );
+
+  test.each(['transform', 'gradientTransform', 'patternTransform'])(
+    'keeps attributeName="%s"',
+    (target) => {
+      const rendered = compile(
+        `<svg viewBox="0 0 10 10"><rect width="10" height="10"><animateTransform attributeName="${target}" type="scale" to="2" dur="1s"></animateTransform></rect></svg>`,
+      );
+
+      expect(rendered.ok && rendered.html).toContain(`<animateTransform attributeName="${target}"`);
+    },
+  );
+
+  // A component body passes unknown tags through with their attributes, which
+  // is how documents written before the allowlist keep compiling. That leniency
+  // stops at `<svg>`: inside a graphic the SVG rules apply wherever the graphic
+  // was written.
+  test('keeps the attributeName rule inside a component body', () => {
+    registerComponent(
+      definition({
+        name: 'SvgAnimationBody',
+        body: 'htmdx',
+        Component: ({ children }: { children?: ReactNode }) =>
+          createElement('section', null, children),
+      }),
+    );
+    const rendered = compile(
+      '<SvgAnimationBody>\n<svg viewBox="0 0 10 10"><rect width="10" height="10"><animateTransform attributeName="href" to="x"></animateTransform></rect></svg>\n</SvgAnimationBody>',
+    );
+
+    expect(rendered.ok && rendered.html).toContain('<animateTransform to="x">');
+    expect(rendered.ok && rendered.html).not.toContain('attributeName');
+  });
+
+  test('drops an <mpath> reference that leaves the document', () => {
+    const rendered = compile(
+      '<svg viewBox="0 0 10 10"><circle r="4"><animateMotion dur="1s"><mpath href="https://evil.example/x.svg#track"></mpath></animateMotion></circle></svg>',
+    );
+
+    expect(rendered.ok && rendered.html).toContain('<mpath>');
+    expect(rendered.ok && rendered.html).not.toContain('evil.example');
+  });
+
+  // `<animate>` and `<set>` take a free-form `attributeName` by design — that is
+  // the whole point of them. Pinning it would leave nothing useful behind, so
+  // they stay out rather than becoming a narrower version of themselves.
+  test.each(['animate', 'set'])('keeps <%s> literal', (element) => {
+    const rendered = compile(
+      `<svg viewBox="0 0 10 10">\n<rect width="10" height="10"><${element} attributeName="href" to="x"></${element}></rect>\n</svg>`,
+    );
+
+    expect(rendered.ok).toBe(true);
+    expect(rendered.ok && rendered.html).toContain(`&lt;${element}`);
+    expect(rendered.ok && rendered.html).not.toContain(`<${element} `);
+  });
 });

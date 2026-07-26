@@ -153,9 +153,34 @@ the filter primitives are allowed. Element names keep their casing, so
 `<linearGradient>` and `<clipPath>` work as written — and `<lineargradient>` is
 corrected to match.
 
+A graphic can move on its own. `<animateTransform>` and `<animateMotion>` (with
+`<mpath>`) are allowed, so a spinner or a marker travelling a path needs no
+script and no CSS:
+
+```mdx
+<svg viewBox="0 0 40 40" width="40" height="40">
+  <rect x="10" y="10" width="20" height="20" fill="#6366f1">
+    <animateTransform
+      attributeName="transform"
+      type="rotate"
+      from="0 20 20"
+      to="360 20 20"
+      dur="4s"
+      repeatCount="indefinite"
+    ></animateTransform>
+  </rect>
+</svg>
+```
+
+`attributeName` is pinned to `transform`, `gradientTransform`, and
+`patternTransform` — the only three those elements need. Any other target is
+dropped, so an animation cannot rewrite an `href` after the compile has checked
+it. `<animate>` and `<set>` take a free-form `attributeName` by design, which is
+why they are not allowed at all.
+
 Left out on purpose: `<script>`, `<foreignObject>`, `<use>`, `<image>`,
-`<feImage>`, `<a>`, and the animation elements. Each is a way to reach out of
-the graphic — into script, into HTML, or into another document. Every filter
+`<feImage>`, `<a>`, `<animate>`, and `<set>`. Each is a way to reach out of the
+graphic — into script, into HTML, or into another document. Every filter
 primitive that only computes from its inputs is allowed; `<feImage>` is the one
 that loads a document, so it is the one that is not. Inside an `<svg>` they
 render as the text they were written as, the same way a non-allowlisted HTML tag
@@ -163,8 +188,8 @@ does.
 
 References stay inside the document. `fill="url(#bars)"` resolves against the
 graphic, while `fill="url(https://example.com/x)"` is dropped, and `href` is
-accepted only on `textPath` and only as a `#fragment`. `on*` attributes fail the
-compile and `style` is sanitized the same way it is in HTML.
+accepted only on `textPath` and `mpath`, and only as a `#fragment`. `on*`
+attributes fail the compile and `style` is sanitized the same way it is in HTML.
 
 Text inside `<text>` and `<tspan>` renders as written — Markdown does not apply
 there. An SVG element written outside a graphic, like a bare `<path>` in prose,

@@ -37,6 +37,13 @@ exist at the artifact level:
 - `runtime-version-mismatch` — the artifact pins a version other than the one
   doing the linting. Pass `--runtime` to lint against what actually ships.
 
+### Known limitation
+
+`invalid-html-nesting` is reported by React, which remembers which nesting
+warnings it has already logged in module state that no API resets. Linting many
+files in one run therefore reports each distinct violation once, on the first
+file that has it. Lint a file on its own to see all of its nesting warnings.
+
 ## JSON output
 
 ```json

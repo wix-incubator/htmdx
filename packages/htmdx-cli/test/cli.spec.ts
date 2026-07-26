@@ -115,6 +115,23 @@ describe('htmdx lint', () => {
     );
   });
 
+  // React remembers which nesting warnings it has already logged, in react-dom
+  // module state that no API resets. Linting many files in one process
+  // therefore reports each distinct violation once, on the first file that has
+  // it. Locked here so the behavior is known rather than discovered.
+  test('reports a repeated nesting violation once per process', async () => {
+    const nested = '<Foldout title="t">\n<p>Outer <div>inner</div></p>\n</Foldout>\n';
+    const first = fixture('nested-a.htmdx', nested);
+    const second = fixture('nested-b.htmdx', nested);
+
+    const together = await cli('lint', '--format', 'json', first, second);
+    const report = JSON.parse(together.stdout);
+    expect(report.warningCount).toBe(1);
+
+    const alone = await cli('lint', '--format', 'json', second);
+    expect(JSON.parse(alone.stdout).warningCount).toBe(1);
+  });
+
   test('exits 2 when a file cannot be read', async () => {
     const result = await cli('lint', join(fixtures, 'does-not-exist.htmdx'));
 

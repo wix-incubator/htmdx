@@ -731,6 +731,10 @@ function reportHostError(
     reactRoots.delete(host);
     hostRoot.root.unmount();
   }
+  // The panel replaces the banner and its cards, so the delegated copy handler
+  // has nothing left to answer for.
+  degradedListeners.get(host)?.abort();
+  degradedListeners.delete(host);
 
   renderError(host, diagnostics, source, artifactDiagnostics);
   host.dispatchEvent(

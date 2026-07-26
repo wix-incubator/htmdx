@@ -1,19 +1,15 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, test, vi } from 'vitest';
-import { compile } from '../src';
+import { compile, validate } from '../src';
+import { extractSource } from '../src/testing';
 
 const examples = ['index.html', 'decision-brief.html', 'blank-layout.html', 'component-tour.html'];
 
 function readHtmdxSource(file: string): string {
-  const html = readFileSync(resolve(import.meta.dirname, '../../../examples', file), 'utf8');
-  const source = html.match(/<script\s+type="text\/htmdx"[^>]*>([\s\S]*?)<\/script>/)?.[1];
-
-  if (source === undefined) {
-    throw new Error(`${file} does not contain an HTMDX source block`);
-  }
-
-  return source;
+  return extractSource(
+    readFileSync(resolve(import.meta.dirname, '../../../examples', file), 'utf8'),
+  );
 }
 
 describe('shipped examples', () => {
@@ -36,5 +32,9 @@ describe('shipped examples', () => {
     expect(
       errors.filter((message) => /cannot be a child|cannot be a descendant/.test(message)),
     ).toEqual([]);
+  });
+
+  test.each(examples)('%s validates clean', (file) => {
+    expect(validate(readHtmdxSource(file))).toEqual([]);
   });
 });

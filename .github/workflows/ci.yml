@@ -37,6 +37,9 @@ jobs:
       - name: Test
         run: yarn test
 
+      - name: Lint shipped examples
+        run: node packages/htmdx-cli/dist/cli.js lint examples/*.html
+
       - name: Lint
         run: yarn lint
 

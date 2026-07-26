@@ -1,12 +1,25 @@
 import { describe, expect, test } from 'vitest';
 import { compile, renderHost } from '../src';
 import {
+  HtmdxBodyContractError,
   parseComponentBody,
   parseGfmTable,
   parseLabelNumberList,
   parseLabelValueList,
   parseMarkdownListCards,
 } from '../src/components/body-contracts';
+
+function contractFailure(run: () => unknown): HtmdxBodyContractError {
+  try {
+    run();
+  } catch (error) {
+    if (error instanceof HtmdxBodyContractError) {
+      return error;
+    }
+    throw error;
+  }
+  throw new Error('expected a body-contract failure');
+}
 
 describe('component body contracts', () => {
   test('parses label-value rows at the first colon', () => {
@@ -152,6 +165,31 @@ describe('component body contracts', () => {
 
     expect(rendered).toMatchObject({ ok: false });
     expect(!rendered.ok && rendered.error).toContain('tier "Must-have" is repeated');
+  });
+
+  test('carries the offending row, the expected shape, and an example on the error', () => {
+    const { contract } = contractFailure(() =>
+      parseComponentBody('ChartBar', 'label-number-list', '- Users: 1\n- Sessions: many'),
+    );
+
+    expect(contract).toEqual({
+      component: 'ChartBar',
+      expected: "one or more '- label: number' rows whose values are finite, non-negative decimals",
+      example: '- Mobile: 62',
+      receivedInput: '- Sessions: many',
+      bodyLine: 2,
+      bodyColumn: undefined,
+    });
+  });
+
+  test('bounds the received row and strips control characters', () => {
+    const { contract } = contractFailure(() =>
+      parseComponentBody('ChartBar', 'label-number-list', `- Users: ${'x'.repeat(400)}\tmany`),
+    );
+
+    expect(contract.receivedInput).toHaveLength(201);
+    expect(contract.receivedInput?.endsWith('…')).toBe(true);
+    expect(contract.receivedInput).not.toContain('\t');
   });
 
   test('shows the whole-artifact browser error for an invalid body', async () => {

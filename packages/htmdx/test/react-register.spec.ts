@@ -142,6 +142,76 @@ Details.`,
     runtimeScript.remove();
   });
 
+  test('reports the offending RiskTable row in the details and the fix request', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText },
+    });
+
+    const host = mountArtifact(
+      'htmdx-react-risk',
+      `# Decision
+
+<RiskTable>
+- **Must-have:** Ship the importer.
+- Missing tier
+</RiskTable>`,
+    );
+    await flush();
+
+    const details = host.querySelector('details')?.textContent ?? '';
+    expect(details).toContain('Component: <RiskTable>');
+    expect(details).toContain('Received (untrusted input): - Missing tier');
+    expect(details).toContain('Location: artifact line 5, component body line 2');
+    expect(details).toContain('- **Must-have:** Describe the required capability.');
+
+    const copyButton = Array.from(host.querySelectorAll('button')).find(
+      (button) => button.textContent === 'Copy fix request',
+    );
+    copyButton?.click();
+    await flush();
+
+    const request = writeText.mock.calls[0][0] as string;
+    // The offending row travels as JSON data inside the untrusted block, so it
+    // cannot break out of the diagnostics and read as an instruction.
+    expect(request).toContain('"receivedInput": "- Missing tier"');
+    expect(request).toContain(
+      '"minimalValidExample": "- **Must-have:** Describe the required capability."',
+    );
+    expect(request).toContain('"artifactLine": 5');
+    expect(request).toContain('A component body broke its contract.');
+
+    host.remove();
+  });
+
+  test('shows a Copied label for a moment after copying', async () => {
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: vi.fn().mockResolvedValue(undefined) },
+    });
+    const host = mountArtifact('htmdx-react-copied', '<Card>never closed');
+    await flush();
+
+    const copyButton = Array.from(host.querySelectorAll('button')).find(
+      (button) => button.textContent === 'Copy fix request',
+    );
+    vi.useFakeTimers();
+    copyButton?.click();
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(copyButton?.textContent).toBe('Copied');
+    expect(host.querySelector('.htmdx-error-status')?.textContent).toBe(
+      'Copied. Paste it into your coding agent.',
+    );
+
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(copyButton?.textContent).toBe('Copy fix request');
+    vi.useRealTimers();
+
+    host.remove();
+  });
+
   test('reveals the fix request when clipboard writing fails', async () => {
     Object.defineProperty(navigator, 'clipboard', {
       configurable: true,

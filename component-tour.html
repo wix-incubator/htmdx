@@ -226,6 +226,33 @@ Shadcn bodies use composable HTMDX instead. This Card nests a Badge:
 
 <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800" alt="Forest landscape" width="800" loading="lazy">
 
+## Raw HTML
+
+Allowlisted HTML renders alongside Markdown, inline like
+<a href="https://github.com/wix-incubator/htmdx">this link</a> or as blocks.
+
+<video controls muted playsinline width="640" class="max-w-xl rounded-lg border" poster="https://images.unsplash.com/photo-1535025183041-0991a977e25b?w=800">
+  <source src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm" type="video/webm">
+</video>
+
+<iframe src="https://www.openstreetmap.org/export/embed.html?bbox=34.75%2C32.05%2C34.82%2C32.11" width="640" height="320" loading="lazy" title="Map" class="max-w-xl rounded-lg border"></iframe>
+
+<div class="grid gap-3 rounded-lg border p-4">
+
+A `div` that opens a line owns everything to its close tag, so Markdown and
+component tags keep working inside it.
+
+<Badge variant="secondary">nested component</Badge>
+
+</div>
+
+<details class="max-w-xl rounded-lg border p-4">
+  <summary>Native disclosure, no component required</summary>
+
+  Hidden until the summary is clicked.
+
+</details>
+
 ## Aspect ratio
 
 <AspectRatio ratio="1.7778" class="max-w-md overflow-hidden rounded-lg border">

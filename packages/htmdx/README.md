@@ -347,36 +347,108 @@ Positions are 1-based `line`/`column` plus a 0-based `offset` and `length`, so
 editors and language servers can underline the exact span. An empty array means
 the source is clean. Like `compile()`, this needs a DOM (a browser or jsdom).
 
-The same checks run from a terminal or CI through the `htmdx` bin this package
-ships. Pin the invocation to the version an artifact declares and you lint
-against exactly what ships:
+To run these checks over files from a terminal or CI, see
+[`htmdx lint`](#htmdx-lint), which adds the findings that only apply to a whole
+artifact.
+
+## Command line
+
+This package ships an `htmdx` bin, so `npx` runs it without an install. Every
+command answers from the runtime doing the answering, so pinning the invocation
+to the version an artifact declares gets you the behavior that artifact ships:
 
 <!-- x-release-please-start-version -->
 
 ```bash
-npx @wix/htmdx lint report.html
 npx @wix/htmdx@4.6.0 lint docs/*.htmdx --strict
+npx @wix/htmdx@4.6.0 compile report.htmdx --out report-body.html
+npx @wix/htmdx@4.6.0 components Callout
 ```
 
 <!-- x-release-please-end-version -->
+
+| Command             | Description                                               |
+| ------------------- | --------------------------------------------------------- |
+| `lint <files...>`   | Report problems. `validate` is an alias for the same run. |
+| `compile <file>`    | Print the `htmdx-app` markup.                             |
+| `components [name]` | List the catalog, or describe one component.              |
+
+Exit codes are `0` clean, `1` problems found, and `2` could not run.
+
+### htmdx lint
+
+Runs everything `validate()` reports, plus two findings that only exist once
+source is embedded in a page: `unpinned-runtime` (the runtime `<script>` has no
+pinned version, so a future release can change the artifact) and
+`runtime-version-mismatch` (the artifact pins a version other than the one
+linting it). That is why the command is `lint` rather than `validate` — it is a
+superset of the API call, checked against a whole file rather than a string.
+`validate` is accepted as an alias for anyone who reaches for that name first.
 
 | Option                    | Description                      |
 | ------------------------- | -------------------------------- |
 | `--format <pretty\|json>` | Output format. Default `pretty`. |
 | `--strict`                | Treat warnings as failures.      |
 
-Exit codes are `0` clean, `1` problems found, and `2` could not run. It accepts
-an HTML artifact — the source comes from its `<script type="text/htmdx">` block
-and positions are reported against the artifact — or a bare source file. On top
-of everything `validate()` reports, two findings only exist at the artifact
-level: `unpinned-runtime` (the runtime `<script>` has no pinned version, so a
-future release can change the artifact) and `runtime-version-mismatch` (the
-artifact pins a version other than the one linting it).
+It accepts an HTML artifact — the source comes from its
+`<script type="text/htmdx">` block and positions are reported against the
+artifact — or a bare source file.
 
 `invalid-html-nesting` comes from React, which remembers which nesting warnings
 it has already logged in module state no API resets. Linting many files in one
 run reports each distinct violation once, on the first file that has it; lint a
 file on its own to see all of them.
+
+### htmdx compile
+
+Prints what `compile()` returns to a JS caller, for pipelines that want the
+markup without running the runtime in a browser: a build step, a readable diff
+in review, or a server that renders once and serves the result.
+
+| Option             | Description                                 |
+| ------------------ | ------------------------------------------- |
+| `-o, --out <file>` | Write to a file instead of stdout.          |
+| `--layout <name>`  | Document layout, same names as frontmatter. |
+
+It reads a source file or an artifact, the same way `lint` does. A source the
+runtime rejects exits `1` with the compile error on stderr.
+
+The output is the `htmdx-app` markup, not a standalone page — it carries the
+class names but not the theme, so serving it still means loading the styles the
+browser bundle injects.
+
+### htmdx components
+
+Prints the [component manifest](#exact-version-component-manifest) built next to
+the bin, so the catalog is the one that version renders. With no argument it
+lists every component grouped by source; with a name it prints that component's
+purpose, body mode, props, and canonical example.
+
+```bash
+$ npx @wix/htmdx components Foldout
+Foldout
+
+A collapsible panel: a titled header that expands on click to reveal flexible content (text, tables, charts, or any nested component). Collapsed by default; stack multiple for a group.
+
+body: htmdx  source: built-in
+
+props:
+  title: string
+    The header text shown in the summary row. Supports inline markdown.
+  open: boolean (default false)
+    Render the panel expanded on load. Defaults to collapsed.
+
+example:
+  <Foldout title="Additional details">
+  Any content — text, a table, a chart, or any nested component.
+  </Foldout>
+```
+
+A name that does not match exits `1` and suggests the closest entries, by
+substring and by edit distance, so a typo or a half-remembered name still lands:
+`unknown component "Calout"; did you mean Callout?`. `--format json` prints the
+manifest entry, or the whole manifest when no name is given — the shape to read
+before writing a document rather than guessing at prop names.
 
 ## Testing documents
 

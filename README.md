@@ -252,26 +252,37 @@ for (const { line, column, severity, code, message } of validate(source)) {
 // 9:1  warning  image-missing-alt — image has no alt text
 ```
 
-The same checks run from a terminal or CI through the `htmdx` bin the package ships — no separate install. Pin the invocation to the version an artifact declares and you lint against exactly what ships:
+## Command line
+
+The package ships an `htmdx` bin, so `npx` runs the toolchain without an install. Pin the invocation to the version an artifact declares and every command answers for exactly what ships:
 
 <!-- x-release-please-start-version -->
 
 ```bash
-npx @wix/htmdx lint report.html
 npx @wix/htmdx@4.6.0 lint docs/*.htmdx --strict
+npx @wix/htmdx@4.6.0 compile report.htmdx --out report-body.html
+npx @wix/htmdx@4.6.0 components Callout
 ```
 
 <!-- x-release-please-end-version -->
 
-It accepts an HTML artifact — the source comes from its `<script type="text/htmdx">` block and positions are reported against the artifact — or a bare source file. `--format json` emits a machine-readable report and `--strict` treats warnings as failures. Exit codes are `0` clean, `1` problems found, `2` could not run.
+| Command | Description |
+| --- | --- |
+| `lint <files...>` | Report every problem in artifacts and source files. `validate` is an alias. |
+| `compile <file>` | Print the `htmdx-app` markup, the same output `compile()` returns to a caller. |
+| `components [name]` | List the component catalog, or describe one component's props and example. |
 
-Two findings exist only at the artifact level: `unpinned-runtime` (the runtime `<script>` has no pinned version, so a future release can change the artifact) and `runtime-version-mismatch` (the artifact pins a version other than the one linting it). This repo lints its own examples this way in CI. See the [package README](./packages/htmdx/README.md#validating-source) for the full behavior, including how `invalid-html-nesting` dedupes across files in one run.
+Exit codes are `0` clean, `1` problems found, `2` could not run. `--format json` makes `lint` and `components` machine-readable; `--strict` turns lint warnings into failures; `-o, --out` writes compile output to a file and `--layout` picks a document layout.
+
+`lint` accepts an HTML artifact — the source comes from its `<script type="text/htmdx">` block and positions are reported against the artifact — or a bare source file. On top of everything `validate()` reports, it adds two findings that only exist at the artifact level: `unpinned-runtime` (the runtime `<script>` has no pinned version, so a future release can change the artifact) and `runtime-version-mismatch` (the artifact pins a version other than the one linting it). This repo lints its own examples this way in CI.
+
+`components` reads the manifest built next to the bin, so the catalog it prints is the one that version renders — the thing to ask before writing a document rather than guessing at prop names. See the [package README](./packages/htmdx/README.md#command-line) for the full behavior, including how `invalid-html-nesting` dedupes across files in one run.
 
 ## Package
 
 - npm: `@wix/htmdx` · CDN entry: `dist/browser.js` (~145KB gzip) · module entries: `.`, `./react`, `./testing`, `./components`, `./components/builtins`, `./components/shadcn`
 - custom element: `<htmdx-code>` · browser API: `window.Htmdx`
-- linting: [`validate()` and the bundled `htmdx` bin](#validation-and-linting) — `npx @wix/htmdx lint <files...>`
+- linting: [`validate()`](#validation-and-linting) · CLI: [`lint`, `compile`, `components`](#command-line) — `npx @wix/htmdx lint <files...>`
 - component contract: `dist/components.json`
 - architecture decisions: [`adr/`](./adr/)
 

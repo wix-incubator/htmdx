@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { promisify } from 'node:util';
@@ -144,5 +144,133 @@ describe('htmdx lint', () => {
 
     expect(result.code).toBe(2);
     expect(result.stderr).toContain('Usage');
+  });
+});
+
+describe('htmdx validate', () => {
+  test('is an alias for lint', async () => {
+    const file = fixture('alias.htmdx', BROKEN);
+    const linted = await cli('lint', '--format', 'json', file);
+    const validated = await cli('validate', '--format', 'json', file);
+
+    expect(validated.code).toBe(linted.code);
+    expect(validated.stdout).toBe(linted.stdout);
+  });
+});
+
+describe('htmdx compile', () => {
+  test('prints the static HTML snapshot of a source file', async () => {
+    const result = await cli('compile', fixture('compile-clean.htmdx', CLEAN));
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain('data-htmdx-component="Callout"');
+    expect(result.stdout).toContain('All good.');
+  });
+
+  test('compiles the embedded source of an HTML artifact', async () => {
+    const artifact = [
+      '<!doctype html>',
+      '<html><body>',
+      '<script type="text/htmdx">',
+      CLEAN,
+      '</script>',
+      '</body></html>',
+      '',
+    ].join('\n');
+    const result = await cli('compile', fixture('compile-artifact.html', artifact));
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain('data-htmdx-component="Callout"');
+  });
+
+  test('writes to a file with --out', async () => {
+    const out = join(fixtures, 'out.html');
+    const result = await cli('compile', fixture('compile-out.htmdx', CLEAN), '--out', out);
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toBe('');
+    expect(readFileSync(out, 'utf8')).toContain('data-htmdx-component="Callout"');
+  });
+
+  test('honors --layout', async () => {
+    const file = fixture('compile-layout.htmdx', CLEAN);
+    const blank = await cli('compile', file, '--layout', 'blank');
+    const standard = await cli('compile', file);
+
+    expect(blank.code).toBe(0);
+    expect(blank.stdout).not.toBe(standard.stdout);
+    expect(blank.stdout).not.toContain('htmdx-hero');
+  });
+
+  test('exits 1 with the reason when the source does not compile', async () => {
+    const result = await cli('compile', fixture('compile-broken.htmdx', BROKEN));
+
+    expect(result.code).toBe(1);
+    expect(result.stderr).toContain('Nope');
+  });
+
+  test('exits 2 when no file is given', async () => {
+    const result = await cli('compile');
+
+    expect(result.code).toBe(2);
+    expect(result.stderr).toContain('Usage');
+  });
+});
+
+describe('htmdx components', () => {
+  test('lists the catalog grouped by source', async () => {
+    const result = await cli('components');
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toMatch(/\d+ components in @wix\/htmdx@/);
+    expect(result.stdout).toContain('built-in');
+    expect(result.stdout).toContain('shadcn');
+    expect(result.stdout).toContain('Callout');
+  });
+
+  test('describes one component with its props and example', async () => {
+    const result = await cli('components', 'Foldout');
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain('body: htmdx');
+    expect(result.stdout).toContain('title: string');
+    expect(result.stdout).toContain('<Foldout');
+  });
+
+  test('matches the name case-insensitively', async () => {
+    const result = await cli('components', 'callout');
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain('Callout');
+  });
+
+  test('emits the raw manifest entry as JSON', async () => {
+    const result = await cli('components', 'Callout', '--format', 'json');
+
+    expect(result.code).toBe(0);
+    expect(JSON.parse(result.stdout)).toMatchObject({ name: 'Callout', source: 'built-in' });
+  });
+
+  test('emits the whole manifest as JSON when no name is given', async () => {
+    const result = await cli('components', '--format', 'json');
+
+    expect(result.code).toBe(0);
+    const manifest = JSON.parse(result.stdout);
+    expect(manifest.format).toBe('htmdx@2');
+    expect(manifest.components.length).toBeGreaterThan(0);
+  });
+
+  test('suggests a near match for a typo', async () => {
+    const result = await cli('components', 'Calout');
+
+    expect(result.code).toBe(1);
+    expect(result.stderr).toContain('Callout');
+  });
+
+  test('exits 1 for a name with nothing close', async () => {
+    const result = await cli('components', 'Zzzzzzzz');
+
+    expect(result.code).toBe(1);
+    expect(result.stderr).toContain('unknown component');
   });
 });

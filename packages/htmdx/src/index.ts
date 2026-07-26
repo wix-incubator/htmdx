@@ -1,7 +1,7 @@
 // React-only htmdx runtime. HTMDX source renders through React everywhere:
 // built-ins are React components, the shadcn/ui pack is included, and
 // compile() produces a static HTML snapshot of the same tree.
-import type { ReactElement } from 'react';
+import { createElement, Fragment, type ReactElement } from 'react';
 import {
   createDefinitionRegistry,
   type HtmdxComponent,
@@ -15,7 +15,13 @@ import { executiveSummaryStyles } from './components/builtins/ExecutiveSummary/E
 import { foldoutStyles } from './components/builtins/Foldout/Foldout';
 import { sourceQuoteStyles } from './components/builtins/SourceQuote/SourceQuote';
 import * as shadcnDefinitionExports from './components/shadcn';
-import { compileDocument, tokenizeSource } from './react';
+import {
+  collectStructuralDiagnostics,
+  compileDocument,
+  diagnosticForBlock,
+  tokenizeSource,
+} from './react';
+import type { HtmdxDiagnostic } from './diagnostics';
 import { addLayout, type HtmdxLayoutDefinition } from './layout';
 import { THEME_CSS, THEME_IDS } from './themes';
 import { VERSION } from './version';
@@ -25,6 +31,8 @@ export { VERSION } from './version';
 export { injectShadcnTheme } from './components/shadcn/shared/theme';
 export { compileDocument, compileToReact, Htmdx, listComponents } from './react';
 export type { HtmdxDocument, HtmdxDocumentOptions, HtmdxReactOptions } from './react';
+export { HtmdxSourceError } from './diagnostics';
+export type { HtmdxDiagnostic, HtmdxDiagnosticCode, HtmdxSeverity } from './diagnostics';
 export type { HtmdxLayoutDefinition, HtmdxLayoutProps, HtmdxLayoutSlot } from './layout';
 export type HtmdxToken =
   | { type: 'markdown'; value: string }
@@ -110,6 +118,25 @@ export function compile(source: string, options: HtmdxCompileOptions = {}): Htmd
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : String(error) };
   }
+}
+
+// Every problem in one pass, with positions. compile() stops at the first
+// failure by design; validate() recovers at the tokenizer and renders each
+// component block in isolation so one bad block does not mask the rest.
+// Like compile(), this needs a DOM: component bodies parse through DOMParser
+// and body-format rules only run when the component renders.
+export function validate(source: string, options: HtmdxCompileOptions = {}): HtmdxDiagnostic[] {
+  const { diagnostics, probes } = collectStructuralDiagnostics(source, runtimeOptionsFor(options));
+
+  for (const probe of probes) {
+    try {
+      renderStaticHtml(createElement(Fragment, null, probe.render()));
+    } catch (error) {
+      diagnostics.push(diagnosticForBlock(source, probe, error));
+    }
+  }
+
+  return diagnostics.toSorted((left, right) => left.offset - right.offset);
 }
 
 // Static snapshot through the client renderer on a detached container.

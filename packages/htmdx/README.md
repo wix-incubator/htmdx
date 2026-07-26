@@ -70,7 +70,9 @@ Built-ins use this mode. `htmdx` accepts Markdown, HTML, and nested registered
 component tags; shadcn and external definitions use it when they support
 composition. `none` accepts only an empty or self-closing tag. A Built-in's
 `purpose` and `example`
-describe any stricter list or table grammar it checks. Invalid bodies fail the
+describe any stricter list or table grammar it checks; `npx @wix/htmdx skill
+components` prints the same grammar per family in prose, with a worked example
+per family. Invalid bodies fail the
 whole compile, and browser hosts show the error with the raw source. Imports,
 exports, brace expressions, event handlers, and function-valued props cannot
 be expressed — the source is data, not code.

@@ -90,6 +90,8 @@ The runtime ships 87 components. Its `htmdx@2` exact-version `dist/components.js
 
 **Report Built-ins** cover summaries, callouts, metrics, charts, tables, timelines, findings, evidence, and risks. Their `markdown` bodies reject nested tags, and each definition's purpose and example state any stricter list or table grammar. Components with `htmdx` bodies accept Markdown, HTML, and nested registered tags; components with `none` bodies accept only empty or self-closing tags.
 
+The grammar itself is not restated here — `npx @wix/htmdx skill components` prints it per component family, with a worked example that the test suite validates against this runtime.
+
 **shadcn/ui pack** provides 16 vendored families on real Radix state with a bundled Tailwind v4 theme — `Card` (with `CardHeader`, `CardTitle`, `CardContent`, …), `Badge`, `Button`, `Tabs`, `Accordion`, `Alert`, `Avatar`, `Breadcrumb`, `Dialog`, `HoverCard`, `Popover`, `Progress`, `Separator`, `Table`, `Tooltip`, and `AspectRatio`. `Card` is provided exclusively by the shadcn pack.
 
 ## Source blocks

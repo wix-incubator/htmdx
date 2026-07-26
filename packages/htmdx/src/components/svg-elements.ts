@@ -6,7 +6,7 @@
 // resolve to canonical casing, so either parse path lands on the same element.
 //
 // Left out on purpose: `<script>`, `<foreignObject>`, `<use>`, `<image>`,
-// `<feImage>`, the animation elements, and `<a>`. Each is a way to reach outside
+// `<feImage>`, `<animate>`, `<set>`, and `<a>`. Each is a way to reach outside
 // the graphic — into script, into HTML, or into another document. Every filter
 // primitive that only computes from its inputs is allowed; `<feImage>` is the
 // one that loads a document, so it is the one that is not.
@@ -14,6 +14,8 @@ import { HtmdxSourceError } from '../diagnostics';
 import { safeStyle } from './html-elements';
 
 const ELEMENT_NAMES = [
+  'animateMotion',
+  'animateTransform',
   'circle',
   'clipPath',
   'defs',
@@ -49,6 +51,7 @@ const ELEMENT_NAMES = [
   'linearGradient',
   'marker',
   'mask',
+  'mpath',
   'path',
   'pattern',
   'polygon',
@@ -152,7 +155,37 @@ function transferFunction() {
   return new Set(['amplitude', 'exponent', 'intercept', 'offset', 'slope', 'tablevalues', 'type']);
 }
 
+// Timing and value attributes shared by the two animation elements. None of
+// them names a target; they only describe when the animation runs and what it
+// interpolates between.
+const ANIMATION_ATTRIBUTES = [
+  'accumulate',
+  'additive',
+  'attributename',
+  'begin',
+  'by',
+  'calcmode',
+  'dur',
+  'end',
+  'from',
+  'keysplines',
+  'keytimes',
+  'max',
+  'min',
+  'repeatcount',
+  'repeatdur',
+  'restart',
+  'to',
+  'values',
+] as const;
+
+function animation(...extra: string[]) {
+  return new Set([...ANIMATION_ATTRIBUTES, ...extra]);
+}
+
 const ELEMENT_ATTRIBUTES = new Map([
+  ['animatemotion', animation('keypoints', 'origin', 'path', 'rotate')],
+  ['animatetransform', animation('type')],
   ['circle', new Set(['cx', 'cy', 'r', 'pathlength'])],
   ['clippath', new Set(['clippathunits'])],
   ['ellipse', new Set(['cx', 'cy', 'rx', 'ry', 'pathlength'])],
@@ -225,6 +258,7 @@ const ELEMENT_ATTRIBUTES = new Map([
     ]),
   ],
   ['mask', new Set(['height', 'maskcontentunits', 'maskunits', 'width', 'x', 'y'])],
+  ['mpath', new Set(['href'])],
   ['path', new Set(['d', 'pathlength'])],
   [
     'pattern',
@@ -273,6 +307,7 @@ const ELEMENT_ATTRIBUTES = new Map([
 // and hyphenated names camel-case mechanically.
 const CANONICAL_NAMES = new Map([
   ['basefrequency', 'baseFrequency'],
+  ['calcmode', 'calcMode'],
   ['class', 'className'],
   ['clippathunits', 'clipPathUnits'],
   ['diffuseconstant', 'diffuseConstant'],
@@ -282,6 +317,9 @@ const CANONICAL_NAMES = new Map([
   ['gradientunits', 'gradientUnits'],
   ['kernelmatrix', 'kernelMatrix'],
   ['kernelunitlength', 'kernelUnitLength'],
+  ['keypoints', 'keyPoints'],
+  ['keysplines', 'keySplines'],
+  ['keytimes', 'keyTimes'],
   ['lengthadjust', 'lengthAdjust'],
   ['limitingconeangle', 'limitingConeAngle'],
   ['markerheight', 'markerHeight'],
@@ -302,6 +340,8 @@ const CANONICAL_NAMES = new Map([
   ['primitiveunits', 'primitiveUnits'],
   ['refx', 'refX'],
   ['refy', 'refY'],
+  ['repeatcount', 'repeatCount'],
+  ['repeatdur', 'repeatDur'],
   ['requiredextensions', 'requiredExtensions'],
   ['specularconstant', 'specularConstant'],
   ['specularexponent', 'specularExponent'],
@@ -328,6 +368,13 @@ const CANONICAL_NAMES = new Map([
 // makes React treat them as custom attributes and render them unchanged.
 const HYPHENATED_PROPS = new Set(['mask-type', 'mix-blend-mode']);
 
+// `attributeName` is the one attribute that retargets what another attribute
+// becomes. Left open, an animation could aim at an `href` and rewrite it after
+// the compile has already checked it, which is why `<animate>` and `<set>` are
+// not allowed at all. The two transform animations are useful with a target set
+// of exactly three, so that is the set they get.
+const ANIMATABLE_ATTRIBUTES = new Set(['transform', 'gradientTransform', 'patternTransform']);
+
 // A paint value may reference a gradient, mask, or filter defined in the same
 // document. That is the only `url()` an SVG attribute is allowed to carry: no
 // scheme, no path, no other document.
@@ -351,6 +398,12 @@ export function safeSvgProps(
     }
     if (/^(?:aria|data)-[a-z0-9_.:-]+$/.test(attribute)) {
       props[attribute] = value;
+      continue;
+    }
+    if (attribute === 'attributename') {
+      if (allowed?.has('attributename') && ANIMATABLE_ATTRIBUTES.has(value.trim())) {
+        props.attributeName = value.trim();
+      }
       continue;
     }
     if (attribute === 'href' || attribute === 'xlink:href') {

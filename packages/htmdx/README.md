@@ -268,3 +268,72 @@ Security note: the React runtime runs the registered component code with
 agent-authored props (`compile()` can still emit a static HTML snapshot of the
 same tree). Components are host-owned and whitelisted; the source still cannot
 express code, only data.
+
+## Validating source
+
+`compile()` stops at the first failure. `validate()` reports every independent
+problem at once, each anchored to a position in the source:
+
+```ts
+import { validate } from '@wix/htmdx';
+
+for (const { line, column, severity, code, message } of validate(source)) {
+  console.log(`${line}:${column} ${severity} ${code} — ${message}`);
+}
+// 3:1  error    unknown-component — unknown component <Nope>
+// 5:10 error    unknown-prop — unknown prop "tone" for <Callout>
+// 9:1  warning  image-missing-alt — image has no alt text
+```
+
+Positions are 1-based `line`/`column` plus a 0-based `offset` and `length`, so
+editors and language servers can underline the exact span. An empty array means
+the source is clean. Like `compile()`, this needs a DOM (a browser or jsdom).
+
+The same checks run from a terminal or CI through the `htmdx` bin this package
+ships. Pin the invocation to the version an artifact declares and you lint
+against exactly what ships:
+
+```bash
+npx @wix/htmdx lint report.html
+npx @wix/htmdx@4.5.1 lint docs/*.htmdx --strict
+```
+
+| Option                    | Description                      |
+| ------------------------- | -------------------------------- |
+| `--format <pretty\|json>` | Output format. Default `pretty`. |
+| `--strict`                | Treat warnings as failures.      |
+
+Exit codes are `0` clean, `1` problems found, and `2` could not run. It accepts
+an HTML artifact — the source comes from its `<script type="text/htmdx">` block
+and positions are reported against the artifact — or a bare source file. On top
+of everything `validate()` reports, two findings only exist at the artifact
+level: `unpinned-runtime` (the runtime `<script>` has no pinned version, so a
+future release can change the artifact) and `runtime-version-mismatch` (the
+artifact pins a version other than the one linting it).
+
+`invalid-html-nesting` comes from React, which remembers which nesting warnings
+it has already logged in module state no API resets. Linting many files in one
+run reports each distinct violation once, on the first file that has it; lint a
+file on its own to see all of them.
+
+## Testing documents
+
+`@wix/htmdx/testing` covers the two things a consumer's test suite needs: get
+the source out of a shipped artifact, and snapshot it.
+
+```ts
+import { extractSource, snapshot } from '@wix/htmdx/testing';
+
+const source = extractSource(readFileSync('report.html', 'utf8'));
+
+expect(snapshot(source)).toMatchInlineSnapshot(`
+  markdown "# Report"
+  <Callout>
+    text "Ship it."
+`);
+```
+
+`snapshot()` defaults to `mode: 'structure'` — the component tree as written,
+so upgrading the runtime does not churn every snapshot. Pass `mode: 'html'` to
+snapshot the rendered markup instead. Either mode throws if the source has
+errors, rather than recording the breakage as expected output.

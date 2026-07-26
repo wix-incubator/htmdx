@@ -1,7 +1,7 @@
 // React-only htmdx runtime. HTMDX source renders through React everywhere:
 // built-ins are React components, the shadcn/ui pack is included, and
 // compile() produces a static HTML snapshot of the same tree.
-import type { ReactElement } from 'react';
+import { createElement, Fragment, type ReactElement } from 'react';
 import {
   createDefinitionRegistry,
   type HtmdxComponent,
@@ -9,13 +9,18 @@ import {
 } from './component-definition';
 import { flushSync } from 'react-dom';
 import { createRoot, type Root } from 'react-dom/client';
-import * as builtinDefinitionExports from './components/builtins';
+import { bundledDefinitions, globalDefinitions, runtimeOptionsFor } from './runtime-definitions';
 import { calloutStyles } from './components/builtins/Callout/Callout';
 import { executiveSummaryStyles } from './components/builtins/ExecutiveSummary/ExecutiveSummary';
 import { foldoutStyles } from './components/builtins/Foldout/Foldout';
 import { sourceQuoteStyles } from './components/builtins/SourceQuote/SourceQuote';
-import * as shadcnDefinitionExports from './components/shadcn';
-import { compileDocument, tokenizeSource } from './react';
+import {
+  collectStructuralDiagnostics,
+  compileDocument,
+  diagnosticForBlock,
+  tokenizeSource,
+} from './react';
+import { toDiagnostic, type HtmdxDiagnostic } from './diagnostics';
 import { addLayout, type HtmdxLayoutDefinition } from './layout';
 import { THEME_CSS, THEME_IDS } from './themes';
 import { VERSION } from './version';
@@ -25,6 +30,8 @@ export { VERSION } from './version';
 export { injectShadcnTheme } from './components/shadcn/shared/theme';
 export { compileDocument, compileToReact, Htmdx, listComponents } from './react';
 export type { HtmdxDocument, HtmdxDocumentOptions, HtmdxReactOptions } from './react';
+export { HtmdxSourceError } from './diagnostics';
+export type { HtmdxDiagnostic, HtmdxDiagnosticCode, HtmdxSeverity } from './diagnostics';
 export type { HtmdxLayoutDefinition, HtmdxLayoutProps, HtmdxLayoutSlot } from './layout';
 export type HtmdxToken =
   | { type: 'markdown'; value: string }
@@ -67,13 +74,6 @@ export const DEFAULT_TAG_NAME = 'htmdx-code';
 export const DEFAULT_TAILWIND_BROWSER_SRC = 'https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4';
 const DEFAULT_SOURCE_SELECTOR = 'script[type="text/htmdx"], template[type="text/htmdx"]';
 
-const bundledDefinitions: HtmdxComponentDefinitions = [
-  ...Object.values(builtinDefinitionExports),
-  ...Object.values(shadcnDefinitionExports),
-];
-createDefinitionRegistry(bundledDefinitions);
-
-const globalDefinitions: HtmdxComponent[] = [];
 const registeredTagNames = new Set([DEFAULT_TAG_NAME]);
 const registeredOptions = new Map<string, HtmdxRegisterOptions>();
 const sourceCache = new WeakMap<Element, HtmdxSourceResult & { ok: true }>();
@@ -93,12 +93,6 @@ type HostRoot = { root: Root; renderError: { current: CapturedError | null } };
 const reactRoots = new WeakMap<Element, HostRoot>();
 const stickyObservers = new WeakMap<Element, IntersectionObserver>();
 
-function runtimeOptionsFor(options: HtmdxCompileOptions) {
-  const definitions = [...bundledDefinitions, ...globalDefinitions, ...(options.definitions || [])];
-  createDefinitionRegistry(definitions);
-  return { definitions, layout: options.layout };
-}
-
 export function compile(source: string, options: HtmdxCompileOptions = {}): HtmdxCompileResult {
   try {
     const doc = compileDocument(source, runtimeOptionsFor(options));
@@ -110,6 +104,74 @@ export function compile(source: string, options: HtmdxCompileOptions = {}): Htmd
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : String(error) };
   }
+}
+
+// Every problem in one pass, with positions. compile() stops at the first
+// failure by design; validate() recovers at the tokenizer and renders each
+// component block in isolation so one bad block does not mask the rest.
+// Like compile(), this needs a DOM: component bodies parse through DOMParser
+// and body-format rules only run when the component renders.
+export function validate(source: string, options: HtmdxCompileOptions = {}): HtmdxDiagnostic[] {
+  const { diagnostics, probes } = collectStructuralDiagnostics(source, runtimeOptionsFor(options));
+
+  for (const probe of probes) {
+    const nesting = captureNestingWarnings(() => {
+      try {
+        renderStaticHtml(createElement(Fragment, null, probe.render()));
+      } catch (error) {
+        diagnostics.push(diagnosticForBlock(source, probe, error));
+      }
+    });
+
+    for (const message of nesting) {
+      diagnostics.push(
+        toDiagnostic(source, 'invalid-html-nesting', message, probe.offset, 1, 'warning'),
+      );
+    }
+  }
+
+  return diagnostics.toSorted((left, right) => left.offset - right.offset);
+}
+
+// React reports invalid nesting through console.error during render and
+// nowhere else, so the only way to surface it is to listen while rendering.
+// Anything else React logs is passed through untouched.
+//
+// React also remembers which nesting warnings it has already logged, in
+// react-dom module state that no API resets. Validating several sources in one
+// process therefore reports each distinct violation once, on the first source
+// that has it; a fresh process sees it again.
+function captureNestingWarnings(render: () => void): string[] {
+  const captured: string[] = [];
+  // oxlint-disable no-console
+  const consoleError = console.error;
+  console.error = (...args: unknown[]) => {
+    const [format, ...substitutions] = args;
+    const message = String(format);
+    if (/cannot be a child|cannot be a descendant|validateDOMNesting/.test(message)) {
+      captured.push(formatConsoleMessage(message, substitutions).split('\n')[0]);
+      return;
+    }
+    consoleError(...args);
+  };
+
+  try {
+    render();
+  } finally {
+    console.error = consoleError;
+  }
+  // oxlint-enable no-console
+
+  return captured;
+}
+
+// React logs through console's format-string protocol, so the tag names live
+// in the trailing arguments rather than the message.
+function formatConsoleMessage(format: string, substitutions: unknown[]): string {
+  let index = 0;
+  return format.replace(/%[sdo]/g, (token) =>
+    index < substitutions.length ? String(substitutions[index++]) : token,
+  );
 }
 
 // Static snapshot through the client renderer on a detached container.

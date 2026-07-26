@@ -24,6 +24,12 @@ import { BUILT_IN_LOGOS } from '../logos';
 import { getLayout, resolveLayoutSlots } from '../layout';
 import { renderInline, renderMarkdown } from './markdown';
 import { THEME_IDS } from '../themes';
+import {
+  HtmdxSourceError,
+  toDiagnostic,
+  type HtmdxDiagnostic,
+  type HtmdxDiagnosticCode,
+} from '../diagnostics';
 
 export type HtmdxReactOptions = {
   definitions?: HtmdxComponentDefinitions;
@@ -39,8 +45,8 @@ type RuntimeCatalog = {
 };
 
 type Block =
-  | { type: 'markdown'; value: string }
-  | { type: 'component'; name: string; attrs: string; body: string };
+  | { type: 'markdown'; value: string; offset: number }
+  | { type: 'component'; name: string; attrs: string; body: string; offset: number };
 
 function createRuntimeCatalog(options: HtmdxReactOptions): RuntimeCatalog {
   const definitions = createDefinitionRegistry(options.definitions);
@@ -116,7 +122,7 @@ export function compileDocument(source: string, options: HtmdxDocumentOptions = 
   if (layout !== 'default') {
     const definition = getLayout(layout);
     if (!definition) {
-      throw new Error(`unknown layout "${layout}"`);
+      throw new HtmdxSourceError('unknown-layout', `unknown layout "${layout}"`);
     }
     const theme = themeFromMeta(meta);
     const children = renderBlocks(blocks, catalog, context);
@@ -279,7 +285,7 @@ function extractHeroContent(blocks: Block[]): string {
   }
 
   if (value) {
-    blocks[0] = { type: 'markdown', value };
+    blocks[0] = { type: 'markdown', value, offset: first.offset };
   } else {
     blocks.shift();
   }
@@ -453,7 +459,7 @@ function renderComponentBlock(
 ): ReactNode {
   const definition = catalog.definitions.get(block.name.toLowerCase());
   if (!definition) {
-    throw new Error(`unknown component <${block.name}>`);
+    throw new HtmdxSourceError('unknown-component', `unknown component <${block.name}>`);
   }
   return renderDefinition(
     definition,
@@ -474,7 +480,8 @@ function renderDefinition(
   const componentProps = { ...props, key };
   if (definition.body === 'markdown') {
     if (hasBodyElements(body)) {
-      throw new Error(
+      throw new HtmdxSourceError(
+        'markdown-body-nested-tags',
         `component <${definition.name}> with markdown body does not allow nested tags`,
       );
     }
@@ -483,7 +490,10 @@ function renderDefinition(
   }
   if (definition.body === 'none') {
     if (body.trim()) {
-      throw new Error(`component <${definition.name}> does not allow a body`);
+      throw new HtmdxSourceError(
+        'body-not-allowed',
+        `component <${definition.name}> does not allow a body`,
+      );
     }
     return createElement(definition.Component, componentProps);
   }
@@ -580,7 +590,7 @@ function nodeToReact(
   }
   const canonical = catalog.names.get(lower);
   if (!canonical && /^[A-Z]/.test(element.tagName)) {
-    throw new Error(`unknown component <${element.tagName}>`);
+    throw new HtmdxSourceError('unknown-component', `unknown component <${element.tagName}>`);
   }
   const definition = canonical ? catalog.definitions.get(lower) : undefined;
   if (definition) {
@@ -605,7 +615,10 @@ function nodeToReact(
   const props: Record<string, unknown> = { key };
   for (const attr of element.getAttributeNames()) {
     if (/^on/i.test(attr)) {
-      throw new Error(`event handler attribute "${attr}" is not allowed`);
+      throw new HtmdxSourceError(
+        'event-handler-attribute',
+        `event handler attribute "${attr}" is not allowed`,
+      );
     }
     props[normalizePropName(attr)] = parseAttrValue(element.getAttribute(attr) || '');
   }
@@ -681,7 +694,14 @@ function mapSourceAttributes(body: string, nodes: Node[]): WeakMap<Element, Sour
   return attributesByElement;
 }
 
-function tokenize(source: string, registry: Map<string, string>): Block[] {
+// When `recover` is supplied the scan reports a tag-level failure and keeps
+// going instead of throwing, so validate() can surface every bad tag in one
+// pass. compile() passes nothing and keeps failing on the first.
+function tokenize(
+  source: string,
+  registry: Map<string, string>,
+  recover?: (error: HtmdxSourceError) => void,
+): Block[] {
   const blocks: Block[] = [];
   // Tag scanning runs on the masked syntax (code fences and inline code
   // blanked out, positions preserved) so component tags inside code samples
@@ -702,22 +722,43 @@ function tokenize(source: string, registry: Map<string, string>): Block[] {
       // typo or a missing registration, not markdown — fail loudly so
       // agents get feedback instead of silently degraded output.
       if (/^[A-Z]/.test(rawName)) {
-        throw new Error(`unknown component <${rawName}>`);
+        const error = new HtmdxSourceError(
+          'unknown-component',
+          `unknown component <${rawName}>`,
+          match.index,
+          match[0].length,
+        );
+        if (!recover) {
+          throw error;
+        }
+        recover(error);
       }
       continue;
     }
 
-    pushMarkdown(blocks, source.slice(cursor, match.index));
+    pushMarkdown(blocks, source.slice(cursor, match.index), cursor);
 
     if (selfClosing) {
-      blocks.push({ type: 'component', name: canonical, attrs, body: '' });
+      blocks.push({ type: 'component', name: canonical, attrs, body: '', offset: match.index });
       cursor = openTag.lastIndex;
       continue;
     }
 
     const close = findMatchingClose(syntax, rawName, openTag.lastIndex);
     if (!close) {
-      throw new Error(`unclosed component <${canonical}>`);
+      const error = new HtmdxSourceError(
+        'unclosed-component',
+        `unclosed component <${canonical}>`,
+        match.index,
+        match[0].length,
+      );
+      if (!recover) {
+        throw error;
+      }
+      // No closing tag means no reliable body boundary; report and let the
+      // rest of the source be scanned as markdown.
+      recover(error);
+      continue;
     }
 
     blocks.push({
@@ -725,12 +766,13 @@ function tokenize(source: string, registry: Map<string, string>): Block[] {
       name: canonical,
       attrs,
       body: source.slice(openTag.lastIndex, close.bodyEnd).trim(),
+      offset: match.index,
     });
     cursor = close.closeEnd;
     openTag.lastIndex = close.closeEnd;
   }
 
-  pushMarkdown(blocks, source.slice(cursor));
+  pushMarkdown(blocks, source.slice(cursor), cursor);
   return blocks;
 }
 
@@ -755,10 +797,10 @@ function findMatchingClose(source: string, name: string, from: number) {
   return null;
 }
 
-function pushMarkdown(blocks: Block[], value: string) {
+function pushMarkdown(blocks: Block[], value: string, start: number) {
   const trimmed = value.trim();
   if (trimmed) {
-    blocks.push({ type: 'markdown', value: trimmed });
+    blocks.push({ type: 'markdown', value: trimmed, offset: start + value.indexOf(trimmed[0]) });
   }
 }
 
@@ -768,6 +810,8 @@ type SourceAttribute = {
   bare: boolean;
   quoted?: boolean;
   fromDom?: boolean;
+  /** Offset of the attribute name, relative to the attribute string. */
+  offset?: number;
 };
 
 function parseAttributes(attrs: string): SourceAttribute[] {
@@ -781,6 +825,7 @@ function parseAttributes(attrs: string): SourceAttribute[] {
       value,
       bare: value === undefined,
       quoted: match[2] !== undefined || match[3] !== undefined,
+      offset: match.index,
     });
   }
   return attributes;
@@ -795,8 +840,14 @@ function definitionPropsFromAttributes(
   const supplied = new Set<string>();
 
   for (const attribute of attributes) {
+    // Event handlers report as an unknown prop for message compatibility, but
+    // carry their own code: the user mistake is distinct from a typo.
     if (/^on/i.test(attribute.name)) {
-      throw new Error(`unknown prop "${attribute.name}" for <${definition.name}>`);
+      throw attributeError(
+        'event-handler-attribute',
+        `unknown prop "${attribute.name}" for <${definition.name}>`,
+        attribute,
+      );
     }
     if (attribute.name === 'class') {
       props.className = attribute.value ?? '';
@@ -809,10 +860,18 @@ function definitionPropsFromAttributes(
 
     const declaration = declarations.get(attribute.name);
     if (!declaration) {
-      throw new Error(`unknown prop "${attribute.name}" for <${definition.name}>`);
+      throw attributeError(
+        'unknown-prop',
+        `unknown prop "${attribute.name}" for <${definition.name}>`,
+        attribute,
+      );
     }
     if (!attribute.fromDom && !attribute.quoted && attribute.value?.includes('{')) {
-      throw new Error(`brace expressions are not allowed in prop "${attribute.name}"`);
+      throw attributeError(
+        'brace-expression-prop',
+        `brace expressions are not allowed in prop "${attribute.name}"`,
+        attribute,
+      );
     }
     supplied.add(declaration.name);
     props[declaration.name] = parseDefinitionProp(definition.name, declaration, attribute);
@@ -823,13 +882,24 @@ function definitionPropsFromAttributes(
       continue;
     }
     if (declaration.required) {
-      throw new Error(`required prop "${declaration.name}" is missing for <${definition.name}>`);
+      throw new HtmdxSourceError(
+        'missing-required-prop',
+        `required prop "${declaration.name}" is missing for <${definition.name}>`,
+      );
     }
     if (declaration.default !== undefined) {
       props[declaration.name] = declaration.default;
     }
   }
   return props;
+}
+
+function attributeError(
+  code: HtmdxDiagnosticCode,
+  message: string,
+  attribute: SourceAttribute,
+): HtmdxSourceError {
+  return new HtmdxSourceError(code, message, attribute.offset, attribute.name.length);
 }
 
 function parseDefinitionProp(
@@ -840,7 +910,11 @@ function parseDefinitionProp(
   let value: unknown;
   if (prop.type === 'string') {
     if (attribute.bare && attribute.value === undefined) {
-      throw new Error(`prop "${prop.name}" for <${componentName}> requires a string value`);
+      throw attributeError(
+        'prop-type-string',
+        `prop "${prop.name}" for <${componentName}> requires a string value`,
+        attribute,
+      );
     }
     value = attribute.value ?? '';
   } else if (prop.type === 'number') {
@@ -850,7 +924,11 @@ function parseDefinitionProp(
         ? Number(source)
         : Number.NaN;
     if (!Number.isFinite(value)) {
-      throw new Error(`prop "${prop.name}" for <${componentName}> must be a finite number`);
+      throw attributeError(
+        'prop-type-number',
+        `prop "${prop.name}" for <${componentName}> must be a finite number`,
+        attribute,
+      );
     }
   } else if (prop.type === 'boolean') {
     if (attribute.bare) {
@@ -858,16 +936,28 @@ function parseDefinitionProp(
     } else if (attribute.value === 'true' || attribute.value === 'false') {
       value = attribute.value === 'true';
     } else {
-      throw new Error(`prop "${prop.name}" for <${componentName}> must be true or false`);
+      throw attributeError(
+        'prop-type-boolean',
+        `prop "${prop.name}" for <${componentName}> must be true or false`,
+        attribute,
+      );
     }
   } else {
     if (attribute.bare || attribute.value === undefined) {
-      throw new Error(`prop "${prop.name}" for <${componentName}> must be valid JSON`);
+      throw attributeError(
+        'prop-type-json',
+        `prop "${prop.name}" for <${componentName}> must be valid JSON`,
+        attribute,
+      );
     }
     try {
       value = JSON.parse(attribute.value);
     } catch {
-      throw new Error(`prop "${prop.name}" for <${componentName}> must be valid JSON`);
+      throw attributeError(
+        'prop-type-json',
+        `prop "${prop.name}" for <${componentName}> must be valid JSON`,
+        attribute,
+      );
     }
   }
 
@@ -878,16 +968,25 @@ function parseDefinitionProp(
 function assertDeclarativeBody(componentName: string, body: string, allowTags = false): void {
   let syntax = markdownSyntaxSource(body);
   if (allowTags && /=\s*\{/.test(syntax)) {
-    throw new Error(`component <${componentName}> body does not allow brace expressions`);
+    throw new HtmdxSourceError(
+      'brace-expression-body',
+      `component <${componentName}> body does not allow brace expressions`,
+    );
   }
   if (allowTags) {
     syntax = syntax.replace(/<[^>]*>/g, '');
   }
   if (/^\s*(import|export)\b/m.test(syntax)) {
-    throw new Error(`component <${componentName}> body does not allow imports or exports`);
+    throw new HtmdxSourceError(
+      'import-export-body',
+      `component <${componentName}> body does not allow imports or exports`,
+    );
   }
   if (/[{}]/.test(syntax)) {
-    throw new Error(`component <${componentName}> body does not allow brace expressions`);
+    throw new HtmdxSourceError(
+      'brace-expression-body',
+      `component <${componentName}> body does not allow brace expressions`,
+    );
   }
 }
 
@@ -923,4 +1022,280 @@ function stripFrontmatterAndComments(source: string) {
     .replace(/^---[\s\S]*?---\s*/, '')
     .replace(/<!--[\s\S]*?-->/g, '')
     .trim();
+}
+
+// Same removals as stripFrontmatterAndComments, but blanked in place so every
+// offset still maps to the original source. Mirrors markdownSyntaxSource.
+function blankFrontmatterAndComments(source: string) {
+  const blanked = source.split('');
+  const blank = (start: number, end: number) => {
+    for (let index = start; index < end; index += 1) {
+      if (blanked[index] !== '\n' && blanked[index] !== '\r') {
+        blanked[index] = ' ';
+      }
+    }
+  };
+
+  const frontmatter = source.match(/^---[\s\S]*?---\s*/);
+  if (frontmatter) {
+    blank(0, frontmatter[0].length);
+  }
+  for (const comment of source.matchAll(/<!--[\s\S]*?-->/g)) {
+    blank(comment.index, comment.index + comment[0].length);
+  }
+  return blanked.join('');
+}
+
+const FRONTMATTER_FIELDS = new Set([
+  'layout',
+  'title',
+  'project',
+  'owner',
+  'phase',
+  'updated',
+  'theme',
+  'logo',
+  'logo-alt',
+]);
+
+// Scanned on the masked syntax so an image inside a code fence or inline code
+// is documentation, not a finding. Markdown has no way to mark an image as
+// decorative, so an empty alt is always a warning; `<img alt="">` is the
+// standard way to say "decorative" and is left alone.
+function imagesMissingAlt(source: string, normalized: string): HtmdxDiagnostic[] {
+  const scannable = markdownSyntaxSource(normalized);
+  const diagnostics: HtmdxDiagnostic[] = [];
+
+  for (const match of scannable.matchAll(/!\[([^\]]*)]\([^)]*\)/g)) {
+    if (!match[1].trim()) {
+      diagnostics.push(
+        toDiagnostic(
+          source,
+          'image-missing-alt',
+          'image has no alt text',
+          match.index,
+          match[0].length,
+          'warning',
+        ),
+      );
+    }
+  }
+
+  for (const match of scannable.matchAll(/<img\b[^>]*>/gi)) {
+    if (!/\balt\s*=/i.test(match[0])) {
+      diagnostics.push(
+        toDiagnostic(
+          source,
+          'image-missing-alt',
+          'image has no alt attribute',
+          match.index,
+          match[0].length,
+          'warning',
+        ),
+      );
+    }
+  }
+
+  return diagnostics;
+}
+
+export type HtmdxStructureNode =
+  | { type: 'markdown'; value: string }
+  | { type: 'text'; value: string }
+  | {
+      type: 'element';
+      name: string;
+      props: Record<string, string>;
+      children: HtmdxStructureNode[];
+    };
+
+// The document's shape as written, not as rendered: component names, the props
+// they were given, and the text between them. Derived from the source rather
+// than the React tree so a snapshot survives runtime markup and styling churn.
+export function structureOf(source: string, options: HtmdxReactOptions = {}): HtmdxStructureNode[] {
+  const catalog = createRuntimeCatalog(options);
+  return tokenize(stripFrontmatterAndComments(source), catalog.names).map((block) => {
+    if (block.type === 'markdown') {
+      return { type: 'markdown' as const, value: block.value.trim() };
+    }
+    return {
+      type: 'element' as const,
+      name: block.name,
+      props: propsFromSourceAttributes(parseAttributes(block.attrs)),
+      children: structureChildren(block.body, catalog),
+    };
+  });
+}
+
+function structureChildren(body: string, catalog: RuntimeCatalog): HtmdxStructureNode[] {
+  const trimmed = body.trim();
+  if (!trimmed) {
+    return [];
+  }
+  if (!hasBodyElements(body)) {
+    return [{ type: 'text', value: trimmed }];
+  }
+
+  const { nodes, sourceAttributes } = parseBodyNodes(body);
+  return structureNodes(nodes, catalog, sourceAttributes);
+}
+
+function structureNodes(
+  nodes: Node[],
+  catalog: RuntimeCatalog,
+  sourceAttributes: WeakMap<Element, SourceAttribute[]>,
+): HtmdxStructureNode[] {
+  const structure: HtmdxStructureNode[] = [];
+  for (const node of nodes) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const value = (node.textContent || '').trim();
+      if (value) {
+        structure.push({ type: 'text', value });
+      }
+      continue;
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE) {
+      continue;
+    }
+    const element = node as Element;
+    const tag = element.tagName;
+    structure.push({
+      type: 'element',
+      name: catalog.names.get(tag.toLowerCase()) ?? tag,
+      props: propsFromSourceAttributes(
+        sourceAttributes.get(element) ??
+          Array.from(element.attributes, (attribute) => ({
+            name: attribute.name,
+            value: attribute.value,
+            bare: false,
+          })),
+      ),
+      children: structureNodes(Array.from(element.childNodes), catalog, sourceAttributes),
+    });
+  }
+  return structure;
+}
+
+function propsFromSourceAttributes(attributes: SourceAttribute[]): Record<string, string> {
+  return Object.fromEntries(
+    attributes.map((attribute) => [attribute.name, attribute.bare ? '' : (attribute.value ?? '')]),
+  );
+}
+
+export type ValidationProbe = {
+  offset: number;
+  render: () => ReactNode;
+};
+
+// Everything validate() can determine without a DOM, plus one render thunk per
+// component block. The caller renders each probe in isolation so a component
+// that throws does not hide the blocks after it.
+export function collectStructuralDiagnostics(
+  source: string,
+  options: HtmdxDocumentOptions = {},
+): { diagnostics: HtmdxDiagnostic[]; probes: ValidationProbe[] } {
+  const catalog = createRuntimeCatalog(options);
+  const diagnostics: HtmdxDiagnostic[] = [];
+  const meta = parseFrontmatter(source);
+
+  for (const [field, value] of Object.entries(meta)) {
+    const offset = Math.max(0, source.indexOf(`${field}:`));
+    if (!FRONTMATTER_FIELDS.has(field)) {
+      diagnostics.push(
+        toDiagnostic(
+          source,
+          'unknown-frontmatter-field',
+          `unknown frontmatter field "${field}" is ignored`,
+          offset,
+          field.length,
+          'warning',
+        ),
+      );
+      continue;
+    }
+    if (
+      field === 'theme' &&
+      value &&
+      !(THEME_IDS as readonly string[]).includes(value.trim().toLowerCase())
+    ) {
+      diagnostics.push(
+        toDiagnostic(
+          source,
+          'unknown-theme',
+          `unknown theme "${value}" falls back to the base palette; expected one of ${THEME_IDS.join(', ')}`,
+          offset,
+          field.length,
+          'warning',
+        ),
+      );
+    }
+  }
+
+  const layout = (options.layout || meta.layout || 'default').trim().toLowerCase();
+  if (layout !== 'default' && layout !== 'blank' && !getLayout(layout)) {
+    diagnostics.push(
+      toDiagnostic(
+        source,
+        'unknown-layout',
+        `unknown layout "${layout}"`,
+        Math.max(0, source.indexOf('layout:')),
+        'layout'.length,
+        'error',
+      ),
+    );
+  }
+
+  const normalized = blankFrontmatterAndComments(source);
+  diagnostics.push(...imagesMissingAlt(source, normalized));
+
+  const blocks = tokenize(normalized, catalog.names, (error) => {
+    diagnostics.push(
+      toDiagnostic(source, error.code, error.message, error.offset ?? 0, error.length ?? 1),
+    );
+  });
+
+  const probes = blocks
+    .filter((block) => block.type === 'component')
+    .map((block, index) => ({
+      offset: block.offset,
+      render: () => renderComponentBlock(block, catalog, `v-${index}`),
+    }));
+
+  return { diagnostics, probes };
+}
+
+// A component block's failure can arrive from three places: the tokenizer
+// (already coded), attribute parsing (coded, offset relative to the tag's
+// attribute string), or the component's own render, where body-contract
+// errors already carry a body-relative location inside their message.
+export function diagnosticForBlock(
+  source: string,
+  block: { offset: number },
+  error: unknown,
+): HtmdxDiagnostic {
+  const message = error instanceof Error ? error.message : String(error);
+
+  if (error instanceof HtmdxSourceError) {
+    const openingTag = source.slice(block.offset).match(/^<([A-Za-z][A-Za-z0-9]*)[^>]*>/);
+    const tagName = openingTag?.[1] ?? '';
+    const rebased =
+      error.offset === undefined ? block.offset : block.offset + 1 + tagName.length + error.offset;
+    // An attribute offset is relative to its own tag. When the failing tag is
+    // nested inside the block's body, rebasing it against the block's opening
+    // tag lands on an unrelated character, so fall back to the block itself.
+    const withinOpeningTag = rebased < block.offset + (openingTag?.[0].length ?? 0);
+    const offset = withinOpeningTag ? rebased : block.offset;
+    return toDiagnostic(
+      source,
+      error.code,
+      message,
+      offset,
+      withinOpeningTag ? (error.length ?? 1) : 1,
+    );
+  }
+
+  const code: HtmdxDiagnosticCode = message.startsWith('Invalid body for <')
+    ? 'body-contract'
+    : 'render-failed';
+  return toDiagnostic(source, code, message, block.offset, 1);
 }

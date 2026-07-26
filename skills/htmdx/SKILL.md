@@ -16,26 +16,33 @@ package.
 
 ## Load the guidance
 
-Run this before authoring, editing, or reviewing any HTMDX:
-
-```sh
-npx -y @wix/htmdx@latest skill
-```
-
-Use the version the artifact pins instead of `@latest` when it has one, so the
-guidance matches what the file actually loads:
+Run this before authoring, editing, or reviewing any HTMDX. When the file
+already pins a runtime, read the guidance from that same version so it matches
+what the artifact actually loads:
 
 ```sh
 npx -y @wix/htmdx@<pinned-version> skill
 ```
 
-Follow that output as the source of truth. If it cannot be loaded, report the
-exact command failure and stop rather than reconstructing the component
-catalog from memory.
+For a new artifact, or for a pin that predates the `skill` command, use
+`@latest`:
+
+```sh
+npx -y @wix/htmdx@latest skill
+```
+
+A pinned version that exits `2` with `unknown command "skill"` is too old to
+carry the guidance. Rerun with `@latest`, then say in the handoff that the
+guidance is newer than the runtime the artifact pins.
+
+Follow that output as the source of truth. If neither command loads, report the
+exact failure and stop rather than reconstructing the component catalog from
+memory.
 
 ## Other topics
 
-Load these when the task calls for them, or pass `--full` for everything:
+Load these when the task calls for them, or pass `--full` for everything. Use
+the same version that answered the first call:
 
 ```sh
 npx -y @wix/htmdx@latest skill --list          # what is available

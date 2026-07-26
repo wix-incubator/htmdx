@@ -435,6 +435,7 @@ to the version an artifact declares gets you the behavior that artifact ships:
 npx @wix/htmdx@4.8.0 lint docs/*.htmdx --strict
 npx @wix/htmdx@4.8.0 compile report.htmdx --out report-body.html
 npx @wix/htmdx@4.8.0 components Callout
+npx @wix/htmdx@4.8.0 skill
 ```
 
 <!-- x-release-please-end-version -->
@@ -444,6 +445,7 @@ npx @wix/htmdx@4.8.0 components Callout
 | `lint <files...>`   | Report problems. `validate` is an alias for the same run. |
 | `compile <file>`    | Print the `htmdx-app` markup.                             |
 | `components [name]` | List the catalog, or describe one component.              |
+| `skill [topic]`     | Print the authoring guidance shipped with this runtime.   |
 
 Exit codes are `0` clean, `1` problems found, and `2` could not run.
 
@@ -521,6 +523,28 @@ substring and by edit distance, so a typo or a half-remembered name still lands:
 `unknown component "Calout"; did you mean Callout?`. `--format json` prints the
 manifest entry, or the whole manifest when no name is given — the shape to read
 before writing a document rather than guessing at prop names.
+
+## Agent guidance
+
+The same bin prints the authoring guidance that ships with this runtime, so an
+agent reads the contract, component grammar, and verification steps for the
+exact version an artifact pins instead of a copy that drifts:
+
+<!-- x-release-please-start-version -->
+
+```bash
+npx @wix/htmdx@4.8.0 skill                 # authoring guidance
+npx @wix/htmdx@4.8.0 skill --list          # available topics
+npx @wix/htmdx@4.8.0 skill components      # body grammar per component
+npx @wix/htmdx@4.8.0 skill --full          # every topic in one stream
+npx @wix/htmdx@4.8.0 skill starter > brief.html
+```
+
+<!-- x-release-please-end-version -->
+
+`--json` returns `{ runtime, topics: [{ name, description, content }] }`. An
+unknown topic exits `2` and names the valid ones. The topic files live in
+`skill/` in this package.
 
 ## Testing documents
 

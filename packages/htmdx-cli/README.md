@@ -13,18 +13,18 @@ artifact) or a bare HTMDX source file.
 
 ## Options
 
-| Option                   | Description                                          |
-| ------------------------ | ---------------------------------------------------- |
-| `--format <pretty\|json>` | Output format. Default `pretty`.                     |
-| `--strict`               | Treat warnings as failures.                          |
-| `--runtime <specifier>`  | Validate against a specific `@wix/htmdx` build.       |
+| Option                    | Description                                     |
+| ------------------------- | ----------------------------------------------- |
+| `--format <pretty\|json>` | Output format. Default `pretty`.                |
+| `--strict`                | Treat warnings as failures.                     |
+| `--runtime <specifier>`   | Validate against a specific `@wix/htmdx` build. |
 
 ## Exit codes
 
-| Code | Meaning                                                    |
-| ---- | ---------------------------------------------------------- |
-| `0`  | No errors (and no warnings, when `--strict` is set).        |
-| `1`  | Problems found.                                             |
+| Code | Meaning                                                      |
+| ---- | ------------------------------------------------------------ |
+| `0`  | No errors (and no warnings, when `--strict` is set).         |
+| `1`  | Problems found.                                              |
 | `2`  | The command could not run — bad usage or an unreadable file. |
 
 ## Rules

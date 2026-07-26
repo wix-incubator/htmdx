@@ -21,5 +21,9 @@ storybook-static
 # Turborepo - ignore cache folder
 .turbo
 
+# Playwright
+playwright-report/
+test-results/
+
 # Claude Code worktrees
 .claude/

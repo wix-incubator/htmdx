@@ -42,3 +42,31 @@ jobs:
 
       - name: Format check
         run: yarn fmt:check
+
+  e2e:
+    name: E2E
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version-file: .nvmrc
+
+      - name: Install dependencies
+        run: printf 'y\n' | NPQ_PKG_MGR=yarn npx --yes npq install
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Build library
+        run: yarn workspace @wix/htmdx build:library
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+        working-directory: packages/htmdx
+
+      - name: E2E
+        run: yarn workspace @wix/htmdx e2e

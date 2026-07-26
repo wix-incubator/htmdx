@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.10.0](https://github.com/wix-incubator/htmdx/compare/v4.9.0...v4.10.0) (2026-07-26)
+
+
+### Features
+
+* **runtime:** render around a failing block and copy a full-scan fix request ([#76](https://github.com/wix-incubator/htmdx/issues/76)) ([19fd560](https://github.com/wix-incubator/htmdx/commit/19fd56071fe4cc3ce28ebf760571428fe3ae9aed))
+
+
+### Bug Fixes
+
+* make invalid component-body errors actionable ([#72](https://github.com/wix-incubator/htmdx/issues/72)) ([9b40f94](https://github.com/wix-incubator/htmdx/commit/9b40f9429f858274725778512620f07a1e02f254)), closes [#51](https://github.com/wix-incubator/htmdx/issues/51)
+
 ## [4.9.0](https://github.com/wix-incubator/htmdx/compare/v4.8.0...v4.9.0) (2026-07-26)
 
 

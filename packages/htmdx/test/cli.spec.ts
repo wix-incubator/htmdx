@@ -337,6 +337,14 @@ describe('htmdx skill', () => {
     ]);
   });
 
+  // A typo'd flag that quietly prints the default topic reads as an answer.
+  test('exits 2 for an unknown flag instead of falling back to a topic', async () => {
+    const result = await cli('skill', '--topics');
+
+    expect(result.code).toBe(2);
+    expect(result.stderr).toContain('unknown option "--topics"');
+  });
+
   test('exits 2 and names the valid topics for an unknown one', async () => {
     const result = await cli('skill', 'nope');
 

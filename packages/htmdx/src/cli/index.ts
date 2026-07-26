@@ -173,9 +173,20 @@ async function runComponents(args: Args): Promise<number> {
   return 0;
 }
 
+const SKILL_FLAGS = new Set(['--list', '--full', '--json']);
+
 async function runSkill(argv: string[]): Promise<number> {
   const flags = new Set(argv.filter((argument) => argument.startsWith('--')));
   const [requested] = argv.filter((argument) => !argument.startsWith('--'));
+
+  // Printing the default topic for a mistyped flag looks like an answer.
+  const unknown = [...flags].find((flag) => !SKILL_FLAGS.has(flag));
+  if (unknown) {
+    process.stderr.write(
+      `unknown option "${unknown}"; expected one of ${[...SKILL_FLAGS].join(', ')}\n`,
+    );
+    return 2;
+  }
 
   if (flags.has('--list')) {
     process.stdout.write(formatTopicList());

@@ -219,4 +219,76 @@ describe('inline SVG', () => {
       ['<svg viewBox="0 0 10 10">', '  <circle r="4" />'].join('\n'),
     );
   });
+
+  // Every filter primitive computes from the source graphic and its siblings.
+  // None of them fetches, which is what separates the list from `<feImage>`.
+  test('renders a texture filter built from local primitives', () => {
+    const rendered = compile(
+      '<svg viewBox="0 0 10 10"><defs><filter id="f"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="4"></feTurbulence><feDisplacementMap in="SourceGraphic" scale="6" xChannelSelector="R" yChannelSelector="G"></feDisplacementMap><feMorphology operator="dilate" radius="1"></feMorphology></filter></defs><rect width="10" height="10" filter="url(#f)"></rect></svg>',
+    );
+
+    expect(rendered.ok && rendered.html).toContain(
+      '<feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="4">',
+    );
+    expect(rendered.ok && rendered.html).toContain(
+      '<feDisplacementMap in="SourceGraphic" scale="6" xChannelSelector="R" yChannelSelector="G">',
+    );
+    expect(rendered.ok && rendered.html).toContain('<feMorphology operator="dilate" radius="1">');
+  });
+
+  test('renders a lighting filter with its light source and transfer functions', () => {
+    const rendered = compile(
+      '<svg viewBox="0 0 10 10"><defs><filter id="f"><feDiffuseLighting surfaceScale="2" diffuseConstant="1" lighting-color="#fff"><feSpotLight x="1" y="1" z="4" pointsAtX="5" pointsAtY="5" limitingConeAngle="30"></feSpotLight></feDiffuseLighting><feComponentTransfer><feFuncR type="table" tableValues="0 1"></feFuncR></feComponentTransfer></filter></defs></svg>',
+    );
+
+    expect(rendered.ok && rendered.html).toContain('surfaceScale="2"');
+    expect(rendered.ok && rendered.html).toContain(
+      '<feSpotLight x="1" y="1" z="4" pointsAtX="5" pointsAtY="5" limitingConeAngle="30">',
+    );
+    expect(rendered.ok && rendered.html).toContain('<feFuncR type="table" tableValues="0 1">');
+  });
+
+  // A hyphenated SVG attribute is only useful if React emits it hyphenated
+  // again. SVG attribute names are case sensitive, so a `maskType` that never
+  // becomes `mask-type` is a silently dead attribute rather than a loud error.
+  test.each([
+    ['color-interpolation-filters', 'linearRGB'],
+    ['image-rendering', 'pixelated'],
+    ['lighting-color', '#fff'],
+    ['mask-type', 'alpha'],
+    ['mix-blend-mode', 'multiply'],
+    ['paint-order', 'stroke'],
+    ['pointer-events', 'none'],
+    ['vector-effect', 'non-scaling-stroke'],
+  ])('round-trips %s as a hyphenated attribute', (attribute, value) => {
+    const group = query(
+      `<svg viewBox="0 0 10 10"><g ${attribute}="${value}"><circle r="4"></circle></g></svg>`,
+      'svg g',
+    );
+
+    expect(group?.getAttribute(attribute)).toBe(value);
+  });
+
+  test('renders a conditional switch', () => {
+    const rendered = compile(
+      '<svg viewBox="0 0 100 20"><switch><text systemLanguage="de" x="2" y="14">Umsatz</text><text x="2" y="14">Revenue</text></switch></svg>',
+    );
+
+    expect(rendered.ok && rendered.html).toContain('<switch>');
+    expect(rendered.ok && rendered.html).toContain('systemLanguage="de"');
+  });
+
+  // Every other filter primitive is local compute; `<feImage>` loads a document.
+  // DOMPurify allows it, this allowlist does not.
+  test('keeps <feImage> literal inside a filter', () => {
+    const rendered = compile(
+      '<svg viewBox="0 0 10 10">\n<filter id="f"><feImage href="https://evil.example/x.png"></feImage></filter>\n<rect width="10" height="10"></rect>\n</svg>',
+    );
+
+    expect(rendered.ok).toBe(true);
+    expect(rendered.ok && rendered.html).toContain('&lt;feImage');
+    // The URL survives as escaped text, which is inert. What must not survive
+    // is an `feImage` element that would fetch it.
+    expect(rendered.ok && rendered.html).not.toContain('<feImage');
+  });
 });

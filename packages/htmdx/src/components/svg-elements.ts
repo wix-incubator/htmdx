@@ -5,9 +5,11 @@
 // names while lowercasing attribute names. Both are keyed by lowercase and
 // resolve to canonical casing, so either parse path lands on the same element.
 //
-// Left out on purpose: `<script>`, `<foreignObject>`, `<use>`, `<image>`, the
-// animation elements, and `<a>`. Each is a way to reach outside the graphic —
-// into script, into HTML, or into another document.
+// Left out on purpose: `<script>`, `<foreignObject>`, `<use>`, `<image>`,
+// `<feImage>`, the animation elements, and `<a>`. Each is a way to reach outside
+// the graphic — into script, into HTML, or into another document. Every filter
+// primitive that only computes from its inputs is allowed; `<feImage>` is the
+// one that loads a document, so it is the one that is not.
 import { HtmdxSourceError } from '../diagnostics';
 import { safeStyle } from './html-elements';
 
@@ -19,13 +21,28 @@ const ELEMENT_NAMES = [
   'ellipse',
   'feBlend',
   'feColorMatrix',
+  'feComponentTransfer',
   'feComposite',
+  'feConvolveMatrix',
+  'feDiffuseLighting',
+  'feDisplacementMap',
+  'feDistantLight',
   'feDropShadow',
   'feFlood',
+  'feFuncA',
+  'feFuncB',
+  'feFuncG',
+  'feFuncR',
   'feGaussianBlur',
   'feMerge',
   'feMergeNode',
+  'feMorphology',
   'feOffset',
+  'fePointLight',
+  'feSpecularLighting',
+  'feSpotLight',
+  'feTile',
+  'feTurbulence',
   'filter',
   'g',
   'line',
@@ -40,6 +57,7 @@ const ELEMENT_NAMES = [
   'rect',
   'stop',
   'svg',
+  'switch',
   'symbol',
   'text',
   'textPath',
@@ -50,13 +68,16 @@ const ELEMENT_NAMES = [
 /** Lowercased tag name to the casing React and the SVG DOM expect. */
 export const SVG_ELEMENTS = new Map(ELEMENT_NAMES.map((name) => [name.toLowerCase(), name]));
 
-// Attributes every element may carry, on top of `aria-*` and `data-*`.
+// Attributes every element may carry, on top of `aria-*` and `data-*`. The two
+// conditional ones are what makes `<switch>` able to choose a branch.
 const GLOBAL_ATTRIBUTES = new Set([
   'class',
   'id',
   'lang',
+  'requiredextensions',
   'role',
   'style',
+  'systemlanguage',
   'tabindex',
   'transform',
 ]);
@@ -69,6 +90,9 @@ const PRESENTATION_ATTRIBUTES = new Set([
   'clip-path',
   'clip-rule',
   'color',
+  'color-interpolation',
+  'color-interpolation-filters',
+  'direction',
   'display',
   'dominant-baseline',
   'fill',
@@ -81,15 +105,19 @@ const PRESENTATION_ATTRIBUTES = new Set([
   'font-style',
   'font-variant',
   'font-weight',
+  'image-rendering',
   'letter-spacing',
+  'lighting-color',
   'marker-end',
   'marker-mid',
   'marker-start',
   'mask',
+  'mask-type',
   'mix-blend-mode',
   'opacity',
   'overflow',
   'paint-order',
+  'pointer-events',
   'shape-rendering',
   'stop-color',
   'stop-opacity',
@@ -105,6 +133,7 @@ const PRESENTATION_ATTRIBUTES = new Set([
   'text-decoration',
   'text-rendering',
   'transform-origin',
+  'unicode-bidi',
   'vector-effect',
   'visibility',
   'word-spacing',
@@ -117,19 +146,65 @@ function filterPrimitive(...extra: string[]) {
   return new Set([...FILTER_PRIMITIVE_ATTRIBUTES, ...extra]);
 }
 
+// The four `<feFunc*>` channels share one attribute set; they differ only in
+// which channel of `<feComponentTransfer>` they describe.
+function transferFunction() {
+  return new Set(['amplitude', 'exponent', 'intercept', 'offset', 'slope', 'tablevalues', 'type']);
+}
+
 const ELEMENT_ATTRIBUTES = new Map([
   ['circle', new Set(['cx', 'cy', 'r', 'pathlength'])],
   ['clippath', new Set(['clippathunits'])],
   ['ellipse', new Set(['cx', 'cy', 'rx', 'ry', 'pathlength'])],
   ['feblend', filterPrimitive('in2', 'mode')],
   ['fecolormatrix', filterPrimitive('type', 'values')],
+  ['fecomponenttransfer', filterPrimitive()],
   ['fecomposite', filterPrimitive('in2', 'k1', 'k2', 'k3', 'k4', 'operator')],
+  [
+    'feconvolvematrix',
+    filterPrimitive(
+      'bias',
+      'divisor',
+      'edgemode',
+      'kernelmatrix',
+      'kernelunitlength',
+      'order',
+      'preservealpha',
+      'targetx',
+      'targety',
+    ),
+  ],
+  ['fediffuselighting', filterPrimitive('diffuseconstant', 'surfacescale')],
+  ['fedisplacementmap', filterPrimitive('in2', 'scale', 'xchannelselector', 'ychannelselector')],
+  ['fedistantlight', new Set(['azimuth', 'elevation'])],
   ['fedropshadow', filterPrimitive('dx', 'dy', 'stddeviation')],
   ['feflood', filterPrimitive('flood-color', 'flood-opacity')],
+  ['fefunca', transferFunction()],
+  ['fefuncb', transferFunction()],
+  ['fefuncg', transferFunction()],
+  ['fefuncr', transferFunction()],
   ['fegaussianblur', filterPrimitive('edgemode', 'stddeviation')],
   ['femerge', filterPrimitive()],
   ['femergenode', new Set(['in'])],
+  ['femorphology', filterPrimitive('operator', 'radius')],
   ['feoffset', filterPrimitive('dx', 'dy')],
+  ['fepointlight', new Set(['x', 'y', 'z'])],
+  ['fespecularlighting', filterPrimitive('specularconstant', 'specularexponent', 'surfacescale')],
+  [
+    'fespotlight',
+    new Set([
+      'limitingconeangle',
+      'pointsatx',
+      'pointsaty',
+      'pointsatz',
+      'specularexponent',
+      'x',
+      'y',
+      'z',
+    ]),
+  ],
+  ['fetile', filterPrimitive()],
+  ['feturbulence', filterPrimitive('basefrequency', 'numoctaves', 'seed', 'stitchtiles', 'type')],
   ['filter', new Set(['filterunits', 'height', 'primitiveunits', 'width', 'x', 'y'])],
   ['line', new Set(['pathlength', 'x1', 'x2', 'y1', 'y2'])],
   [
@@ -197,33 +272,61 @@ const ELEMENT_ATTRIBUTES = new Map([
 // React renames. Everything else is either already lowercase or hyphenated,
 // and hyphenated names camel-case mechanically.
 const CANONICAL_NAMES = new Map([
+  ['basefrequency', 'baseFrequency'],
   ['class', 'className'],
   ['clippathunits', 'clipPathUnits'],
+  ['diffuseconstant', 'diffuseConstant'],
   ['edgemode', 'edgeMode'],
   ['filterunits', 'filterUnits'],
   ['gradienttransform', 'gradientTransform'],
   ['gradientunits', 'gradientUnits'],
+  ['kernelmatrix', 'kernelMatrix'],
+  ['kernelunitlength', 'kernelUnitLength'],
   ['lengthadjust', 'lengthAdjust'],
+  ['limitingconeangle', 'limitingConeAngle'],
   ['markerheight', 'markerHeight'],
   ['markerunits', 'markerUnits'],
   ['markerwidth', 'markerWidth'],
   ['maskcontentunits', 'maskContentUnits'],
   ['maskunits', 'maskUnits'],
+  ['numoctaves', 'numOctaves'],
   ['pathlength', 'pathLength'],
   ['patterncontentunits', 'patternContentUnits'],
   ['patterntransform', 'patternTransform'],
   ['patternunits', 'patternUnits'],
+  ['pointsatx', 'pointsAtX'],
+  ['pointsaty', 'pointsAtY'],
+  ['pointsatz', 'pointsAtZ'],
   ['preserveaspectratio', 'preserveAspectRatio'],
+  ['preservealpha', 'preserveAlpha'],
   ['primitiveunits', 'primitiveUnits'],
   ['refx', 'refX'],
   ['refy', 'refY'],
+  ['requiredextensions', 'requiredExtensions'],
+  ['specularconstant', 'specularConstant'],
+  ['specularexponent', 'specularExponent'],
   ['spreadmethod', 'spreadMethod'],
   ['startoffset', 'startOffset'],
   ['stddeviation', 'stdDeviation'],
+  ['stitchtiles', 'stitchTiles'],
+  ['surfacescale', 'surfaceScale'],
+  ['systemlanguage', 'systemLanguage'],
   ['tabindex', 'tabIndex'],
+  ['tablevalues', 'tableValues'],
+  ['targetx', 'targetX'],
+  ['targety', 'targetY'],
   ['textlength', 'textLength'],
   ['viewbox', 'viewBox'],
+  ['xchannelselector', 'xChannelSelector'],
+  ['ychannelselector', 'yChannelSelector'],
 ]);
+
+// React knows the hyphenated presentation attributes by their camel-cased prop
+// name and writes the hyphen back out — except these two, which it has no entry
+// for and would emit verbatim as `maskType`. SVG attribute names are case
+// sensitive, so that is a dead attribute. Passing the hyphen straight through
+// makes React treat them as custom attributes and render them unchanged.
+const HYPHENATED_PROPS = new Set(['mask-type', 'mix-blend-mode']);
 
 // A paint value may reference a gradient, mask, or filter defined in the same
 // document. That is the only `url()` an SVG attribute is allowed to carry: no
@@ -284,6 +387,9 @@ function reactPropName(attribute: string) {
   const canonical = CANONICAL_NAMES.get(attribute);
   if (canonical) {
     return canonical;
+  }
+  if (HYPHENATED_PROPS.has(attribute)) {
+    return attribute;
   }
   return attribute.replace(/-([a-z])/g, (_, character: string) => character.toUpperCase());
 }

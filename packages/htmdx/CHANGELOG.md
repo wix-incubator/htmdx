@@ -1,5 +1,18 @@
 # Changelog
 
+## [4.6.0](https://github.com/wix-incubator/htmdx/compare/v4.5.1...v4.6.0) (2026-07-26)
+
+
+### Features
+
+* add validate(), the testing subpath, and an htmdx lint CLI ([#55](https://github.com/wix-incubator/htmdx/issues/55)) ([077e452](https://github.com/wix-incubator/htmdx/commit/077e452a97bad355e69e2df5259ddf69fe686429))
+* **layouts:** add document layout selection ([#49](https://github.com/wix-incubator/htmdx/issues/49)) ([b91d9ee](https://github.com/wix-incubator/htmdx/commit/b91d9eea5d46ff1a9eb01ea2b669f7c5e3e83434))
+
+
+### Bug Fixes
+
+* keep code spans literal inside component bodies ([#53](https://github.com/wix-incubator/htmdx/issues/53)) ([ab67396](https://github.com/wix-incubator/htmdx/commit/ab67396799edbd80cfef75b5601d899219498223))
+
 ## [4.5.1](https://github.com/wix-incubator/htmdx/compare/v4.5.0...v4.5.1) (2026-07-21)
 
 

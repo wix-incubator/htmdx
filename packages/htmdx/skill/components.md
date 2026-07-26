@@ -7,7 +7,7 @@ canonical example, body mode, and props:
 <!-- x-release-please-start-version -->
 
 ```text
-https://cdn.jsdelivr.net/npm/@wix/htmdx@4.8.0/dist/components.json
+https://cdn.jsdelivr.net/npm/@wix/htmdx@4.9.0/dist/components.json
 ```
 
 <!-- x-release-please-end-version -->

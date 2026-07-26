@@ -1,5 +1,19 @@
 # Changelog
 
+## [4.9.0](https://github.com/wix-incubator/htmdx/compare/v4.8.0...v4.9.0) (2026-07-26)
+
+
+### Features
+
+* **cli:** ship the agent guidance from the runtime and print it with htmdx skill ([#69](https://github.com/wix-incubator/htmdx/issues/69)) ([373f71d](https://github.com/wix-incubator/htmdx/commit/373f71dc637ca100d357be098814ee453f30af8f))
+* **react:** highlight code blocks and give raw pre the same chrome ([#73](https://github.com/wix-incubator/htmdx/issues/73)) ([d76dfa0](https://github.com/wix-incubator/htmdx/commit/d76dfa0a1d797178f168cf64695238b1e5c8f14a))
+* **react:** render mermaid diagrams from fenced code blocks ([#71](https://github.com/wix-incubator/htmdx/issues/71)) ([5dcc43d](https://github.com/wix-incubator/htmdx/commit/5dcc43d88d562519c44233e5b287f6eb2a6ab488))
+
+
+### Bug Fixes
+
+* **build:** pin the browser bundle to the production JSX transform ([#68](https://github.com/wix-incubator/htmdx/issues/68)) ([6cf1747](https://github.com/wix-incubator/htmdx/commit/6cf1747accac418d75e619e9961c14b9dc3eb5b9))
+
 ## [4.8.0](https://github.com/wix-incubator/htmdx/compare/v4.7.0...v4.8.0) (2026-07-26)
 
 

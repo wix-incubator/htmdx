@@ -20,6 +20,7 @@ import {
   diagnosticForBlock,
   tokenizeSource,
 } from './react';
+import { configureMermaid, type HtmdxMermaidOptions } from './react/mermaid';
 import { toDiagnostic, type HtmdxDiagnostic } from './diagnostics';
 import { addLayout, type HtmdxLayoutDefinition } from './layout';
 import { THEME_CSS, THEME_IDS } from './themes';
@@ -30,6 +31,7 @@ export { VERSION } from './version';
 export { injectShadcnTheme } from './components/shadcn/shared/theme';
 export { compileDocument, compileToReact, Htmdx, listComponents } from './react';
 export type { HtmdxDocument, HtmdxDocumentOptions, HtmdxReactOptions } from './react';
+export { DEFAULT_MERMAID_SRC, type HtmdxMermaidOptions } from './react/mermaid';
 export { HtmdxSourceError } from './diagnostics';
 export type { HtmdxDiagnostic, HtmdxDiagnosticCode, HtmdxSeverity } from './diagnostics';
 export type { HtmdxLayoutDefinition, HtmdxLayoutProps, HtmdxLayoutSlot } from './layout';
@@ -65,6 +67,7 @@ export type HtmdxRegisterOptions = {
   sourceSelector?: string;
   theme?: HtmdxThemeDefinition;
   tailwind?: boolean | { src?: string };
+  mermaid?: HtmdxMermaidOptions;
   automount?: boolean;
 } & HtmdxCompileOptions;
 
@@ -269,6 +272,9 @@ export function register(options: HtmdxRegisterOptions = {}) {
   }
   injectFonts();
   injectTailwindBrowser(options.tailwind);
+  // Mermaid is not injected here: unlike Tailwind, nothing needs it until a
+  // document turns out to contain a diagram, so the fetch is the diagram's.
+  configureMermaid(options.mermaid);
   injectThemeStyle(options.theme);
 
   const tagName = options.tagName || DEFAULT_TAG_NAME;

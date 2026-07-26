@@ -12,6 +12,7 @@ import {
   uniqueSlug,
   type RenderContext,
 } from '../components/rendering';
+import { MermaidDiagram } from './mermaid';
 
 const INLINE = /\*\*([^*]+)\*\*|`([^`]+)`|\[([^\]]+)\]\(([^)]+)\)/g;
 const HTML_TAG = /<\/?([A-Za-z][A-Za-z0-9]*)(?:\s[^>]*)?\/?>/g;
@@ -188,7 +189,30 @@ function renderFencedCode(block: string, key: number) {
   const marker = opening[1];
   const closing = new RegExp(`^ {0,3}${marker[0]}{${marker.length},}\\s*$`);
   const codeLines = closing.test(lines.at(-1) || '') ? lines.slice(1, -1) : lines.slice(1);
-  return createElement('pre', { key }, createElement('code', null, codeLines.join('\n')));
+  const code = codeLines.join('\n');
+  const language = fenceLanguage(lines[0].slice(lines[0].indexOf(marker) + marker.length));
+
+  // The diagram renders itself into the same fence markup until mermaid has
+  // loaded, so compile() stays synchronous and an artifact that never reaches
+  // a browser still shows the diagram source.
+  if (language === 'mermaid') {
+    return createElement(MermaidDiagram, { key, source: code });
+  }
+
+  return createElement(
+    'pre',
+    { key },
+    createElement('code', language ? { className: `language-${language}` } : null, code),
+  );
+}
+
+// Only the first word of the info string, and only when it is a bare language
+// name. CommonMark lets the rest carry anything, and it lands in a class
+// attribute, so a value that is not a plain identifier is dropped rather than
+// escaped.
+function fenceLanguage(info: string) {
+  const word = info.trim().split(/\s+/)[0]?.toLowerCase() || '';
+  return /^[a-z][a-z0-9+#._-]*$/.test(word) ? word : '';
 }
 
 function findNextImage(source: string, syntax: string, from: number): ParsedImage | null {

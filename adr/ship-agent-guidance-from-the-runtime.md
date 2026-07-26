@@ -55,7 +55,7 @@ Reading the guidance now costs a tool call and, on first use of a version, a pac
 download. The token cost is the same as loading a vendored skill; the latency is not.
 npx caches per exact version, so the cost is paid once per version per machine.
 
-Every release up to and including 4.6.0 predates the command and answers `htmdx skill`
+Every release up to and including 4.8.0 predates the command and answers `htmdx skill`
 with `unknown command "skill"` and exit 2. Artifacts pinned to those versions get the
 `@latest` fallback until they are repinned.
 

@@ -6,9 +6,9 @@ runtime it describes. Companion topics:
 <!-- x-release-please-start-version -->
 
 ```bash
-npx @wix/htmdx@4.6.0 skill components    # body grammar for every component
-npx @wix/htmdx@4.6.0 skill integration   # React host, registration, testing
-npx @wix/htmdx@4.6.0 skill starter       # a starter artifact to copy
+npx @wix/htmdx@4.8.0 skill components    # body grammar for every component
+npx @wix/htmdx@4.8.0 skill integration   # React host, registration, testing
+npx @wix/htmdx@4.8.0 skill starter       # a starter artifact to copy
 ```
 
 <!-- x-release-please-end-version -->
@@ -60,7 +60,7 @@ to disk — and replace the title, frontmatter, and body. The shell is:
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Artifact title</title>
-    <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@4.6.0/dist/browser.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@4.8.0/dist/browser.js" defer></script>
   </head>
   <body>
     <!-- prettier-ignore -->
@@ -145,7 +145,7 @@ exact-version manifest is the source of truth when the network is reachable:
 <!-- x-release-please-start-version -->
 
 ```text
-https://cdn.jsdelivr.net/npm/@wix/htmdx@4.6.0/dist/components.json
+https://cdn.jsdelivr.net/npm/@wix/htmdx@4.8.0/dist/components.json
 ```
 
 <!-- x-release-please-end-version -->
@@ -205,7 +205,7 @@ Lint every artifact before presenting it, with the runtime it pins:
 <!-- x-release-please-start-version -->
 
 ```bash
-npx @wix/htmdx@4.6.0 lint path/to/artifact.html --strict
+npx @wix/htmdx@4.8.0 lint path/to/artifact.html --strict
 ```
 
 <!-- x-release-please-end-version -->
@@ -226,9 +226,11 @@ Lint checks the source, not the rendering. When the change is visual, open the
 
 ## CLI
 
-The package ships one binary, `htmdx`, with two commands: `lint` checks
-artifacts and source files, and `skill` prints this guidance. Run either with
-the version the artifact pins, so the results match what the file loads.
+The package ships one binary, `htmdx`. `lint` checks artifacts and source files
+(`validate` is an alias), `compile` prints the static HTML snapshot,
+`components` describes the catalog, and `skill` prints this guidance. Run any
+of them with the version the artifact pins, so the results match what the file
+loads.
 
 Already a dependency? Use the local bin instead — `yarn htmdx …`,
 `npx htmdx …`, or `node_modules/.bin/htmdx …`.
@@ -238,10 +240,10 @@ Already a dependency? Use the local bin instead — `yarn htmdx …`,
 <!-- x-release-please-start-version -->
 
 ```bash
-npx @wix/htmdx@4.6.0 lint artifact.html          # one artifact
-npx @wix/htmdx@4.6.0 lint a.html b.html doc.mdx  # several files
-npx @wix/htmdx@4.6.0 lint artifacts/*.html       # let the shell expand it
-npx @wix/htmdx@4.6.0 lint artifact.html --strict --format json
+npx @wix/htmdx@4.8.0 lint artifact.html          # one artifact
+npx @wix/htmdx@4.8.0 lint a.html b.html doc.mdx  # several files
+npx @wix/htmdx@4.8.0 lint artifacts/*.html       # let the shell expand it
+npx @wix/htmdx@4.8.0 lint artifact.html --strict --format json
 ```
 
 <!-- x-release-please-end-version -->
@@ -264,7 +266,7 @@ editor shows.
 ```text
 artifact.html
   2:26     warning  unpinned-runtime
-    runtime is not pinned to a version; a future release can change this artifact (pin @wix/htmdx@4.6.0)
+    runtime is not pinned to a version; a future release can change this artifact (pin @wix/htmdx@4.8.0)
   5:10     error  unknown-prop
     unknown prop "type" for <Callout>
   9:1      error  body-contract
@@ -280,6 +282,25 @@ Exit codes: `0` clean, `1` problems found (with `--strict`, warnings count),
 unknown command. A `2` means the artifact was never checked; do not read it as
 a pass.
 
+### compile and components
+
+<!-- x-release-please-start-version -->
+
+```bash
+npx @wix/htmdx@4.8.0 compile artifact.html --out snapshot.html
+npx @wix/htmdx@4.8.0 components            # the whole catalog, grouped by source
+npx @wix/htmdx@4.8.0 components Foldout    # purpose, body mode, props, example
+```
+
+<!-- x-release-please-end-version -->
+
+`compile` prints the `htmdx-app` markup this runtime renders, for a build step
+or a readable diff; `--layout <name>` picks a document layout and `-o, --out`
+writes to a file. `components` reads the manifest built next to the bin, so it
+answers for exactly the version running it — ask it before guessing at a prop
+name. Both accept `--format json`; a name with no match exits `1` and suggests
+the closest entries.
+
 ### skill
 
 `skill` prints this guidance from the installed package, so it always matches
@@ -288,11 +309,11 @@ the runtime that renders the artifact.
 <!-- x-release-please-start-version -->
 
 ```bash
-npx @wix/htmdx@4.6.0 skill                 # this topic (authoring)
-npx @wix/htmdx@4.6.0 skill --list          # available topics
-npx @wix/htmdx@4.6.0 skill components      # one topic
-npx @wix/htmdx@4.6.0 skill --full          # every topic in one stream
-npx @wix/htmdx@4.6.0 skill starter > brief.html
+npx @wix/htmdx@4.8.0 skill                 # this topic (authoring)
+npx @wix/htmdx@4.8.0 skill --list          # available topics
+npx @wix/htmdx@4.8.0 skill components      # one topic
+npx @wix/htmdx@4.8.0 skill --full          # every topic in one stream
+npx @wix/htmdx@4.8.0 skill starter > brief.html
 ```
 
 <!-- x-release-please-end-version -->

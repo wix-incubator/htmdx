@@ -30,3 +30,7 @@ Examples:
 Classify by public behavior: `feat` adds it, `fix` repairs it, and behavior-neutral work uses a non-release type. Mark changes or removals to public APIs, output, or runtime contracts as breaking with `!`. For mixed work, use the highest impact; prefer separate PRs when practical.
 
 Before creating or updating a PR, check its title. Never edit package versions, release tags, or generated changelogs. Release Please owns normal releases; a human merges its release PR.
+
+The `@wix/htmdx@<version>` runtime pins in `README.md` and `packages/htmdx/README.md` are generated the same way. Those snippets sit between `x-release-please-start-version` and `x-release-please-end-version` comments, and the release PR rewrites every version inside them, so the docs ship pinned to the version being published. Leave the markers in place, keep new version-bearing snippets inside a marked block, and do not bump the pins by hand.
+
+One consequence worth knowing: an open release PR is not rebuilt when the only new commits are non-releasing types, so changes to `release-please-config.json` or to the markers will not reach it. Close that PR and let the next run recreate it from master.

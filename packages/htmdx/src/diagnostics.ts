@@ -20,6 +20,7 @@ export type HtmdxDiagnosticCode =
   | 'markdown-body-nested-tags'
   | 'body-not-allowed'
   | 'event-handler-attribute'
+  | 'html-element-not-allowed'
   | 'unknown-layout'
   | 'body-contract'
   | 'render-failed'

@@ -35,6 +35,7 @@ export type { HtmdxDiagnostic, HtmdxDiagnosticCode, HtmdxSeverity } from './diag
 export type { HtmdxLayoutDefinition, HtmdxLayoutProps, HtmdxLayoutSlot } from './layout';
 export type HtmdxToken =
   | { type: 'markdown'; value: string }
+  | { type: 'html'; value: string }
   | { type: 'component'; name: string; body: string };
 
 export type HtmdxCompileResult =

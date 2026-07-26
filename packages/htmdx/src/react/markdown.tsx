@@ -3,6 +3,7 @@
 // by React, links and images are scheme-checked, and headings register into the TOC.
 import { createElement, type ReactNode } from 'react';
 import { markdownSyntaxSource } from '../components/body-contracts';
+import { HTML_ELEMENTS } from '../components/html-elements';
 import {
   decodeHtmlEntities,
   safeHref,
@@ -13,6 +14,11 @@ import {
 } from '../components/rendering';
 
 const INLINE = /\*\*([^*]+)\*\*|`([^`]+)`|\[([^\]]+)\]\(([^)]+)\)/g;
+const HTML_TAG = /<\/?([A-Za-z][A-Za-z0-9]*)(?:\s[^>]*)?\/?>/g;
+
+// Raw HTML is parsed by the caller: it owns the component catalog, so a
+// registered tag nested in allowlisted markup still resolves to its component.
+export type HtmlRenderer = (source: string, key: string) => ReactNode;
 
 type ParsedImage = {
   start: number;
@@ -21,8 +27,12 @@ type ParsedImage = {
   fallback: string;
 };
 
-export function renderInline(text: string): ReactNode {
+export function renderInline(text: string, html?: HtmlRenderer): ReactNode {
   const syntax = markdownSyntaxSource(text);
+  if (html && hasHtmlElement(syntax)) {
+    return html(text, 'html');
+  }
+
   const nodes: ReactNode[] = [];
   let cursor = 0;
   let key = 0;
@@ -65,17 +75,28 @@ function appendInlineText(nodes: ReactNode[], text: string, initialKey: number) 
   }
 }
 
-export function renderMarkdown(markdown: string, context?: RenderContext): ReactNode[] {
-  return splitMarkdownBlocks(markdown).map((block, index) => renderBlock(block, index, context));
+export function renderMarkdown(
+  markdown: string,
+  context?: RenderContext,
+  html?: HtmlRenderer,
+): ReactNode[] {
+  return splitMarkdownBlocks(markdown).map((block, index) =>
+    renderBlock(block, index, context, html),
+  );
 }
 
-function renderBlock(block: string, key: number, context?: RenderContext): ReactNode {
+function renderBlock(
+  block: string,
+  key: number,
+  context?: RenderContext,
+  html?: HtmlRenderer,
+): ReactNode {
   const fencedCode = renderFencedCode(block, key);
   if (fencedCode) {
     return fencedCode;
   }
   if (block.startsWith('### ')) {
-    return createElement('h3', { key }, renderInline(block.slice(4)));
+    return createElement('h3', { key }, renderInline(block.slice(4), html));
   }
   if (block.startsWith('## ')) {
     const label = block.slice(3);
@@ -83,21 +104,32 @@ function renderBlock(block: string, key: number, context?: RenderContext): React
     if (context) {
       context.headings.push({ id, label });
     }
-    return createElement('h2', { key, id }, renderInline(label));
+    return createElement('h2', { key, id }, renderInline(label, html));
   }
   if (block.startsWith('# ')) {
-    return createElement('h1', { key }, renderInline(block.slice(2)));
+    return createElement('h1', { key }, renderInline(block.slice(2), html));
   }
   if (block.startsWith('- ')) {
     return createElement(
       'ul',
       { key },
       parseList(block).map((item, index) =>
-        createElement('li', { key: index }, renderInline(item)),
+        createElement('li', { key: index }, renderInline(item, html)),
       ),
     );
   }
-  return createElement('p', { key }, renderInline(block.replace(/\n/g, ' ')));
+  return createElement('p', { key }, renderInline(block.replace(/\n/g, ' '), html));
+}
+
+function hasHtmlElement(syntax: string) {
+  HTML_TAG.lastIndex = 0;
+  let match: RegExpExecArray | null;
+  while ((match = HTML_TAG.exec(syntax))) {
+    if (HTML_ELEMENTS.has(match[1].toLowerCase())) {
+      return true;
+    }
+  }
+  return false;
 }
 
 function splitMarkdownBlocks(markdown: string) {

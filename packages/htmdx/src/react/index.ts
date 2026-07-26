@@ -19,10 +19,17 @@ import {
   type HtmdxComponentDefinitions,
   type HtmdxProp,
 } from '../component-definition';
+import {
+  HTML_BLOCK_ELEMENTS,
+  HTML_FLOW_CONTAINERS,
+  HTML_ELEMENTS,
+  HTML_VOID_ELEMENTS,
+  safeElementProps,
+} from '../components/html-elements';
 import { safeImageAttributes, uniqueSlug, type RenderContext } from '../components/rendering';
 import { BUILT_IN_LOGOS } from '../logos';
 import { getLayout, resolveLayoutSlots } from '../layout';
-import { renderInline, renderMarkdown } from './markdown';
+import { renderInline, renderMarkdown, type HtmlRenderer } from './markdown';
 import { THEME_IDS } from '../themes';
 import {
   HtmdxSourceError,
@@ -46,6 +53,7 @@ type RuntimeCatalog = {
 
 type Block =
   | { type: 'markdown'; value: string; offset: number }
+  | { type: 'html'; value: string; offset: number }
   | { type: 'component'; name: string; attrs: string; body: string; offset: number };
 
 function createRuntimeCatalog(options: HtmdxReactOptions): RuntimeCatalog {
@@ -114,7 +122,7 @@ export function compileDocument(source: string, options: HtmdxDocumentOptions = 
       ),
       title,
       headings: context.headings,
-      components: blocks.filter((block) => block.type === 'component').map((block) => block.name),
+      components: componentNames(blocks, catalog.names),
       meta,
     };
   }
@@ -141,12 +149,13 @@ export function compileDocument(source: string, options: HtmdxDocumentOptions = 
       ),
       title,
       headings: context.headings,
-      components: blocks.filter((block) => block.type === 'component').map((block) => block.name),
+      components: componentNames(blocks, catalog.names),
       meta,
     };
   }
   const lead = title ? extractHeroContent(blocks) : '';
   const sections = groupSections(blocks, catalog, context);
+  const inlineHtml = inlineHtmlRenderer(catalog);
 
   const sectionElements = sections
     .filter((section) => section.heading || section.children.length > 0)
@@ -155,7 +164,11 @@ export function compileDocument(source: string, options: HtmdxDocumentOptions = 
         'section',
         { className: 'htmdx-doc-section', key: section.heading?.id || `head-${index}` },
         section.heading
-          ? createElement('h2', { id: section.heading.id }, renderInline(section.heading.label))
+          ? createElement(
+              'h2',
+              { id: section.heading.id },
+              renderInline(section.heading.label, inlineHtml),
+            )
           : null,
         createElement('div', { className: 'htmdx-doc-section-card' }, ...section.children),
       ),
@@ -190,18 +203,47 @@ export function compileDocument(source: string, options: HtmdxDocumentOptions = 
     ),
     title,
     headings: context.headings,
-    components: blocks.filter((block) => block.type === 'component').map((block) => block.name),
+    components: componentNames(blocks, catalog.names),
     meta,
   };
 }
 
 function renderBlocks(blocks: Block[], catalog: RuntimeCatalog, context: RenderContext) {
+  const html = inlineHtmlRenderer(catalog);
   return blocks.map((block, index) => {
     if (block.type === 'markdown') {
-      return createElement('div', { key: `md-${index}` }, renderMarkdown(block.value, context));
+      return createElement(
+        'div',
+        { key: `md-${index}` },
+        renderMarkdown(block.value, context, html),
+      );
+    }
+    if (block.type === 'html') {
+      return renderHtmlFragment(block.value, catalog, `html-${index}`, true);
     }
     return renderComponentBlock(block, catalog, `c-${index}`);
   });
+}
+
+// Inline HTML sits inside a Markdown line, so its text nodes stay inline;
+// block-level HTML owns whole lines and renders Markdown text as blocks.
+function inlineHtmlRenderer(catalog: RuntimeCatalog): HtmlRenderer {
+  return (source, key) => renderHtmlFragment(source, catalog, key, false);
+}
+
+function renderHtmlFragment(
+  source: string,
+  catalog: RuntimeCatalog,
+  key: string,
+  blockMarkdownText: boolean,
+): ReactNode {
+  const { nodes, sourceElements } = parseBodyNodes(source);
+  const children = nodes
+    .map((node, index) =>
+      nodeToReact(node, catalog, `${key}-${index}`, { sourceElements, blockMarkdownText }),
+    )
+    .filter((child) => child !== null);
+  return createElement(Fragment, { key }, ...children);
 }
 
 type Section = {
@@ -220,15 +262,27 @@ function groupSections(
 ): Section[] {
   const sections: Section[] = [{ heading: null, children: [] }];
   let current = sections[0];
+  const html = inlineHtmlRenderer(catalog);
 
   const pushChunk = (chunk: string, key: string) => {
     const trimmed = chunk.trim();
     if (trimmed) {
-      current.children.push(createElement('div', { key }, renderMarkdown(trimmed, context)));
+      current.children.push(createElement('div', { key }, renderMarkdown(trimmed, context, html)));
     }
   };
 
   for (const [index, block] of blocks.entries()) {
+    if (block.type === 'html') {
+      current.children.push(
+        createElement(
+          'div',
+          { className: 'htmdx-content-component', key: `h-${index}` },
+          renderHtmlFragment(block.value, catalog, `h-${index}-content`, true),
+        ),
+      );
+      continue;
+    }
+
     if (block.type === 'component') {
       // Mark only top-level Component blocks so the document shell can own
       // their vertical rhythm without affecting prose or nested composition.
@@ -429,13 +483,12 @@ export function listComponents(
   const registry = new Map(
     definitions.map((definition) => [definition.name.toLowerCase(), definition.name]),
   );
-  return tokenize(stripFrontmatterAndComments(source), registry)
-    .filter((block) => block.type === 'component')
-    .map((block) => block.name);
+  return componentNames(tokenize(stripFrontmatterAndComments(source), registry), registry);
 }
 
 export type HtmdxSourceToken =
   | { type: 'markdown'; value: string }
+  | { type: 'html'; value: string }
   | { type: 'component'; name: string; body: string };
 
 export function tokenizeSource(
@@ -446,10 +499,34 @@ export function tokenizeSource(
     definitions.map((definition) => [definition.name.toLowerCase(), definition.name]),
   );
   return tokenize(stripFrontmatterAndComments(source), registry).map((block) =>
-    block.type === 'markdown'
-      ? { type: 'markdown' as const, value: block.value }
-      : { type: 'component' as const, name: block.name, body: block.body },
+    block.type === 'component'
+      ? { type: 'component' as const, name: block.name, body: block.body }
+      : { type: block.type, value: block.value },
   );
+}
+
+// Components nested inside a raw HTML block are still part of the document, so
+// the reported list scans those blocks instead of stopping at the wrapper.
+function componentNames(blocks: Block[], registry: Map<string, string>) {
+  return blocks.flatMap((block) => {
+    if (block.type === 'component') {
+      return [block.name];
+    }
+    if (block.type !== 'html') {
+      return [];
+    }
+    const names: string[] = [];
+    const syntax = markdownSyntaxSource(block.value);
+    const openTag = /<([A-Za-z][A-Za-z0-9]*)/g;
+    let match: RegExpExecArray | null;
+    while ((match = openTag.exec(syntax))) {
+      const canonical = registry.get(match[1].toLowerCase());
+      if (canonical) {
+        names.push(canonical);
+      }
+    }
+    return names;
+  });
 }
 
 function renderComponentBlock(
@@ -537,10 +614,12 @@ function bodyToChildren(body: string, catalog: RuntimeCatalog, keyPrefix: string
     );
   }
 
-  const { nodes, sourceAttributes } = parseBodyNodes(body);
+  const { nodes, sourceElements } = parseBodyNodes(body);
 
   const children = nodes
-    .map((node, index) => nodeToReact(node, catalog, `${keyPrefix}-${index}`, sourceAttributes))
+    .map((node, index) =>
+      nodeToReact(node, catalog, `${keyPrefix}-${index}`, { sourceElements, componentBody: true }),
+    )
     .filter((child) => child !== null);
   return children.length === 1 ? children[0] : children;
 }
@@ -549,14 +628,30 @@ function hasBodyElements(body: string) {
   return /<\/?[A-Za-z][A-Za-z0-9]*(\s[^>]*)?\/?>|<>|<\/>/.test(markdownSyntaxSource(body));
 }
 
+// A component body and a raw HTML block are parsed the same way but answer to
+// different rules. A body is pre-existing surface: it keeps the passthrough and
+// the wrapper `<span>` it has always had. A raw HTML block is new surface, so
+// it answers to the allowlist and emits no wrapper.
+type NodeContext = {
+  sourceElements?: WeakMap<Element, SourceElement>;
+  componentBody?: boolean;
+  blockMarkdownText?: boolean;
+  discardWhitespaceText?: boolean;
+};
+
 function nodeToReact(
   node: Node,
   catalog: RuntimeCatalog,
   key: string,
-  sourceAttributes: WeakMap<Element, SourceAttribute[]> = new WeakMap(),
-  renderBlockMarkdownText = true,
-  discardWhitespaceText = false,
+  context: NodeContext = {},
 ): ReactNode | null {
+  const {
+    sourceElements = new WeakMap<Element, SourceElement>(),
+    componentBody = false,
+    blockMarkdownText = true,
+    discardWhitespaceText = false,
+  } = context;
+
   if (node.nodeType === Node.TEXT_NODE) {
     const text = node.textContent || '';
     if (!text) {
@@ -567,10 +662,13 @@ function nodeToReact(
     if (discardWhitespaceText && !text.trim()) {
       return null;
     }
-    if (renderBlockMarkdownText && text.trim() && isBlockMarkdown(text)) {
+    if (blockMarkdownText && text.trim() && isBlockMarkdown(text)) {
       return createElement(Fragment, { key }, ...renderMarkdown(text));
     }
-    return text.trim() ? createElement('span', { key }, renderInline(text)) : text;
+    if (!text.trim()) {
+      return text;
+    }
+    return createElement(componentBody ? 'span' : Fragment, { key }, renderInline(text));
   }
 
   if (node.nodeType !== Node.ELEMENT_NODE) {
@@ -588,14 +686,10 @@ function nodeToReact(
       ? createElement('img', { key, ...safeAttributes })
       : attributes.alt || null;
   }
-  const canonical = catalog.names.get(lower);
-  if (!canonical && /^[A-Z]/.test(element.tagName)) {
-    throw new HtmdxSourceError('unknown-component', `unknown component <${element.tagName}>`);
-  }
-  const definition = canonical ? catalog.definitions.get(lower) : undefined;
+  const definition = catalog.definitions.get(lower);
   if (definition) {
     const attributes =
-      sourceAttributes.get(element) ||
+      sourceElements.get(element)?.attributes ||
       element.getAttributeNames().map((name) => ({
         name,
         value: element.getAttribute(name) ?? '',
@@ -611,32 +705,131 @@ function nodeToReact(
     );
   }
 
-  const target = lower;
-  const props: Record<string, unknown> = { key };
-  for (const attr of element.getAttributeNames()) {
-    if (/^on/i.test(attr)) {
-      throw new HtmdxSourceError(
-        'event-handler-attribute',
-        `event handler attribute "${attr}" is not allowed`,
-      );
+  // The allowlist decides before casing does. The HTML fallback parse uppercases
+  // every tag name, so reading the authored name first would reject `<video>` as
+  // a missing component whenever the source pairing could not be recovered.
+  if (!HTML_ELEMENTS.has(lower)) {
+    const authored = sourceElements.get(element)?.name || lower;
+    if (/^[A-Z]/.test(authored)) {
+      throw new HtmdxSourceError('unknown-component', `unknown component <${authored}>`);
     }
-    props[normalizePropName(attr)] = parseAttrValue(element.getAttribute(attr) || '');
+    return componentBody
+      ? passthroughElement(element, catalog, key, sourceElements)
+      : // Outside a body, an element the allowlist does not cover is not markup.
+        // Markdown already renders it as literal text, so keep doing that here
+        // instead of failing the document over one stray tag.
+        unescapeCodeSpans(serializeElement(element));
   }
+
+  const target = lower;
+  const props: Record<string, unknown> = {
+    key,
+    ...safeElementProps(
+      lower,
+      element.getAttributeNames().map((name) => ({
+        name,
+        value: element.getAttribute(name) ?? '',
+      })),
+    ),
+  };
 
   const children = Array.from(element.childNodes)
     .map((child, index) =>
-      nodeToReact(
-        child,
-        catalog,
-        `${key}-${index}`,
-        sourceAttributes,
-        false,
-        tableHtmlContainers.has(target),
-      ),
+      nodeToReact(child, catalog, `${key}-${index}`, {
+        sourceElements,
+        componentBody,
+        blockMarkdownText: blockMarkdownText && HTML_FLOW_CONTAINERS.has(target),
+        discardWhitespaceText: tableHtmlContainers.has(target),
+      }),
     )
     .filter((child) => child !== null);
 
   return createElement(target, props, ...children);
+}
+
+// Elements that turn source into code once they reach the DOM. Everything else
+// outside the allowlist keeps rendering from a component body the way it always
+// has, so documents written against the old permissive behavior still compile.
+const UNSAFE_ELEMENTS = new Set([
+  'base',
+  'embed',
+  'link',
+  'meta',
+  'object',
+  'script',
+  'style',
+  'template',
+]);
+
+function passthroughElement(
+  element: Element,
+  catalog: RuntimeCatalog,
+  key: string,
+  sourceElements: WeakMap<Element, SourceElement>,
+): ReactNode {
+  const target = element.tagName.toLowerCase();
+  if (UNSAFE_ELEMENTS.has(target)) {
+    throw new HtmdxSourceError(
+      'html-element-not-allowed',
+      `HTML element <${target}> is not allowed`,
+    );
+  }
+
+  const props: Record<string, unknown> = { key };
+  for (const attribute of element.getAttributeNames()) {
+    if (/^on/i.test(attribute)) {
+      throw new HtmdxSourceError(
+        'event-handler-attribute',
+        `event handler attribute "${attribute}" is not allowed`,
+      );
+    }
+    props[normalizePropName(attribute)] = parseAttrValue(element.getAttribute(attribute) || '');
+  }
+
+  const children = Array.from(element.childNodes)
+    .map((child, index) =>
+      nodeToReact(child, catalog, `${key}-${index}`, { sourceElements, componentBody: true }),
+    )
+    .filter((child) => child !== null);
+
+  return createElement(target, props, ...children);
+}
+
+function normalizePropName(name: string) {
+  if (name === 'class') {
+    return 'className';
+  }
+  if (name === 'for') {
+    return 'htmlFor';
+  }
+  return name.replace(/-([a-z])/g, (_, char: string) => char.toUpperCase());
+}
+
+function parseAttrValue(value: string): unknown {
+  if (value === '') {
+    return true;
+  }
+  if (/^(true|false|null|-?\d+(\.\d+)?)$/.test(value)) {
+    return JSON.parse(value);
+  }
+  if (value.startsWith('{') || value.startsWith('[')) {
+    try {
+      return JSON.parse(value);
+    } catch {
+      return value;
+    }
+  }
+  return value;
+}
+
+// The XML parse keeps authored casing but serializes with namespace noise the
+// source never had, so rebuild the tag from what was written.
+function serializeElement(element: Element): string {
+  const attributes = Array.from(element.attributes, (attribute) =>
+    attribute.value === '' ? ` ${attribute.name}` : ` ${attribute.name}="${attribute.value}"`,
+  ).join('');
+  const name = element.tagName;
+  return `<${name}${attributes}>${element.innerHTML}</${name}>`;
 }
 
 // Bodies are parsed as XML first: it preserves tag and attribute case (so
@@ -645,7 +838,7 @@ function nodeToReact(
 // unclosed tags) fall back to forgiving HTML parsing.
 function parseBodyNodes(body: string): {
   nodes: Node[];
-  sourceAttributes: WeakMap<Element, SourceAttribute[]>;
+  sourceElements: WeakMap<Element, SourceElement>;
 } {
   const source = escapeCodeSpans(body);
   const xml = new DOMParser().parseFromString(`<htmdx-body>${source}</htmdx-body>`, 'text/xml');
@@ -653,20 +846,18 @@ function parseBodyNodes(body: string): {
     ? Array.from(xml.documentElement.childNodes)
     : Array.from(new DOMParser().parseFromString(source, 'text/html').body.childNodes);
 
-  return { nodes, sourceAttributes: mapSourceAttributes(source, nodes) };
+  return { nodes, sourceElements: mapSourceElements(source, nodes) };
 }
 
-// DOMParser exposes both `enabled` and `enabled=""` as an empty attribute.
-// Pair parsed elements with source attributes so schema parsing can distinguish them.
-function mapSourceAttributes(body: string, nodes: Node[]): WeakMap<Element, SourceAttribute[]> {
-  const sourceElements: { name: string; attributes: SourceAttribute[] }[] = [];
+// DOMParser exposes both `enabled` and `enabled=""` as an empty attribute, and
+// the HTML fallback parse discards tag casing. Pair parsed elements with their
+// source tags so schema parsing and component detection see the authored form.
+function mapSourceElements(body: string, nodes: Node[]): WeakMap<Element, SourceElement> {
+  const sources: SourceElement[] = [];
   const openTag = /<([A-Za-z][A-Za-z0-9]*)(\s+(?:[^"'<>]|"[^"]*"|'[^']*')*)?\s*\/?>/g;
   let match: RegExpExecArray | null;
   while ((match = openTag.exec(body))) {
-    sourceElements.push({
-      name: match[1].toLowerCase(),
-      attributes: parseAttributes(match[2] || ''),
-    });
+    sources.push({ name: match[1], attributes: parseAttributes(match[2] || '') });
   }
 
   const domElements: Element[] = [];
@@ -682,16 +873,16 @@ function mapSourceAttributes(body: string, nodes: Node[]): WeakMap<Element, Sour
   };
   collectElements(nodes);
 
-  const attributesByElement = new WeakMap<Element, SourceAttribute[]>();
+  const sourceByElement = new WeakMap<Element, SourceElement>();
   let sourceIndex = 0;
   for (const element of domElements) {
-    const source = sourceElements[sourceIndex];
-    if (source?.name === element.tagName.toLowerCase()) {
-      attributesByElement.set(element, source.attributes);
+    const source = sources[sourceIndex];
+    if (source?.name.toLowerCase() === element.tagName.toLowerCase()) {
+      sourceByElement.set(element, source);
       sourceIndex += 1;
     }
   }
-  return attributesByElement;
+  return sourceByElement;
 }
 
 // When `recover` is supplied the scan reports a tag-level failure and keeps
@@ -715,6 +906,7 @@ function tokenize(
     const [, rawName, attrs, selfClosing] = match;
     const canonical = registry.get(rawName.toLowerCase());
     if (!canonical) {
+      // `<IMG>` is HTML, not a missing component, whatever its casing.
       if (rawName.toLowerCase() === 'img') {
         continue;
       }
@@ -732,6 +924,38 @@ function tokenize(
           throw error;
         }
         recover(error);
+        continue;
+      }
+
+      // Unknown tags stay literal Markdown text.
+      const lower = rawName.toLowerCase();
+      if (selfClosing || HTML_VOID_ELEMENTS.has(lower) || !HTML_ELEMENTS.has(lower)) {
+        continue;
+      }
+
+      // An allowlisted block element that opens a line owns everything up to
+      // its close tag, so blank lines and nested components stay in one block.
+      if (HTML_BLOCK_ELEMENTS.has(lower) && opensLine(syntax, match.index)) {
+        const close = findMatchingClose(syntax, rawName, openTag.lastIndex);
+        if (close) {
+          pushMarkdown(blocks, source.slice(cursor, match.index), cursor);
+          blocks.push({
+            type: 'html',
+            value: source.slice(match.index, close.closeEnd),
+            offset: match.index,
+          });
+          cursor = close.closeEnd;
+          openTag.lastIndex = close.closeEnd;
+          continue;
+        }
+      }
+
+      // Everything else renders from inside its Markdown block, which handles
+      // nested components too, so scanning skips the whole span instead of
+      // splitting a component out of the paragraph that wraps it.
+      const inline = findMatchingClose(syntax, rawName, openTag.lastIndex);
+      if (inline && !/\n\s*\n/.test(syntax.slice(openTag.lastIndex, inline.bodyEnd))) {
+        openTag.lastIndex = inline.closeEnd;
       }
       continue;
     }
@@ -776,6 +1000,16 @@ function tokenize(
   return blocks;
 }
 
+// CommonMark's HTML-block rule: up to three leading spaces still counts as
+// opening the line, deeper indentation is code or list content.
+function opensLine(source: string, index: number) {
+  let start = index;
+  while (start > 0 && (source[start - 1] === ' ' || source[start - 1] === '\t')) {
+    start -= 1;
+  }
+  return index - start <= 3 && (start === 0 || source[start - 1] === '\n');
+}
+
 // Depth-aware close matching: nested same-name tags (the case the core regex
 // tokenizer cannot handle) increment depth instead of terminating the block.
 function findMatchingClose(source: string, name: string, from: number) {
@@ -803,6 +1037,11 @@ function pushMarkdown(blocks: Block[], value: string, start: number) {
     blocks.push({ type: 'markdown', value: trimmed, offset: start + value.indexOf(trimmed[0]) });
   }
 }
+
+type SourceElement = {
+  name: string;
+  attributes: SourceAttribute[];
+};
 
 type SourceAttribute = {
   name: string;
@@ -990,33 +1229,6 @@ function assertDeclarativeBody(componentName: string, body: string, allowTags = 
   }
 }
 
-function normalizePropName(name: string) {
-  if (name === 'class') {
-    return 'className';
-  }
-  if (name === 'for') {
-    return 'htmlFor';
-  }
-  return name.replace(/-([a-z])/g, (_, char: string) => char.toUpperCase());
-}
-
-function parseAttrValue(value: string): unknown {
-  if (value === '') {
-    return true;
-  }
-  if (/^(true|false|null|-?\d+(\.\d+)?)$/.test(value)) {
-    return JSON.parse(value);
-  }
-  if (value.startsWith('{') || value.startsWith('[')) {
-    try {
-      return JSON.parse(value);
-    } catch {
-      return value;
-    }
-  }
-  return value;
-}
-
 function stripFrontmatterAndComments(source: string) {
   return source
     .replace(/^---[\s\S]*?---\s*/, '')
@@ -1114,16 +1326,23 @@ export type HtmdxStructureNode =
 // than the React tree so a snapshot survives runtime markup and styling churn.
 export function structureOf(source: string, options: HtmdxReactOptions = {}): HtmdxStructureNode[] {
   const catalog = createRuntimeCatalog(options);
-  return tokenize(stripFrontmatterAndComments(source), catalog.names).map((block) => {
+  return tokenize(stripFrontmatterAndComments(source), catalog.names).flatMap((block) => {
     if (block.type === 'markdown') {
-      return { type: 'markdown' as const, value: block.value.trim() };
+      return [{ type: 'markdown' as const, value: block.value.trim() }];
     }
-    return {
-      type: 'element' as const,
-      name: block.name,
-      props: propsFromSourceAttributes(parseAttributes(block.attrs)),
-      children: structureChildren(block.body, catalog),
-    };
+    // A raw HTML block has no wrapper of its own: its elements are the
+    // structure, so they sit at the same level as the blocks around them.
+    if (block.type === 'html') {
+      return structureChildren(block.value, catalog);
+    }
+    return [
+      {
+        type: 'element' as const,
+        name: block.name,
+        props: propsFromSourceAttributes(parseAttributes(block.attrs)),
+        children: structureChildren(block.body, catalog),
+      },
+    ];
   });
 }
 
@@ -1136,14 +1355,14 @@ function structureChildren(body: string, catalog: RuntimeCatalog): HtmdxStructur
     return [{ type: 'text', value: trimmed }];
   }
 
-  const { nodes, sourceAttributes } = parseBodyNodes(body);
-  return structureNodes(nodes, catalog, sourceAttributes);
+  const { nodes, sourceElements } = parseBodyNodes(body);
+  return structureNodes(nodes, catalog, sourceElements);
 }
 
 function structureNodes(
   nodes: Node[],
   catalog: RuntimeCatalog,
-  sourceAttributes: WeakMap<Element, SourceAttribute[]>,
+  sourceElements: WeakMap<Element, SourceElement>,
 ): HtmdxStructureNode[] {
   const structure: HtmdxStructureNode[] = [];
   for (const node of nodes) {
@@ -1159,18 +1378,19 @@ function structureNodes(
     }
     const element = node as Element;
     const tag = element.tagName;
+    const source = sourceElements.get(element);
     structure.push({
       type: 'element',
-      name: catalog.names.get(tag.toLowerCase()) ?? tag,
+      name: catalog.names.get(tag.toLowerCase()) ?? source?.name ?? tag,
       props: propsFromSourceAttributes(
-        sourceAttributes.get(element) ??
+        source?.attributes ??
           Array.from(element.attributes, (attribute) => ({
             name: attribute.name,
             value: attribute.value,
             bare: false,
           })),
       ),
-      children: structureNodes(Array.from(element.childNodes), catalog, sourceAttributes),
+      children: structureNodes(Array.from(element.childNodes), catalog, sourceElements),
     });
   }
   return structure;
@@ -1254,11 +1474,16 @@ export function collectStructuralDiagnostics(
     );
   });
 
+  // Raw HTML blocks get a probe too: a disallowed element or an event handler
+  // attribute only surfaces when the fragment is actually rendered.
   const probes = blocks
-    .filter((block) => block.type === 'component')
+    .filter((block) => block.type !== 'markdown')
     .map((block, index) => ({
       offset: block.offset,
-      render: () => renderComponentBlock(block, catalog, `v-${index}`),
+      render: () =>
+        block.type === 'html'
+          ? renderHtmlFragment(block.value, catalog, `v-${index}`, true)
+          : renderComponentBlock(block, catalog, `v-${index}`),
     }));
 
   return { diagnostics, probes };

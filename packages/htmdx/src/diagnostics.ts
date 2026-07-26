@@ -52,7 +52,7 @@ export class HtmdxSourceError extends Error {
   }
 }
 
-export function positionAt(source: string, offset: number) {
+function positionAt(source: string, offset: number) {
   const clamped = Math.max(0, Math.min(offset, source.length));
   let line = 1;
   let lineStart = 0;

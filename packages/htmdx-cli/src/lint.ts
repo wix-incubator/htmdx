@@ -39,7 +39,7 @@ type Runtime = {
 
 let runtimeCache: Promise<Runtime> | undefined;
 
-export async function loadRuntime(specifier = '@wix/htmdx'): Promise<Runtime> {
+async function loadRuntime(specifier = '@wix/htmdx'): Promise<Runtime> {
   installDom();
   runtimeCache ??= import(specifier) as Promise<Runtime>;
   return runtimeCache;

@@ -1,11 +1,13 @@
 import { execFile } from 'node:child_process';
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readdirSync, readFileSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { promisify } from 'node:util';
 import { beforeAll, describe, expect, test } from 'vitest';
+import { SKILL_TOPICS } from '../src/cli/skill';
 
 const run = promisify(execFile);
+const packageDir = resolve(import.meta.dirname, '..');
 const CLI = resolve(import.meta.dirname, '../dist/cli.js');
 const fixtures = mkdtempSync(join(tmpdir(), 'htmdx-cli-'));
 
@@ -341,5 +343,47 @@ describe('htmdx skill', () => {
     expect(result.code).toBe(2);
     expect(result.stderr).toContain('unknown skill topic "nope"');
     expect(result.stderr).toContain('components');
+  });
+});
+
+// `skill` reads its topics from ../skill relative to dist/cli.js, so an agent
+// only gets the guidance if the bin and the topic files both survive `npm
+// pack`. Nothing else in the suite exercises the published layout, and the
+// failure mode — dropping the files entry, moving the bundle — is silent until
+// someone runs the command off npm. Pack for real and run it out of the
+// extracted tarball.
+describe('published package', () => {
+  let published: string;
+
+  beforeAll(async () => {
+    const destination = mkdtempSync(join(tmpdir(), 'htmdx-pack-'));
+    const { stdout } = await run('npm', ['pack', '--pack-destination', destination], {
+      cwd: packageDir,
+      shell: true,
+    });
+    const tarball = join(destination, stdout.trim().split('\n').at(-1) ?? '');
+    await run('tar', ['-xzf', tarball, '-C', destination]);
+    published = join(destination, 'package');
+    // The tarball carries no node_modules, and the bin imports jsdom. Point it
+    // at the installed tree so the run exercises the packed file layout rather
+    // than npm's install step.
+    symlinkSync(resolve(packageDir, '../../node_modules'), join(published, 'node_modules'), 'dir');
+  }, 300_000);
+
+  test('ships every guidance topic alongside the bin', () => {
+    expect(readdirSync(join(published, 'dist'))).toContain('cli.js');
+    expect(readdirSync(join(published, 'skill'))).toEqual(
+      expect.arrayContaining(SKILL_TOPICS.map((topic) => topic.file)),
+    );
+  });
+
+  test('serves the guidance from the published layout', async () => {
+    const { stdout } = await run(process.execPath, [
+      join(published, 'dist/cli.js'),
+      'skill',
+      'components',
+    ]);
+
+    expect(stdout).toContain('# Component grammar');
   });
 });

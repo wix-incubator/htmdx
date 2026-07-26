@@ -125,7 +125,10 @@ function hasHtmlElement(syntax: string) {
   HTML_TAG.lastIndex = 0;
   let match: RegExpExecArray | null;
   while ((match = HTML_TAG.exec(syntax))) {
-    if (HTML_ELEMENTS.has(match[1].toLowerCase())) {
+    const tag = match[1].toLowerCase();
+    // `svg` alone, not the whole SVG allowlist: a bare `<path>` in prose is
+    // text, and inside a graphic the renderer has already taken over.
+    if (HTML_ELEMENTS.has(tag) || tag === 'svg') {
       return true;
     }
   }

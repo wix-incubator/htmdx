@@ -38,7 +38,12 @@ jobs:
         run: yarn test
 
       - name: Lint shipped examples
-        run: node packages/htmdx/dist/cli.js lint examples/*.html
+        run: node packages/htmdx/dist/cli.js lint $(ls examples/*.html | grep -v '/degraded\.html$')
+
+      # degraded.html demonstrates the degraded error page, so the CLI must keep
+      # rejecting it. test/shipped-examples.spec.ts pins which two diagnostics.
+      - name: Reject the deliberately broken example
+        run: "! node packages/htmdx/dist/cli.js lint examples/degraded.html"
 
       - name: Lint
         run: yarn lint

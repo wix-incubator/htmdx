@@ -3,7 +3,7 @@
 // loads the runtime, and which version it pins.
 
 import type { HtmdxDiagnostic } from '../diagnostics';
-import { installDom } from './dom';
+import { extractEmbeddedSource, isArtifact, loadRuntime } from './runtime';
 
 export type LintDiagnosticCode =
   | HtmdxDiagnostic['code']
@@ -23,38 +23,24 @@ export type LintReport = {
   warningCount: number;
 };
 
-const HTMDX_SCRIPT = /<script\s+type="text\/htmdx"[^>]*>([\s\S]*?)<\/script>/;
 const RUNTIME_SCRIPT = /<script[^>]+src=["']([^"']*@wix\/htmdx[^"']*)["']/i;
 const PINNED_VERSION = /@wix\/htmdx@(\d+\.\d+\.\d+(?:-[\w.]+)?)/;
 
-type Runtime = typeof import('../index');
-
-let runtimeCache: Promise<Runtime> | undefined;
-
-// react-dom decides whether it has a DOM when its module first evaluates, so
-// the globals have to exist before the runtime is imported — hence the lazy
-// import rather than a static one at the top of the file.
-async function loadRuntime(): Promise<Runtime> {
-  installDom();
-  runtimeCache ??= import('../index');
-  return runtimeCache;
-}
-
 export async function lintFile(file: string, content: string): Promise<LintFileResult> {
   const runtime = await loadRuntime();
-  const isArtifact = /\.html?$/i.test(file) || HTMDX_SCRIPT.test(content);
-  const source = isArtifact ? extractEmbeddedSource(content) : content;
+  const artifact = isArtifact(file, content);
+  const source = artifact ? extractEmbeddedSource(content) : content;
 
   if (source === undefined) {
     return { file, diagnostics: [] };
   }
 
-  const offset = isArtifact ? content.indexOf(source) : 0;
+  const offset = artifact ? content.indexOf(source) : 0;
   const diagnostics: LintDiagnostic[] = runtime
     .validate(source)
     .map((diagnostic) => rebase(diagnostic, content, offset));
 
-  if (isArtifact) {
+  if (artifact) {
     diagnostics.push(...runtimeScriptDiagnostics(content, runtime.VERSION));
   }
 
@@ -68,10 +54,6 @@ export function summarize(files: LintFileResult[]): LintReport {
     errorCount: all.filter((diagnostic) => diagnostic.severity === 'error').length,
     warningCount: all.filter((diagnostic) => diagnostic.severity === 'warning').length,
   };
-}
-
-function extractEmbeddedSource(content: string): string | undefined {
-  return content.match(HTMDX_SCRIPT)?.[1];
 }
 
 // validate() sees only the embedded source, so its positions are relative to

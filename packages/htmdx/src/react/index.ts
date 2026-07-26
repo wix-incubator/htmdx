@@ -9,6 +9,7 @@
 import { createElement, Fragment, type ReactElement, type ReactNode } from 'react';
 import {
   escapeCodeSpans,
+  HtmdxBodyContractError,
   markdownSyntaxSource,
   unescapeCodeSpans,
 } from '../components/body-contracts';
@@ -1602,8 +1603,47 @@ export function diagnosticForBlock(
     );
   }
 
+  if (error instanceof HtmdxBodyContractError) {
+    const row = bodyRowInSource(source, block.offset, error.contract.bodyLine);
+    return toDiagnostic(
+      source,
+      'body-contract',
+      message,
+      row?.offset ?? block.offset,
+      row?.length ?? 1,
+    );
+  }
+
   const code: HtmdxDiagnosticCode = message.startsWith('Invalid body for <')
     ? 'body-contract'
     : 'render-failed';
   return toDiagnostic(source, code, message, block.offset, 1);
+}
+
+// Body-contract errors count lines from the trimmed body the component saw, so
+// the artifact position is that body's first line plus the reported offset.
+function bodyRowInSource(source: string, blockOffset: number, bodyLine: number | undefined) {
+  const openingTag = source.slice(blockOffset).match(/^<[A-Za-z][A-Za-z0-9]*[^>]*>/);
+  if (!bodyLine || !openingTag) {
+    return null;
+  }
+
+  const bodyStart = source.slice(blockOffset + openingTag[0].length).search(/\S/);
+  if (bodyStart < 0) {
+    return null;
+  }
+
+  let offset = blockOffset + openingTag[0].length + bodyStart;
+  for (let remaining = bodyLine - 1; remaining > 0; remaining -= 1) {
+    const next = source.indexOf('\n', offset);
+    if (next < 0) {
+      return null;
+    }
+    offset = next + 1;
+  }
+
+  const row = source.slice(offset).match(/^[^\n]*/)?.[0] ?? '';
+  const indent = row.length - row.trimStart().length;
+  const text = row.trim();
+  return text ? { offset: offset + indent, length: text.length } : null;
 }

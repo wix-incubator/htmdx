@@ -12,6 +12,7 @@ import {
 } from '../shared/structured';
 
 const RISK_TIERS = ['Must-have', 'Differentiator', 'Not now', "Won't do"] as const;
+const RISK_EXAMPLE = '- **Must-have:** Describe the required capability.';
 
 function validateRiskTable(body: MarkdownListCards) {
   const seen = new Set<string>();
@@ -21,7 +22,7 @@ function validateRiskTable(body: MarkdownListCards) {
       throw new BodyContractError(
         'each risk item must begin with one canonical, case-sensitive bold tier followed by text',
         `a unique bold tier (${RISK_TIERS.join(', ')}) and non-empty text`,
-        body.lines[index],
+        { line: body.lines[index], example: RISK_EXAMPLE },
       );
     }
     const tier = match[1];
@@ -30,14 +31,14 @@ function validateRiskTable(body: MarkdownListCards) {
       throw new BodyContractError(
         'each risk item must contain exactly one canonical bold tier',
         'one canonical bold tier at the beginning of each item',
-        body.lines[index],
+        { line: body.lines[index], example: RISK_EXAMPLE },
       );
     }
     if (seen.has(tier)) {
       throw new BodyContractError(
         `tier "${tier}" is repeated`,
         'each canonical risk tier at most once',
-        body.lines[index],
+        { line: body.lines[index], example: RISK_EXAMPLE },
       );
     }
     seen.add(tier);

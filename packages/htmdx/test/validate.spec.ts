@@ -32,8 +32,19 @@ describe('validate', () => {
     expect(positions).toEqual([
       { code: 'unknown-component', line: 3, column: 1 },
       { code: 'unknown-prop', line: 5, column: 10 },
-      { code: 'body-contract', line: 7, column: 1 },
+      { code: 'body-contract', line: 7, column: 7 },
     ]);
+  });
+
+  test('anchors a body-contract failure to the offending row, not the opening tag', () => {
+    const source = ['<ChartBar>', '- Mobile: 62', '- Desktop: many', '</ChartBar>', ''].join('\n');
+
+    const [diagnostic] = validate(source);
+
+    expect(diagnostic).toMatchObject({ code: 'body-contract', line: 3, column: 1 });
+    expect(source.slice(diagnostic.offset, diagnostic.offset + diagnostic.length)).toBe(
+      '- Desktop: many',
+    );
   });
 
   test('returns no diagnostics for valid source', () => {

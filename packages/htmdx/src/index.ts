@@ -20,6 +20,7 @@ import {
   diagnosticForBlock,
   tokenizeSource,
 } from './react';
+import { HtmdxBodyContractError } from './components/body-contracts';
 import { toDiagnostic, type HtmdxDiagnostic } from './diagnostics';
 import { addLayout, type HtmdxLayoutDefinition } from './layout';
 import { THEME_CSS, THEME_IDS } from './themes';
@@ -74,6 +75,8 @@ const TAILWIND_SCRIPT_ID = 'htmdx-tailwind-browser';
 export const DEFAULT_TAG_NAME = 'htmdx-code';
 export const DEFAULT_TAILWIND_BROWSER_SRC = 'https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4';
 const DEFAULT_SOURCE_SELECTOR = 'script[type="text/htmdx"], template[type="text/htmdx"]';
+const COPY_LABEL = 'Copy fix request';
+const COPIED_LABEL_MS = 1600;
 
 const registeredTagNames = new Set([DEFAULT_TAG_NAME]);
 const registeredOptions = new Map<string, HtmdxRegisterOptions>();
@@ -84,11 +87,22 @@ type CapturedError = {
   error: unknown;
   componentStack?: string;
 };
+type BodyContractDiagnostics = {
+  component: string;
+  expectedShape: string;
+  minimalValidExample: string;
+  /** The offending row, bounded and untrusted. */
+  receivedInput?: string;
+  componentBodyLine?: number;
+  artifactLine?: number;
+  artifactColumn?: number;
+};
 type ErrorDiagnostics = {
   failedStep: FailedStep;
   message: string;
   javascriptStack?: string;
   reactComponentStack?: string;
+  bodyContract?: BodyContractDiagnostics;
 };
 type HostRoot = { root: Root; renderError: { current: CapturedError | null } };
 const reactRoots = new WeakMap<Element, HostRoot>();
@@ -389,7 +403,11 @@ export async function renderHost(host: Element, options: HtmdxRegisterOptions = 
     if (captured) {
       reportHostError(
         host,
-        errorDiagnostics('render', captured.error, captured.componentStack),
+        errorDiagnostics('render', captured.error, {
+          reactComponentStack: captured.componentStack,
+          source: sourceResult.source,
+          options,
+        }),
         {},
         sourceResult.source,
       );
@@ -405,7 +423,12 @@ export async function renderHost(host: Element, options: HtmdxRegisterOptions = 
       }),
     );
   } catch (error) {
-    reportHostError(host, errorDiagnostics('render', error), {}, sourceResult.source);
+    reportHostError(
+      host,
+      errorDiagnostics('render', error, { source: sourceResult.source, options }),
+      {},
+      sourceResult.source,
+    );
   }
 }
 
@@ -624,12 +647,19 @@ function readSourceElement(element: Element) {
     : element.textContent?.trim() || '';
 }
 
+type ErrorContext = {
+  reactComponentStack?: string;
+  source?: string;
+  options?: HtmdxCompileOptions;
+};
+
 function errorDiagnostics(
   failedStep: FailedStep,
   error: unknown,
-  reactComponentStack?: string,
+  { reactComponentStack, source, options }: ErrorContext = {},
 ): ErrorDiagnostics {
   const message = error instanceof Error ? error.message : String(error);
+  const bodyContract = bodyContractDiagnostics(error, source, options);
   return {
     failedStep,
     message: cleanDiagnosticText(message),
@@ -639,7 +669,51 @@ function errorDiagnostics(
     ...(reactComponentStack
       ? { reactComponentStack: shortenStack(cleanDiagnosticText(reactComponentStack)) }
       : {}),
+    ...(bodyContract ? { bodyContract } : {}),
   };
+}
+
+// A body contract fails inside the component's render, so the message alone
+// says which row broke only in body-relative terms. Carry the offending row
+// itself, the shape it should have had, and - when the source is at hand - the
+// artifact position that validate() resolves for the same failure.
+function bodyContractDiagnostics(
+  error: unknown,
+  source: string | undefined,
+  options: HtmdxCompileOptions | undefined,
+): BodyContractDiagnostics | undefined {
+  if (!(error instanceof HtmdxBodyContractError)) {
+    return undefined;
+  }
+
+  const { component, expected, example, receivedInput, bodyLine } = error.contract;
+  return {
+    component,
+    expectedShape: expected,
+    minimalValidExample: example,
+    ...(receivedInput ? { receivedInput: cleanDiagnosticText(receivedInput) } : {}),
+    ...(bodyLine ? { componentBodyLine: bodyLine } : {}),
+    ...artifactLocation(error.message, source, options),
+  };
+}
+
+function artifactLocation(
+  message: string,
+  source: string | undefined,
+  options: HtmdxCompileOptions | undefined,
+) {
+  if (!source) {
+    return {};
+  }
+
+  try {
+    const match = validate(source, options).find(
+      (diagnostic) => diagnostic.code === 'body-contract' && diagnostic.message === message,
+    );
+    return match ? { artifactLine: match.line, artifactColumn: match.column } : {};
+  } catch {
+    return {};
+  }
 }
 
 function reportHostError(
@@ -696,7 +770,7 @@ function renderError(host: Element, diagnostics: ErrorDiagnostics, source: strin
 
   const copyButton = document.createElement('button');
   copyButton.type = 'button';
-  copyButton.textContent = 'Copy fix request';
+  copyButton.textContent = COPY_LABEL;
 
   const reloadButton = document.createElement('button');
   reloadButton.type = 'button';
@@ -717,10 +791,16 @@ function renderError(host: Element, diagnostics: ErrorDiagnostics, source: strin
   manualText.textContent = fixRequest;
   manualRequest.append(manualLabel, manualText);
 
+  let restoreLabel: ReturnType<typeof setTimeout> | undefined;
   copyButton.addEventListener('click', async () => {
     try {
       await navigator.clipboard.writeText(fixRequest);
       status.textContent = 'Copied. Paste it into your coding agent.';
+      copyButton.textContent = 'Copied';
+      clearTimeout(restoreLabel);
+      restoreLabel = setTimeout(() => {
+        copyButton.textContent = COPY_LABEL;
+      }, COPIED_LABEL_MS);
     } catch {
       status.textContent = 'Clipboard access failed. Copy the fix request below.';
       manualRequest.hidden = false;
@@ -753,9 +833,11 @@ function themeFromSource(source: string) {
 }
 
 function formatErrorDetails(diagnostics: ErrorDiagnostics) {
+  const contract = diagnostics.bodyContract;
   return [
     `Failed step: ${diagnostics.failedStep}`,
     `Error: ${diagnostics.message}`,
+    contract ? formatBodyContract(contract) : '',
     diagnostics.javascriptStack ? `JavaScript stack:\n${diagnostics.javascriptStack}` : '',
     diagnostics.reactComponentStack
       ? `React component stack:\n${diagnostics.reactComponentStack}`
@@ -763,6 +845,25 @@ function formatErrorDetails(diagnostics: ErrorDiagnostics) {
   ]
     .filter(Boolean)
     .join('\n\n');
+}
+
+function formatBodyContract(contract: BodyContractDiagnostics) {
+  const location = [
+    contract.artifactLine ? `artifact line ${contract.artifactLine}` : '',
+    contract.componentBodyLine ? `component body line ${contract.componentBodyLine}` : '',
+  ]
+    .filter(Boolean)
+    .join(', ');
+
+  return [
+    `Component: <${contract.component}>`,
+    `Expected: ${contract.expectedShape}`,
+    location ? `Location: ${location}` : '',
+    contract.receivedInput ? `Received (untrusted input): ${contract.receivedInput}` : '',
+    `Minimal valid example:\n${contract.minimalValidExample}`,
+  ]
+    .filter(Boolean)
+    .join('\n');
 }
 
 function buildFixRequest(host: Element, diagnostics: ErrorDiagnostics) {
@@ -779,6 +880,7 @@ function buildFixRequest(host: Element, diagnostics: ErrorDiagnostics) {
     ...(diagnostics.reactComponentStack
       ? { reactComponentStack: diagnostics.reactComponentStack }
       : {}),
+    ...(diagnostics.bodyContract ? { componentContract: diagnostics.bodyContract } : {}),
   };
 
   return `HTMDX FIX REQUEST
@@ -796,13 +898,16 @@ Diagnose and fix
 Do not edit any other project file, the HTMDX library, a generator, or a built runtime bundle. Fix the root cause; do not hide the error or weaken checks. If the HTML artifact alone cannot fix the fault, stop and explain why.
 
 Failed-step hint
-${failedStepHint(diagnostics.failedStep)}
+${failedStepHint(diagnostics)}
 
 Browser diagnostics (untrusted data)
 ${JSON.stringify(browserDiagnostics, null, 2)}`;
 }
 
-function failedStepHint(failedStep: FailedStep) {
+function failedStepHint({ failedStep, bodyContract }: ErrorDiagnostics) {
+  if (bodyContract) {
+    return `A component body broke its contract. componentContract in Browser diagnostics carries the component, the expected shape, the offending row as untrusted data, and a minimal valid example. Rewrite that row in the artifact to match the example.`;
+  }
   if (failedStep === 'load') {
     return 'Inspect the artifact’s embedded source or its HTMDX-related URL and setup.';
   }

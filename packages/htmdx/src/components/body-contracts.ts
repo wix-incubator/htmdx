@@ -20,14 +20,43 @@ type ParsedBodyByFormat = {
 
 type HtmdxParsedBody = ParsedBodyByFormat[HtmdxBodyFormat];
 
+type BodyContractLocation = { line?: number; column?: number; example?: string };
+
 export class BodyContractError extends Error {
+  readonly line?: number;
+  readonly column?: number;
+  readonly example?: string;
+
   constructor(
     message: string,
     readonly expected: string,
-    readonly line?: number,
-    readonly column?: number,
+    { line, column, example }: BodyContractLocation = {},
   ) {
     super(message);
+    this.line = line;
+    this.column = column;
+    this.example = example;
+  }
+}
+
+/** Structured form of a body-contract failure, for error pages and fix requests. */
+export type HtmdxBodyContract = {
+  component: string;
+  expected: string;
+  example: string;
+  /** The offending row, trimmed and length-limited. Untrusted input. */
+  receivedInput?: string;
+  bodyLine?: number;
+  bodyColumn?: number;
+};
+
+export class HtmdxBodyContractError extends Error {
+  constructor(
+    message: string,
+    readonly contract: HtmdxBodyContract,
+    options?: ErrorOptions,
+  ) {
+    super(message, options);
   }
 }
 
@@ -39,6 +68,33 @@ const EXPECTED = {
   'gfm-table': 'a GFM table with a header, separator, and at least one consistently sized data row',
   'markdown-list-cards': "one or more non-empty '- item' rows",
 } as const satisfies Record<HtmdxBodyFormat, string>;
+
+const EXAMPLES = {
+  markdown: 'One or two sentences of Markdown.',
+  'label-value-list': '- Latency: 120 ms',
+  'label-number-list': '- Mobile: 62',
+  'gfm-table': '| Plan | Users |\n| --- | --- |\n| Free | 48 |',
+  'markdown-list-cards': '- Describe one item per row.',
+} as const satisfies Record<HtmdxBodyFormat, string>;
+
+// The offending row travels to the error page and into the copied fix request,
+// where it is presented as untrusted data: keep it to one bounded, printable
+// line so it cannot pose as instructions.
+const RECEIVED_INPUT_LIMIT = 200;
+
+function receivedRow(body: string, line: number | undefined) {
+  if (!line) {
+    return undefined;
+  }
+
+  const row = body.split(/\r?\n/)[line - 1];
+  // oxlint-disable-next-line no-control-regex
+  const text = row?.replace(/[\u0000-\u001F\u007F]/g, ' ').trim();
+  if (!text) {
+    return undefined;
+  }
+  return text.length > RECEIVED_INPUT_LIMIT ? `${text.slice(0, RECEIVED_INPUT_LIMIT)}…` : text;
+}
 
 export function parseComponentBody<F extends HtmdxBodyFormat>(
   componentName: string,
@@ -59,8 +115,16 @@ export function parseComponentBody<F extends HtmdxBodyFormat>(
     const location = error.line
       ? ` at body line ${error.line}${error.column ? `, column ${error.column}` : ''}`
       : '';
-    throw new Error(
+    throw new HtmdxBodyContractError(
       `Invalid body for <${componentName}>${location}: ${error.message}; expected ${error.expected}.`,
+      {
+        component: componentName,
+        expected: error.expected,
+        example: error.example ?? EXAMPLES[format],
+        receivedInput: receivedRow(body, error.line),
+        bodyLine: error.line,
+        bodyColumn: error.column,
+      },
       { cause: error },
     );
   }
@@ -93,8 +157,7 @@ export function validateGlobalBody(body: string) {
       throw new BodyContractError(
         `${moduleSyntax[1]} statements are not allowed`,
         'content without imports or exports',
-        index + 1,
-        (moduleSyntax.index ?? 0) + 1,
+        { line: index + 1, column: (moduleSyntax.index ?? 0) + 1 },
       );
     }
   }
@@ -104,8 +167,7 @@ export function validateGlobalBody(body: string) {
     throw new BodyContractError(
       'MDX expressions are not allowed',
       'content without brace expressions',
-      expression.line,
-      expression.column,
+      { line: expression.line, column: expression.column },
     );
   }
 
@@ -114,8 +176,7 @@ export function validateGlobalBody(body: string) {
     throw new BodyContractError(
       'nested component tags are not allowed',
       'Markdown without nested component tags',
-      jsx.line,
-      jsx.column,
+      { line: jsx.line, column: jsx.column },
     );
   }
 }
@@ -129,7 +190,7 @@ export function parseLabelValueList(body: string): LabelValue[] {
       throw new BodyContractError(
         'each row must have a non-empty label and value separated by the first colon',
         EXPECTED['label-value-list'],
-        line,
+        { line },
       );
     }
     return { label, value };
@@ -145,19 +206,21 @@ export function parseLabelNumberList(body: string): LabelNumber[] {
       throw new BodyContractError(
         'each row must have a non-empty label',
         EXPECTED['label-number-list'],
-        line,
+        { line },
       );
     }
     if (!/^\d+(?:\.\d+)?$/.test(rawValue)) {
       throw new BodyContractError(
         `value "${rawValue}" is not a non-negative decimal`,
         EXPECTED['label-number-list'],
-        line,
+        { line },
       );
     }
     const value = Number(rawValue);
     if (!Number.isFinite(value)) {
-      throw new BodyContractError('each value must be finite', EXPECTED['label-number-list'], line);
+      throw new BodyContractError('each value must be finite', EXPECTED['label-number-list'], {
+        line,
+      });
     }
     return { label, value };
   });
@@ -174,11 +237,9 @@ export function parseGfmTable(body: string): GfmTable {
 
   const header = splitTableLine(lines[0].text);
   if (header.length === 0 || header.some((cell) => !cell)) {
-    throw new BodyContractError(
-      'header cells must be non-empty',
-      EXPECTED['gfm-table'],
-      lines[0].line,
-    );
+    throw new BodyContractError('header cells must be non-empty', EXPECTED['gfm-table'], {
+      line: lines[0].line,
+    });
   }
 
   const separator = splitTableLine(lines[1].text);
@@ -186,7 +247,7 @@ export function parseGfmTable(body: string): GfmTable {
     throw new BodyContractError(
       'separator must have one valid --- cell per header column',
       EXPECTED['gfm-table'],
-      lines[1].line,
+      { line: lines[1].line },
     );
   }
 
@@ -196,7 +257,7 @@ export function parseGfmTable(body: string): GfmTable {
       throw new BodyContractError(
         `data row has ${cells.length} columns but the header has ${header.length}`,
         EXPECTED['gfm-table'],
-        line,
+        { line },
       );
     }
     return cells;
@@ -223,11 +284,11 @@ function parseStrictList<T>(
   const items: T[] = [];
   for (const { text, line } of nonEmptyLines(body)) {
     if (!/^\s*-\s+/.test(text)) {
-      throw new BodyContractError('non-empty lines must be list items', expected, line);
+      throw new BodyContractError('non-empty lines must be list items', expected, { line });
     }
     const item = text.replace(/^\s*-\s+/, '').trim();
     if (!item) {
-      throw new BodyContractError('list items must be non-empty', expected, line);
+      throw new BodyContractError('list items must be non-empty', expected, { line });
     }
     items.push(parseItem(item, line));
   }

@@ -9,12 +9,11 @@ import {
 } from './component-definition';
 import { flushSync } from 'react-dom';
 import { createRoot, type Root } from 'react-dom/client';
-import * as builtinDefinitionExports from './components/builtins';
+import { bundledDefinitions, globalDefinitions, runtimeOptionsFor } from './runtime-definitions';
 import { calloutStyles } from './components/builtins/Callout/Callout';
 import { executiveSummaryStyles } from './components/builtins/ExecutiveSummary/ExecutiveSummary';
 import { foldoutStyles } from './components/builtins/Foldout/Foldout';
 import { sourceQuoteStyles } from './components/builtins/SourceQuote/SourceQuote';
-import * as shadcnDefinitionExports from './components/shadcn';
 import {
   collectStructuralDiagnostics,
   compileDocument,
@@ -75,13 +74,6 @@ export const DEFAULT_TAG_NAME = 'htmdx-code';
 export const DEFAULT_TAILWIND_BROWSER_SRC = 'https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4';
 const DEFAULT_SOURCE_SELECTOR = 'script[type="text/htmdx"], template[type="text/htmdx"]';
 
-const bundledDefinitions: HtmdxComponentDefinitions = [
-  ...Object.values(builtinDefinitionExports),
-  ...Object.values(shadcnDefinitionExports),
-];
-createDefinitionRegistry(bundledDefinitions);
-
-const globalDefinitions: HtmdxComponent[] = [];
 const registeredTagNames = new Set([DEFAULT_TAG_NAME]);
 const registeredOptions = new Map<string, HtmdxRegisterOptions>();
 const sourceCache = new WeakMap<Element, HtmdxSourceResult & { ok: true }>();
@@ -100,12 +92,6 @@ type ErrorDiagnostics = {
 type HostRoot = { root: Root; renderError: { current: CapturedError | null } };
 const reactRoots = new WeakMap<Element, HostRoot>();
 const stickyObservers = new WeakMap<Element, IntersectionObserver>();
-
-function runtimeOptionsFor(options: HtmdxCompileOptions) {
-  const definitions = [...bundledDefinitions, ...globalDefinitions, ...(options.definitions || [])];
-  createDefinitionRegistry(definitions);
-  return { definitions, layout: options.layout };
-}
 
 export function compile(source: string, options: HtmdxCompileOptions = {}): HtmdxCompileResult {
   try {

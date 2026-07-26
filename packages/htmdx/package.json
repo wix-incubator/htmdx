@@ -43,6 +43,10 @@
       "types": "./dist/src/react/index.d.ts",
       "default": "./dist/react.js"
     },
+    "./testing": {
+      "types": "./dist/src/testing/index.d.ts",
+      "default": "./dist/testing.js"
+    },
     "./components": {
       "types": "./dist/src/components/index.d.ts",
       "default": "./dist/components.js"

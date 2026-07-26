@@ -1053,6 +1053,89 @@ const FRONTMATTER_FIELDS = new Set([
   'logo-alt',
 ]);
 
+export type HtmdxStructureNode =
+  | { type: 'markdown'; value: string }
+  | { type: 'text'; value: string }
+  | {
+      type: 'element';
+      name: string;
+      props: Record<string, string>;
+      children: HtmdxStructureNode[];
+    };
+
+// The document's shape as written, not as rendered: component names, the props
+// they were given, and the text between them. Derived from the source rather
+// than the React tree so a snapshot survives runtime markup and styling churn.
+export function structureOf(source: string, options: HtmdxReactOptions = {}): HtmdxStructureNode[] {
+  const catalog = createRuntimeCatalog(options);
+  return tokenize(stripFrontmatterAndComments(source), catalog.names).map((block) => {
+    if (block.type === 'markdown') {
+      return { type: 'markdown' as const, value: block.value.trim() };
+    }
+    return {
+      type: 'element' as const,
+      name: block.name,
+      props: propsFromSourceAttributes(parseAttributes(block.attrs)),
+      children: structureChildren(block.body, catalog),
+    };
+  });
+}
+
+function structureChildren(body: string, catalog: RuntimeCatalog): HtmdxStructureNode[] {
+  const trimmed = body.trim();
+  if (!trimmed) {
+    return [];
+  }
+  if (!hasBodyElements(body)) {
+    return [{ type: 'text', value: trimmed }];
+  }
+
+  const { nodes, sourceAttributes } = parseBodyNodes(body);
+  return structureNodes(nodes, catalog, sourceAttributes);
+}
+
+function structureNodes(
+  nodes: Node[],
+  catalog: RuntimeCatalog,
+  sourceAttributes: WeakMap<Element, SourceAttribute[]>,
+): HtmdxStructureNode[] {
+  const structure: HtmdxStructureNode[] = [];
+  for (const node of nodes) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const value = (node.textContent || '').trim();
+      if (value) {
+        structure.push({ type: 'text', value });
+      }
+      continue;
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE) {
+      continue;
+    }
+    const element = node as Element;
+    const tag = element.tagName;
+    structure.push({
+      type: 'element',
+      name: catalog.names.get(tag.toLowerCase()) ?? tag,
+      props: propsFromSourceAttributes(
+        sourceAttributes.get(element) ??
+          Array.from(element.attributes, (attribute) => ({
+            name: attribute.name,
+            value: attribute.value,
+            bare: false,
+          })),
+      ),
+      children: structureNodes(Array.from(element.childNodes), catalog, sourceAttributes),
+    });
+  }
+  return structure;
+}
+
+function propsFromSourceAttributes(attributes: SourceAttribute[]): Record<string, string> {
+  return Object.fromEntries(
+    attributes.map((attribute) => [attribute.name, attribute.bare ? '' : (attribute.value ?? '')]),
+  );
+}
+
 export type ValidationProbe = {
   offset: number;
   render: () => ReactNode;

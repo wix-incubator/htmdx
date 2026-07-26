@@ -915,7 +915,7 @@ htmdx-code {
   color: var(--primary);
   text-underline-offset: 2px;
 }
-.htmdx-doc-section-card code:not([data-slot]) {
+.htmdx-doc-section-card :not(pre) > code:not([data-slot]) {
   font-family: ui-monospace, monospace;
   font-size: 0.8125rem;
   background: var(--muted);

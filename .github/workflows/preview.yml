@@ -1,0 +1,114 @@
+name: PR preview
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - closed
+
+permissions:
+  contents: write
+  pull-requests: write
+
+# Scoped per pull request so previews do not queue behind each other. Races
+# against other previews and the Pages workflow are handled by the non-force
+# push and retry in publish-gh-pages.sh.
+concurrency:
+  group: preview-${{ github.event.number }}
+  cancel-in-progress: true
+
+env:
+  YARN_NPM_REGISTRY_SERVER: https://registry.npmjs.org
+
+jobs:
+  deploy:
+    name: Build and publish preview
+    # Fork pull requests get a read-only token and cannot publish.
+    if: github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version-file: .nvmrc
+
+      - name: Install dependencies
+        run: printf 'y\n' | NPQ_PKG_MGR=yarn npx --yes npq install
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Build library
+        run: yarn workspace @wix/htmdx build:library
+
+      - name: Assemble preview
+        run: |
+          mkdir -p site
+          cp examples/*.html site/
+          cp packages/htmdx/dist/browser.js site/browser.js
+          touch site/.nojekyll
+
+      - name: Publish to gh-pages
+        id: publish
+        run: |
+          .github/scripts/publish-gh-pages.sh "previews/pr-${PR_NUMBER}" site "preview: pr-${PR_NUMBER} ${GITHUB_SHA}"
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.number }}
+
+      # Best effort: a slow or failed Pages build should not fail the check,
+      # it only means the commented links go live a little later.
+      - name: Wait for Pages to publish
+        continue-on-error: true
+        if: steps.publish.outputs.deployed_sha != ''
+        run: |
+          .github/scripts/wait-for-pages.sh "${{ steps.publish.outputs.deployed_sha }}"
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Comment preview link
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          base="https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/previews/pr-${PR_NUMBER}"
+          {
+            echo "<!-- htmdx-preview -->"
+            echo "### Preview"
+            echo
+            echo "Built from \`${HEAD_SHA}\` with this branch's \`browser.js\`."
+            echo
+            for file in site/*.html; do
+              name="$(basename "$file")"
+              echo "- [$name]($base/$name)"
+            done
+          } > comment.md
+          existing="$(gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
+            --jq 'map(select(.body | startswith("<!-- htmdx-preview -->"))) | .[0].id // empty')"
+          if [ -n "$existing" ]; then
+            gh api --method PATCH "repos/${GITHUB_REPOSITORY}/issues/comments/${existing}" -F body=@comment.md
+          else
+            gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" -F body=@comment.md
+          fi
+
+  cleanup:
+    name: Remove preview
+    if: github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Delete preview directory
+        run: |
+          .github/scripts/publish-gh-pages.sh "previews/pr-${PR_NUMBER}" "" "preview: remove pr-${PR_NUMBER}"
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.number }}

@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.8.0](https://github.com/wix-incubator/htmdx/compare/v4.7.0...v4.8.0) (2026-07-26)
+
+
+### Features
+
+* **react:** allow declarative SVG motion ([#65](https://github.com/wix-incubator/htmdx/issues/65)) ([8a77b21](https://github.com/wix-incubator/htmdx/commit/8a77b21f234f9f6533bed3c699a4faf7cd8f0ab9))
+* **react:** render inline SVG from its own allowlist ([#62](https://github.com/wix-incubator/htmdx/issues/62)) ([e3e48b5](https://github.com/wix-incubator/htmdx/commit/e3e48b527f32ee8effdd800198dc52d1ac2f8f6a))
+
 ## [4.7.0](https://github.com/wix-incubator/htmdx/compare/v4.6.0...v4.7.0) (2026-07-26)
 
 

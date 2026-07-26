@@ -13,7 +13,7 @@ Start with one HTML file:
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@4.7.0/dist/browser.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@4.8.0/dist/browser.js" defer></script>
   </head>
   <body>
     <!-- prettier-ignore -->
@@ -53,7 +53,7 @@ Every release includes its machine-readable component contract at:
 <!-- x-release-please-start-version -->
 
 ```text
-https://cdn.jsdelivr.net/npm/@wix/htmdx@4.7.0/dist/components.json
+https://cdn.jsdelivr.net/npm/@wix/htmdx@4.8.0/dist/components.json
 ```
 
 <!-- x-release-please-end-version -->
@@ -432,9 +432,9 @@ to the version an artifact declares gets you the behavior that artifact ships:
 <!-- x-release-please-start-version -->
 
 ```bash
-npx @wix/htmdx@4.7.0 lint docs/*.htmdx --strict
-npx @wix/htmdx@4.7.0 compile report.htmdx --out report-body.html
-npx @wix/htmdx@4.7.0 components Callout
+npx @wix/htmdx@4.8.0 lint docs/*.htmdx --strict
+npx @wix/htmdx@4.8.0 compile report.htmdx --out report-body.html
+npx @wix/htmdx@4.8.0 components Callout
 ```
 
 <!-- x-release-please-end-version -->

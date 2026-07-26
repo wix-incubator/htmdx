@@ -17,7 +17,14 @@
     "packages/htmdx": {
       "release-type": "node",
       "changelog-path": "CHANGELOG.md",
-      "extra-files": ["/README.md", "README.md"]
+      "extra-files": [
+        "/README.md",
+        "README.md",
+        "skill/authoring.md",
+        "skill/components.md",
+        "skill/integration.md",
+        "skill/artifact.html"
+      ]
     }
   }
 }

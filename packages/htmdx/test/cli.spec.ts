@@ -274,3 +274,72 @@ describe('htmdx components', () => {
     expect(result.stderr).toContain('unknown component');
   });
 });
+
+describe('htmdx skill', () => {
+  test('prints the authoring topic by default', async () => {
+    const result = await cli('skill');
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain('# HTMDX authoring');
+  });
+
+  test('lists the topics with --list', async () => {
+    const result = await cli('skill', '--list');
+
+    expect(result.code).toBe(0);
+    for (const topic of ['authoring', 'components', 'integration', 'starter']) {
+      expect(result.stdout).toContain(topic);
+    }
+  });
+
+  test('prints a named topic', async () => {
+    const result = await cli('skill', 'components');
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain('# Component grammar');
+  });
+
+  test('leaves the release and formatter bookkeeping out of the output', async () => {
+    const result = await cli('skill', 'components');
+
+    expect(result.stdout).not.toContain('x-release-please');
+    expect(result.stdout).not.toMatch(/^<!-- prettier-ignore -->$/m);
+    expect(result.stdout).toContain('```mdx');
+  });
+
+  test('writes a usable artifact with the starter topic', async () => {
+    const starter = await cli('skill', 'starter');
+    const linted = await cli('lint', fixture('starter.html', starter.stdout), '--strict');
+
+    expect(starter.stdout).toContain('<script type="text/htmdx"');
+    expect(linted.code).toBe(0);
+  });
+
+  test('concatenates every topic with --full', async () => {
+    const result = await cli('skill', '--full');
+
+    expect(result.stdout).toContain('<!-- BEGIN authoring.md -->');
+    expect(result.stdout).toContain('<!-- END artifact.html -->');
+  });
+
+  test('reports the runtime alongside the topics with --json', async () => {
+    const result = await cli('skill', '--full', '--json');
+
+    const payload = JSON.parse(result.stdout);
+    expect(payload.runtime).toMatch(/^@wix\/htmdx@\d+\.\d+\.\d+/);
+    expect(payload.topics.map((topic: { name: string }) => topic.name)).toEqual([
+      'authoring',
+      'components',
+      'integration',
+      'starter',
+    ]);
+  });
+
+  test('exits 2 and names the valid topics for an unknown one', async () => {
+    const result = await cli('skill', 'nope');
+
+    expect(result.code).toBe(2);
+    expect(result.stderr).toContain('unknown skill topic "nope"');
+    expect(result.stderr).toContain('components');
+  });
+});

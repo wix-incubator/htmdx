@@ -30,7 +30,8 @@ import { SVG_ELEMENTS, safeSvgProps } from '../components/svg-elements';
 import { safeImageAttributes, uniqueSlug, type RenderContext } from '../components/rendering';
 import { BUILT_IN_LOGOS } from '../logos';
 import { getLayout, resolveLayoutName, resolveLayoutSlots } from '../layout';
-import { renderInline, renderMarkdown, type HtmlRenderer } from './markdown';
+import { CodeBlock } from './CodeBlock';
+import { fenceLanguage, renderInline, renderMarkdown, type HtmlRenderer } from './markdown';
 import { THEME_IDS } from '../themes';
 import {
   HtmdxSourceError,
@@ -742,6 +743,13 @@ function nodeToReact(
         unescapeCodeSpans(serializeElement(element));
   }
 
+  if (lower === 'pre') {
+    const codeBlock = rawCodeBlock(element, key);
+    if (codeBlock) {
+      return codeBlock;
+    }
+  }
+
   const target = lower;
   const props: Record<string, unknown> = {
     key,
@@ -766,6 +774,48 @@ function nodeToReact(
     .filter((child) => child !== null);
 
   return createElement(target, props, ...children);
+}
+
+// An author-written <pre> gets the same chrome, language label, and copy button
+// a Markdown fence gets. Only a bare, text-only subtree qualifies: a <pre> that
+// wraps real markup, or that carries attributes of its own, keeps rendering as
+// the element it was written as rather than losing them to the figure.
+function rawCodeBlock(element: Element, key: string): ReactNode | null {
+  if (element.getAttributeNames().length > 0) {
+    return null;
+  }
+
+  const children = Array.from(element.childNodes).filter(
+    (child) => child.nodeType !== Node.COMMENT_NODE,
+  );
+  const onlyChild = children.length === 1 ? children[0] : null;
+  const code =
+    onlyChild?.nodeType === Node.ELEMENT_NODE &&
+    (onlyChild as Element).tagName.toLowerCase() === 'code'
+      ? (onlyChild as Element)
+      : null;
+
+  const container = code ?? element;
+  if (Array.from(container.childNodes).some((child) => child.nodeType !== Node.TEXT_NODE)) {
+    return null;
+  }
+
+  // The only attribute the chrome can carry over is the language, so a <code>
+  // holding anything else — an id, a second class — renders as written.
+  const codeAttributes = code?.getAttributeNames() ?? [];
+  if (codeAttributes.some((name) => name !== 'class')) {
+    return null;
+  }
+  const className = code?.getAttribute('class')?.trim() ?? '';
+  if (className && !/^language-\S+$/.test(className)) {
+    return null;
+  }
+
+  const language = fenceLanguage(className.slice('language-'.length));
+  // A newline right after the opening tag is source formatting in HTML, and the
+  // XML parse path keeps it. Drop exactly one, then the trailing blank tail.
+  const text = (container.textContent || '').replace(/^\r?\n/, '').replace(/\s+$/, '');
+  return createElement(CodeBlock, { key, code: text, language });
 }
 
 // SVG element names are case sensitive and the forgiving HTML parse uppercases

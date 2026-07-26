@@ -21,6 +21,7 @@ import {
   tokenizeSource,
 } from './react';
 import { configureMermaid, type HtmdxMermaidOptions } from './react/mermaid';
+import { withStaticRender } from './react/static-render';
 import { toDiagnostic, type HtmdxDiagnostic } from './diagnostics';
 import { addLayout, type HtmdxLayoutDefinition } from './layout';
 import { THEME_CSS, THEME_IDS } from './themes';
@@ -195,7 +196,7 @@ function renderStaticHtml(element: ReactElement): string {
     },
   });
   try {
-    flushSync(() => root.render(element));
+    withStaticRender(() => flushSync(() => root.render(element)));
     if (caught) {
       throw caught;
     }
@@ -1009,6 +1010,21 @@ const RUNTIME_CSS = `
     --htmdx-font: var(--md-ref-typeface-plain);
     --htmdx-mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
 
+    /* Syntax colors are fixed rather than theme-derived: a palette that shifts
+       with the accent hue stops separating tokens from each other. Override any
+       of these to reskin every code block. */
+    --htmdx-code-text: #1f2430;
+    --htmdx-code-comment: #71809b;
+    --htmdx-code-keyword: #7c3aed;
+    --htmdx-code-string: #047857;
+    --htmdx-code-number: #b45309;
+    --htmdx-code-function: #2563eb;
+    --htmdx-code-type: #0e7490;
+    --htmdx-code-property: #be185d;
+    --htmdx-code-punctuation: #8a94a6;
+    --htmdx-code-inserted: #047857;
+    --htmdx-code-deleted: #b91c1c;
+
     /* Keep the bundled shadcn pack on the same active M3 palette. */
     --primary: var(--md-sys-color-primary);
     --primary-foreground: var(--md-sys-color-on-primary);
@@ -1312,7 +1328,97 @@ const RUNTIME_CSS = `
     font-weight: 700;
     color: var(--md-sys-color-on-surface);
   }
+  .htmdx-doc-section-card :not(pre) > code:not([data-slot]) {
+    padding: 0.15em 0.4em;
+    border-radius: var(--md-sys-shape-corner-small);
+    background: var(--md-sys-color-surface-container-high);
+    color: var(--md-sys-color-on-surface);
+    font-family: var(--htmdx-mono);
+    font-size: 0.875em;
+  }
   .htmdx-image { display: block; max-width: 100%; height: auto; }
+
+  .htmdx-code-figure {
+    box-sizing: border-box;
+    max-width: 100%;
+    margin: 0 0 16px;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-corner-medium);
+    background: var(--md-sys-color-surface-container-lowest);
+    overflow: hidden;
+  }
+  .htmdx-code-figure:last-child { margin-bottom: 0; }
+  .htmdx-code-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 5px 6px 5px 14px;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    background: var(--md-sys-color-surface-container-low);
+  }
+  .htmdx-code-language {
+    font-family: var(--htmdx-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+  .htmdx-code-copy {
+    flex: none;
+    border: 0;
+    border-radius: var(--md-sys-shape-corner-small);
+    padding: 4px 10px;
+    background: transparent;
+    color: var(--md-sys-color-on-surface-variant);
+    font-family: var(--htmdx-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    /* Dimmed rather than hidden: a control that only exists on hover is
+       invisible on touch and to anyone scanning the page. */
+    opacity: 0.6;
+    transition: opacity 120ms ease, background-color 120ms ease, color 120ms ease;
+  }
+  .htmdx-code-figure:hover .htmdx-code-copy,
+  .htmdx-code-copy:focus-visible { opacity: 1; }
+  .htmdx-code-copy:hover { background: var(--md-sys-color-surface-container-high); }
+  .htmdx-code-copy[data-copied] {
+    opacity: 1;
+    color: var(--md-sys-color-primary);
+  }
+  .htmdx-code-block {
+    box-sizing: border-box;
+    max-width: 100%;
+    margin: 0;
+    padding: 14px 16px;
+    overflow-x: auto;
+    background: none;
+    color: var(--htmdx-code-text);
+    font-family: var(--htmdx-mono);
+    font-size: 0.8125rem;
+    line-height: 1.65;
+    tab-size: 2;
+    scrollbar-width: thin;
+    user-select: text;
+  }
+  .htmdx-tok-comment { color: var(--htmdx-code-comment); font-style: italic; }
+  .htmdx-tok-keyword { color: var(--htmdx-code-keyword); }
+  .htmdx-tok-string { color: var(--htmdx-code-string); }
+  .htmdx-tok-number { color: var(--htmdx-code-number); }
+  .htmdx-tok-function { color: var(--htmdx-code-function); }
+  .htmdx-tok-tag { color: var(--htmdx-code-keyword); }
+  .htmdx-tok-type { color: var(--htmdx-code-type); }
+  .htmdx-tok-attribute { color: var(--htmdx-code-property); }
+  .htmdx-tok-property { color: var(--htmdx-code-property); }
+  .htmdx-tok-operator { color: var(--htmdx-code-punctuation); }
+  .htmdx-tok-punctuation { color: var(--htmdx-code-punctuation); }
+  .htmdx-tok-inserted { color: var(--htmdx-code-inserted); }
+  .htmdx-tok-deleted { color: var(--htmdx-code-deleted); }
+  @media (prefers-reduced-motion: reduce) {
+    .htmdx-code-copy { transition: none; }
+  }
 
   .htmdx-card .htmdx-component-body {
     background: var(--md-sys-color-surface-container-lowest);

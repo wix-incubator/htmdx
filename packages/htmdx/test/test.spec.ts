@@ -1,4 +1,4 @@
-import { createElement, type ReactNode } from 'react';
+import { act, createElement, type ReactNode } from 'react';
 import { describe, expect, test, vi } from 'vitest';
 import {
   DEFAULT_TAG_NAME,
@@ -11,6 +11,7 @@ import {
   renderHost,
   tokenizeBlocks,
 } from '../src';
+import { shadcnThemeCss } from '../src/components/shadcn/shared/theme';
 
 const readPre = (rendered: ReturnType<typeof compile>) => {
   const container = document.createElement('div');
@@ -549,6 +550,185 @@ Context.</script>`;
 
     expect(rendered).toMatchObject({ ok: true });
     expect(container.querySelector('pre')?.textContent).toBe('A &amp; B');
+  });
+
+  test('labels a fenced block with its language and keeps the info string out of the code', () => {
+    const rendered = compile('```ts\nconst x: number = 1;\n```\n');
+    const container = document.createElement('div');
+    container.innerHTML = rendered.ok ? rendered.html : '';
+    const figure = container.querySelector('figure.htmdx-code-figure');
+
+    expect(figure?.getAttribute('data-language')).toBe('ts');
+    expect(figure?.querySelector('.htmdx-code-language')?.textContent).toBe('ts');
+    expect(figure?.querySelector('pre > code')?.className).toBe('language-ts');
+    expect(figure?.querySelector('pre')?.textContent).toBe('const x: number = 1;');
+  });
+
+  test('drops an unusable fence info string instead of emitting a class', () => {
+    const rendered = compile('```{= no/thanks }\nplain\n```\n');
+    const container = document.createElement('div');
+    container.innerHTML = rendered.ok ? rendered.html : '';
+    const figure = container.querySelector('figure.htmdx-code-figure');
+
+    expect(figure?.hasAttribute('data-language')).toBe(false);
+    expect(figure?.querySelector('pre > code')?.hasAttribute('class')).toBe(false);
+    expect(figure?.querySelector('pre')?.textContent).toBe('plain');
+  });
+
+  test('highlights a fenced block it has a grammar for and leaves the rest plain', () => {
+    const rendered = compile(
+      '```ts\n// note\nconst count = 1;\n```\n\n```wat\nconst count = 1;\n```',
+    );
+    const container = document.createElement('div');
+    container.innerHTML = rendered.ok ? rendered.html : '';
+    const [highlighted, plain] = container.querySelectorAll('pre > code');
+
+    expect(highlighted.querySelector('.htmdx-tok-comment')?.textContent).toBe('// note');
+    expect(highlighted.querySelector('.htmdx-tok-keyword')?.textContent).toBe('const');
+    expect(highlighted.querySelector('.htmdx-tok-number')?.textContent).toBe('1');
+    expect(highlighted.textContent).toBe('// note\nconst count = 1;');
+    expect(plain.querySelector('span')).toBeNull();
+  });
+
+  test('highlights markup without letting a tag escape the code block', () => {
+    const rendered = compile('```html\n<div class="a">hi</div>\n```\n');
+    const container = document.createElement('div');
+    container.innerHTML = rendered.ok ? rendered.html : '';
+
+    expect(container.querySelector('div.a')).toBeNull();
+    expect(container.querySelector('.htmdx-tok-tag')?.textContent).toBe('<div');
+    expect(container.querySelector('.htmdx-tok-attribute')?.textContent).toBe('class');
+    expect(container.querySelector('pre')?.textContent).toBe('<div class="a">hi</div>');
+  });
+
+  test('gives a raw pre the same chrome as a fence and reads its language class', () => {
+    const rendered = compile(
+      '<pre><code class="language-json">{"a": 1}</code></pre>\n\n<pre>plain block</pre>',
+    );
+    const container = document.createElement('div');
+    container.innerHTML = rendered.ok ? rendered.html : '';
+    const [fromCode, bare] = container.querySelectorAll('figure.htmdx-code-figure');
+
+    expect(fromCode.getAttribute('data-language')).toBe('json');
+    expect(fromCode.querySelector('.htmdx-tok-property')?.textContent).toBe('"a"');
+    expect(fromCode.querySelector('pre')?.textContent).toBe('{"a": 1}');
+    expect(bare.hasAttribute('data-language')).toBe(false);
+    expect(bare.querySelector('pre')?.textContent).toBe('plain block');
+    // compile() output carries no runtime, so the copy button — which only works
+    // with React attached — stays out of it. renderHost() renders it instead.
+    expect(container.querySelectorAll('.htmdx-code-copy')).toHaveLength(0);
+  });
+
+  test('leaves a pre that wraps real markup as a plain pre element', () => {
+    const rendered = compile('<pre>keep <strong>this</strong> markup</pre>');
+    const container = document.createElement('div');
+    container.innerHTML = rendered.ok ? rendered.html : '';
+
+    expect(container.querySelector('figure.htmdx-code-figure')).toBeNull();
+    expect(container.querySelector('pre > strong')?.textContent).toBe('this');
+  });
+
+  // The chrome carries a language and nothing else, so a block that was written
+  // with an anchor or a styling hook keeps the element it was written as rather
+  // than losing the attribute to the figure.
+  test('leaves a pre carrying its own attributes as a plain pre element', () => {
+    const rendered = compile(
+      '<pre id="example">snippet</pre>\n\n<pre><code class="language-ts theme-dark">const x = 1;</code></pre>',
+    );
+    const container = document.createElement('div');
+    container.innerHTML = rendered.ok ? rendered.html : '';
+
+    expect(container.querySelector('figure.htmdx-code-figure')).toBeNull();
+    expect(container.querySelector('pre#example')?.textContent).toBe('snippet');
+    expect(container.querySelector('pre > code')?.className).toBe('language-ts theme-dark');
+  });
+
+  // An inline span is a chip; a block is already a card. The chip rules run on
+  // an inline box, so one that also matched the block's <code> would repaint its
+  // background once per wrapped line. Both stylesheets carry the same guard.
+  test('keeps the inline code chip off a code block', () => {
+    register({ automount: false });
+    const runtimeCss = document.getElementById('htmdx-runtime-v1-styles')?.textContent ?? '';
+    const sheet = document.createElement('style');
+    sheet.textContent = runtimeCss + shadcnThemeCss;
+    document.head.append(sheet);
+
+    const rendered = compile('## Code\n\nAn inline `span`.\n\n```ts\nconst x = 1;\n```\n');
+    const host = document.createElement('div');
+    host.innerHTML = rendered.ok ? rendered.html : '';
+    document.body.append(host);
+
+    const inline = host.querySelector('p code');
+    const block = host.querySelector('.htmdx-code-block code');
+    const chipSelectors = Array.from(sheet.sheet?.cssRules ?? [])
+      .filter(
+        (rule): rule is CSSStyleRule =>
+          rule instanceof CSSStyleRule &&
+          rule.selectorText.includes('code:not([data-slot])') &&
+          rule.style.background !== '',
+      )
+      .map((rule) => rule.selectorText);
+
+    expect(chipSelectors.length).toBeGreaterThan(0);
+    expect(chipSelectors.filter((selector) => inline?.matches(selector))).toHaveLength(
+      chipSelectors.length,
+    );
+    expect(chipSelectors.filter((selector) => block?.matches(selector))).toHaveLength(0);
+
+    host.remove();
+    sheet.remove();
+  });
+
+  test('copies the block source to the clipboard', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText } });
+    register({ automount: false });
+    const host = document.createElement('div');
+    host.innerHTML = '<script type="text/htmdx">```ts\nconst x = 1;\n```\n</script>';
+    document.body.append(host);
+
+    await renderHost(host);
+    const button = host.querySelector<HTMLButtonElement>('.htmdx-code-copy');
+    await act(async () => {
+      button?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(writeText).toHaveBeenCalledWith('const x = 1;');
+    expect(button?.textContent).toBe('Copied');
+    expect(button?.getAttribute('aria-label')).toBe('Code copied');
+
+    host.remove();
+    vi.unstubAllGlobals();
+  });
+
+  test('renders inline code spans as code elements', () => {
+    const rendered = compile('Run `npm run build` before `git push`.\n');
+    const container = document.createElement('div');
+    container.innerHTML = rendered.ok ? rendered.html : '';
+
+    expect([...container.querySelectorAll('p > code')].map((node) => node.textContent)).toEqual([
+      'npm run build',
+      'git push',
+    ]);
+  });
+
+  test('styles fenced and inline code in the rendered document', async () => {
+    register({ automount: false });
+    const host = document.createElement('div');
+    host.innerHTML =
+      '<script type="text/htmdx">Use `name` here.\n\n```ts\nconst x = 1;\n```\n</script>';
+    document.body.append(host);
+
+    await renderHost(host);
+
+    const pre = host.querySelector('pre.htmdx-code-block');
+    const inline = host.querySelector('p > code');
+    expect(pre).not.toBeNull();
+    expect(getComputedStyle(pre!).overflowX).toBe('auto');
+    expect(getComputedStyle(pre!).maxWidth).toBe('100%');
+    expect(getComputedStyle(inline!).fontFamily).toBe('var(--htmdx-mono)');
+
+    host.remove();
   });
 
   test('does not leak fence markers as text inside component bodies', () => {

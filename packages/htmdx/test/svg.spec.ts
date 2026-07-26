@@ -175,10 +175,15 @@ describe('inline SVG', () => {
       '```html\n<svg><circle/></svg>\n```\n\nInline `<svg viewBox="0 0 1 1">` stays text.',
     );
 
-    expect(rendered.ok && rendered.html).toContain(
-      '<code class="language-html">&lt;svg&gt;&lt;circle/&gt;&lt;/svg&gt;</code>',
+    const container = document.createElement('div');
+    container.innerHTML = rendered.ok ? rendered.html : '';
+
+    expect(container.querySelector('svg')).toBeNull();
+    expect(container.querySelector('pre')?.textContent).toBe('<svg><circle/></svg>');
+    expect(container.querySelector('pre > code')?.className).toBe('language-html');
+    expect(container.querySelector('p')?.innerHTML).toContain(
+      '<code>&lt;svg viewBox="0 0 1 1"&gt;</code>',
     );
-    expect(rendered.ok && rendered.html).toContain('<code>&lt;svg viewBox="0 0 1 1"&gt;</code>');
   });
 
   test('reports a registered component used inside a graphic', () => {

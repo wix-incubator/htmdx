@@ -13,6 +13,8 @@
 
 ## One file, two audiences
 
+<!-- x-release-please-start-version -->
+
 ```html
 <!doctype html>
 <html lang="en">
@@ -40,6 +42,8 @@ The HTML is viewable as-is. Agents edit only this source block.
   </body>
 </html>
 ```
+
+<!-- x-release-please-end-version -->
 
 The pinned runtime renders the source block with React, the component catalog, a theme, and Tailwind. Humans and agents edit that block instead of generated HTML, CSS, or application code.
 
@@ -179,6 +183,8 @@ Set `theme` to `blue` (default), `purple`, `green`, `teal`, `amber`, `magenta`, 
 
 Host code registers standard React components and themes through `window.Htmdx`; artifact source only supplies data. The bundle exposes React, so extension scripts need no build step:
 
+<!-- x-release-please-start-version -->
+
 ```html
 <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@4.0.0/dist/browser.js" defer></script>
 <script>
@@ -201,6 +207,8 @@ Host code registers standard React components and themes through `window.Htmdx`;
   });
 </script>
 ```
+
+<!-- x-release-please-end-version -->
 
 Artifacts then use `<ProductCard>` declaratively. Tailwind classes compile on the fly; disable that with `register({ tailwind: false })` or use a mirror with `register({ tailwind: { src: './tailwind-browser.js' } })`.
 

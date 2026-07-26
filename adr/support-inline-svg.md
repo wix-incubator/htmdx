@@ -26,7 +26,8 @@ independent of the HTML one:
 - Elements: shapes (`path`, `circle`, `ellipse`, `line`, `polygon`, `polyline`,
   `rect`), structure (`svg`, `g`, `defs`, `symbol`, `title`, `desc`), paint
   (`linearGradient`, `radialGradient`, `stop`, `pattern`, `clipPath`, `mask`,
-  `marker`), text (`text`, `tspan`, `textPath`), and a filter subset.
+  `marker`), text (`text`, `tspan`, `textPath`), conditional rendering
+  (`switch`), and the filter primitives that only compute from their inputs.
 - Attributes: globals, `aria-*`, `data-*`, the shared presentation attributes,
   and a per-element geometry set. `on*` fails the compile.
 - Values: a `url()` must be a same-document `url(#id)` reference. `href` is
@@ -37,11 +38,15 @@ The allowlist is keyed by lowercase and resolves to canonical casing, so both
 parse paths land on the same element and `<lineargradient>` is corrected rather
 than rejected.
 
-Not allowlisted: `<script>`, `<foreignObject>`, `<use>`, `<image>`, `<a>`,
-`<style>`, and the animation elements (`animate`, `animateTransform`,
+Not allowlisted: `<script>`, `<foreignObject>`, `<use>`, `<image>`, `<feImage>`,
+`<a>`, `<style>`, and the animation elements (`animate`, `animateTransform`,
 `animateMotion`, `set`). Each is a way out of the graphic. They degrade to the
 text they were written as, matching what a non-allowlisted HTML tag does at the
 top level.
+
+`<feImage>` is the line inside the filter set: every other primitive reads the
+source graphic and its sibling results, while `<feImage>` loads a document.
+DOMPurify allows it; this allowlist does not.
 
 Inside an `<svg>` subtree, SVG's element space wins over both HTML and the
 component catalog: `<text>` and `<path>` are SVG, whatever else is registered

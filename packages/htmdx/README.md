@@ -148,14 +148,18 @@ image file and no component:
 
 SVG answers to its own allowlist, separate from the HTML one, because it has its
 own element and attribute space. Shapes, `g`, `defs`, gradients, `pattern`,
-`clipPath`, `mask`, `marker`, `symbol`, `text`/`tspan`/`textPath`, and a filter
-subset are allowed. Element names keep their casing, so `<linearGradient>` and
-`<clipPath>` work as written — and `<lineargradient>` is corrected to match.
+`clipPath`, `mask`, `marker`, `symbol`, `switch`, `text`/`tspan`/`textPath`, and
+the filter primitives are allowed. Element names keep their casing, so
+`<linearGradient>` and `<clipPath>` work as written — and `<lineargradient>` is
+corrected to match.
 
-Left out on purpose: `<script>`, `<foreignObject>`, `<use>`, `<image>`, `<a>`,
-and the animation elements. Each is a way to reach out of the graphic — into
-script, into HTML, or into another document. Inside an `<svg>` they render as
-the text they were written as, the same way a non-allowlisted HTML tag does.
+Left out on purpose: `<script>`, `<foreignObject>`, `<use>`, `<image>`,
+`<feImage>`, `<a>`, and the animation elements. Each is a way to reach out of
+the graphic — into script, into HTML, or into another document. Every filter
+primitive that only computes from its inputs is allowed; `<feImage>` is the one
+that loads a document, so it is the one that is not. Inside an `<svg>` they
+render as the text they were written as, the same way a non-allowlisted HTML tag
+does.
 
 References stay inside the document. `fill="url(#bars)"` resolves against the
 graphic, while `fill="url(https://example.com/x)"` is dropped, and `href` is

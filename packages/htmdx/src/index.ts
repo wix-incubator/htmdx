@@ -19,6 +19,7 @@ import {
   compileDocument,
   diagnosticForBlock,
   tokenizeSource,
+  type HtmdxBlockFailure,
 } from './react';
 import {
   buildFixRequest,
@@ -30,18 +31,23 @@ import {
 } from './fix-request';
 import { configureMermaid, type HtmdxMermaidOptions } from './react/mermaid';
 import { withStaticRender } from './react/static-render';
-import { toDiagnostic, type HtmdxDiagnostic } from './diagnostics';
+import { HtmdxSourceError, toDiagnostic, type HtmdxDiagnostic } from './diagnostics';
 import { addLayout, type HtmdxLayoutDefinition } from './layout';
 import { THEME_CSS, THEME_IDS } from './themes';
 import { VERSION } from './version';
 
 export { THEME_IDS, type HtmdxThemeId } from './themes';
 export { VERSION } from './version';
+export { HtmdxSourceError };
 export { injectShadcnTheme } from './components/shadcn/shared/theme';
 export { compileDocument, compileToReact, Htmdx, listComponents } from './react';
-export type { HtmdxDocument, HtmdxDocumentOptions, HtmdxReactOptions } from './react';
+export type {
+  HtmdxBlockFailure,
+  HtmdxDocument,
+  HtmdxDocumentOptions,
+  HtmdxReactOptions,
+} from './react';
 export { DEFAULT_MERMAID_SRC, type HtmdxMermaidOptions } from './react/mermaid';
-export { HtmdxSourceError } from './diagnostics';
 export type { HtmdxDiagnostic, HtmdxDiagnosticCode, HtmdxSeverity } from './diagnostics';
 export type { HtmdxLayoutDefinition, HtmdxLayoutProps, HtmdxLayoutSlot } from './layout';
 export type HtmdxToken =
@@ -99,6 +105,7 @@ type CapturedError = {
 type HostRoot = { root: Root; renderError: { current: CapturedError | null } };
 const reactRoots = new WeakMap<Element, HostRoot>();
 const stickyObservers = new WeakMap<Element, IntersectionObserver>();
+const degradedListeners = new WeakMap<Element, AbortController>();
 
 export function compile(source: string, options: HtmdxCompileOptions = {}): HtmdxCompileResult {
   try {
@@ -364,9 +371,16 @@ export async function renderHost(host: Element, options: HtmdxRegisterOptions = 
 
   sourceCache.set(host, sourceResult);
 
+  // A block that fails no longer takes the page with it. Failures land here,
+  // and the banner appended after the render is what tells the reader that the
+  // page they are looking at is incomplete.
+  const blockFailures: HtmdxBlockFailure[] = [];
   let doc;
   try {
-    doc = compileDocument(sourceResult.source, runtimeOptionsFor(options));
+    doc = compileDocument(sourceResult.source, {
+      ...runtimeOptionsFor(options),
+      onBlockError: (failure) => blockFailures.push(failure),
+    });
   } catch (error) {
     const scan = scanArtifact(sourceResult.source, options);
     reportHostError(
@@ -383,11 +397,15 @@ export async function renderHost(host: Element, options: HtmdxRegisterOptions = 
     let hostRoot = reactRoots.get(host);
     if (!hostRoot) {
       // The embedded source element is consumed here; the source is cached
-      // above, so rerenders keep working.
+      // above, so rerenders keep working. React owns a container of its own so
+      // the degraded banner can sit beside it without fighting reconciliation.
       host.innerHTML = '';
+      const container = document.createElement('div');
+      container.className = 'htmdx-root';
+      host.append(container);
       const renderErrorBox: HostRoot['renderError'] = { current: null };
       hostRoot = {
-        root: createRoot(host, {
+        root: createRoot(container, {
           // React roots swallow render errors instead of throwing; capture
           // them so the error fallback below still works.
           onUncaughtError: (error, errorInfo) => {
@@ -396,12 +414,18 @@ export async function renderHost(host: Element, options: HtmdxRegisterOptions = 
               componentStack: errorInfo.componentStack || undefined,
             };
           },
+          // A block boundary already reported this one and put a card in its
+          // place; React's default would log it again as if nothing handled it.
+          onCaughtError: () => {},
         }),
         renderError: renderErrorBox,
       };
       reactRoots.set(host, hostRoot);
     }
     hostRoot.renderError.current = null;
+    host.querySelector('.htmdx-degraded')?.remove();
+    degradedListeners.get(host)?.abort();
+    degradedListeners.delete(host);
     flushSync(() => hostRoot.root.render(doc.element));
     const captured = hostRoot.renderError.current as CapturedError | null;
     if (captured) {
@@ -421,12 +445,39 @@ export async function renderHost(host: Element, options: HtmdxRegisterOptions = 
     activateSectionRail(host);
     activateStickyHeader(host);
     activateInPageAnchors(host);
+    if (blockFailures.length > 0) {
+      renderDegradedBanner(host, blockFailures, sourceResult.source, options);
+    }
     host.dispatchEvent(
       new CustomEvent('htmdx:rendered', {
-        detail: { source: sourceResult.kind, components: doc.components, version: VERSION },
+        detail: {
+          source: sourceResult.kind,
+          components: doc.components,
+          version: VERSION,
+          ...(blockFailures.length > 0 ? { partial: true } : {}),
+        },
         bubbles: true,
       }),
     );
+    // The page rendered, so htmdx:rendered is the truth; htmdx:error follows
+    // for anything watching for failures, marked partial so it is not mistaken
+    // for the whole page going down.
+    if (blockFailures.length > 0) {
+      host.dispatchEvent(
+        new CustomEvent('htmdx:error', {
+          detail: {
+            ok: false,
+            partial: true,
+            failedStep: 'render',
+            blocks: blockFailures.map((failure) => ({
+              component: failure.name,
+              error: failure.error instanceof Error ? failure.error.message : String(failure.error),
+            })),
+          },
+          bubbles: true,
+        }),
+      );
+    }
   } catch (error) {
     const scan = scanArtifact(sourceResult.source, options);
     reportHostError(
@@ -744,31 +795,9 @@ function renderError(
   status.className = 'htmdx-error-status';
   status.setAttribute('aria-live', 'polite');
 
-  const manualRequest = document.createElement('div');
-  manualRequest.hidden = true;
-  const manualLabel = document.createElement('p');
-  manualLabel.textContent = 'Copy this fix request manually:';
-  const manualText = document.createElement('pre');
-  manualText.tabIndex = 0;
-  manualText.textContent = fixRequest;
-  manualRequest.append(manualLabel, manualText);
-
-  let restoreLabel: ReturnType<typeof setTimeout> | undefined;
-  copyButton.addEventListener('click', async () => {
-    try {
-      await navigator.clipboard.writeText(fixRequest);
-      status.textContent = 'Copied. Paste it into your coding agent.';
-      copyButton.textContent = 'Copied';
-      clearTimeout(restoreLabel);
-      restoreLabel = setTimeout(() => {
-        copyButton.textContent = COPY_LABEL;
-      }, COPIED_LABEL_MS);
-    } catch {
-      status.textContent = 'Clipboard access failed. Copy the fix request below.';
-      manualRequest.hidden = false;
-      selectText(manualText);
-    }
-  });
+  const manual = createManualRequest();
+  const copy = copyHandler(status, manual);
+  copyButton.addEventListener('click', () => void copy(copyButton, fixRequest));
 
   const details = document.createElement('details');
   const summary = document.createElement('summary');
@@ -777,8 +806,129 @@ function renderError(
   detailsText.textContent = formatErrorDetails(diagnostics);
   details.append(summary, detailsText);
 
-  panel.append(heading, body, actions, status, manualRequest, details);
+  panel.append(heading, body, actions, status, manual.element, details);
   host.append(panel);
+}
+
+type ManualRequest = { element: HTMLElement; text: HTMLElement };
+
+function createManualRequest(): ManualRequest {
+  const element = document.createElement('div');
+  element.hidden = true;
+  const label = document.createElement('p');
+  label.textContent = 'Copy this fix request manually:';
+  const text = document.createElement('pre');
+  text.tabIndex = 0;
+  element.append(label, text);
+  return { element, text };
+}
+
+// One clipboard flow for the whole-page panel, the degraded banner, and every
+// card inside it: the label flips back on its own, and a refused clipboard
+// reveals the text instead of leaving the reader with nothing.
+function copyHandler(status: HTMLElement, manual: ManualRequest) {
+  let restoreLabel: ReturnType<typeof setTimeout> | undefined;
+  return async (button: HTMLButtonElement, fixRequest: string) => {
+    try {
+      await navigator.clipboard.writeText(fixRequest);
+      status.textContent = 'Copied. Paste it into your coding agent.';
+      button.textContent = 'Copied';
+      clearTimeout(restoreLabel);
+      restoreLabel = setTimeout(() => {
+        button.textContent = COPY_LABEL;
+      }, COPIED_LABEL_MS);
+    } catch {
+      status.textContent = 'Clipboard access failed. Copy the fix request below.';
+      manual.text.textContent = fixRequest;
+      manual.element.hidden = false;
+      selectText(manual.text);
+    }
+  };
+}
+
+// The page rendered, so the banner is a persistent notice rather than a
+// replacement: it says how much is missing and carries the copy action for the
+// artifact as a whole, while each card copies only its own failure.
+function renderDegradedBanner(
+  host: Element,
+  failures: HtmdxBlockFailure[],
+  source: string,
+  options: HtmdxCompileOptions,
+) {
+  const scan = scanArtifact(source, options);
+  const context = fixRequestContext(host, source, scan);
+
+  const banner = document.createElement('section');
+  banner.className = 'htmdx-error htmdx-degraded';
+  banner.setAttribute('role', 'alert');
+  const theme = themeFromSource(source);
+  if (theme) {
+    banner.setAttribute('data-htmdx-theme', theme);
+  }
+
+  const heading = document.createElement('h1');
+  heading.textContent =
+    failures.length === 1
+      ? '1 block on this page didn’t render'
+      : `${failures.length} blocks on this page didn’t render`;
+
+  const body = document.createElement('p');
+  body.textContent =
+    'Everything else is shown below. Copy the fix request and send it to your coding agent, then reload this page.';
+
+  const actions = document.createElement('div');
+  actions.className = 'htmdx-error-actions';
+  const copyButton = document.createElement('button');
+  copyButton.type = 'button';
+  copyButton.textContent = COPY_LABEL;
+  const reloadButton = document.createElement('button');
+  reloadButton.type = 'button';
+  reloadButton.textContent = 'Reload page';
+  reloadButton.addEventListener('click', () => window.location.reload());
+  actions.append(copyButton, reloadButton);
+
+  const status = document.createElement('p');
+  status.className = 'htmdx-error-status';
+  status.setAttribute('aria-live', 'polite');
+
+  const manual = createManualRequest();
+  banner.append(heading, body, actions, status, manual.element);
+  host.prepend(banner);
+
+  const copy = copyHandler(status, manual);
+  copyButton.addEventListener(
+    'click',
+    () => void copy(copyButton, buildFixRequest(blockError(failures[0], scan), context)),
+  );
+
+  // The cards live inside the React tree, which is rebuilt on every render, so
+  // the click handler is delegated from the host and torn down with the banner.
+  const byOffset = new Map(failures.map((failure) => [String(failure.offset), failure]));
+  const controller = new AbortController();
+  degradedListeners.set(host, controller);
+  host.addEventListener(
+    'click',
+    (event) => {
+      const target = event.target instanceof Element ? event.target : null;
+      const button = target?.closest('[data-htmdx-fix]');
+      if (!(button instanceof HTMLButtonElement)) {
+        return;
+      }
+      const failure = byOffset.get(button.dataset.htmdxFix ?? '');
+      if (failure) {
+        void copy(button, buildFixRequest(blockError(failure, scan), context));
+      }
+    },
+    { signal: controller.signal },
+  );
+}
+
+function blockError(failure: HtmdxBlockFailure, artifactDiagnostics: HtmdxDiagnostic[]) {
+  const step = failure.error instanceof HtmdxSourceError ? 'compile' : 'render';
+  return errorDiagnostics(step, failure.error, {
+    ...(failure.componentStack ? { reactComponentStack: failure.componentStack } : {}),
+    artifactDiagnostics,
+  });
 }
 
 function themeFromSource(source: string) {
@@ -1252,6 +1402,55 @@ const RUNTIME_CSS = `
     line-height: 1.5;
     white-space: pre-wrap;
     user-select: text;
+  }
+
+  /* The page rendered, so the banner announces the gap without owning the
+     viewport the way the full-page panel does. */
+  .htmdx-degraded {
+    width: min(880px, calc(100% - 32px));
+    margin: 24px auto 0;
+    padding: 24px;
+    border-color: var(--md-sys-color-error);
+  }
+  .htmdx-degraded h1 { font-size: 1.25rem; }
+  .htmdx-degraded > p { margin-bottom: 16px; }
+
+  /* A card stands in for one block, so it takes the block's place in the flow
+     rather than interrupting the page around it. */
+  .htmdx-block-error {
+    margin: 8px 0;
+    padding: 18px 20px;
+    border: 1px solid var(--md-sys-color-error);
+    border-radius: var(--md-sys-shape-corner-medium);
+    background: var(--md-sys-color-surface-container-lowest);
+    color: var(--md-sys-color-on-surface);
+  }
+  .htmdx-block-error-title { margin: 0; font-weight: 600; }
+  .htmdx-block-error-message {
+    margin: 6px 0 0;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+  .htmdx-block-error-input {
+    margin: 12px 0 0;
+    padding: 10px 12px;
+    overflow: auto;
+    border-radius: var(--md-sys-shape-corner-small);
+    background: var(--md-sys-color-surface-container-low);
+    font-family: var(--htmdx-mono);
+    font-size: 0.8125rem;
+    white-space: pre-wrap;
+    user-select: text;
+  }
+  .htmdx-block-error-fix {
+    margin-top: 14px;
+    border: 1px solid var(--md-sys-color-primary);
+    border-radius: var(--md-sys-shape-corner-full);
+    padding: 8px 16px;
+    background: transparent;
+    color: var(--md-sys-color-primary);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
   }
 
   .htmdx-component-header { display: none; }

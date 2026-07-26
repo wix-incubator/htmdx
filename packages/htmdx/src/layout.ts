@@ -15,8 +15,20 @@ export type HtmdxLayoutDefinition = {
   Component: ComponentType<HtmdxLayoutProps>;
 };
 
-const BUILT_IN_LAYOUTS = new Set(['default', 'blank']);
+// `creator-kit` is a public alias for the default document chrome. Creator Kit
+// artifacts name it explicitly so a future change to the htmdx default cannot
+// silently restyle them.
+const BUILT_IN_LAYOUTS = new Map([
+  ['default', 'default'],
+  ['creator-kit', 'default'],
+  ['blank', 'blank'],
+]);
 const registeredLayouts = new Map<string, HtmdxLayoutDefinition>();
+
+export function resolveLayoutName(name: string) {
+  const key = name.trim().toLowerCase();
+  return BUILT_IN_LAYOUTS.get(key) || key;
+}
 
 export function addLayout(definition: HtmdxLayoutDefinition) {
   const name = definition.name.trim();

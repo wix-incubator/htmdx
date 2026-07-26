@@ -49,16 +49,8 @@ jobs:
           cp -r packages/htmdx/storybook-static site/storybook
           touch site/.nojekyll
 
-      # Plain git deploy: org policy requires SHA-pinned actions, and the
-      # official Pages actions reference upload-artifact by tag internally.
       - name: Deploy to gh-pages branch
         run: |
-          cd site
-          git init -b gh-pages
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -m "deploy: ${GITHUB_SHA}"
-          git push --force "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" gh-pages
+          .github/scripts/publish-gh-pages.sh . site "deploy: ${GITHUB_SHA}"
         env:
           GITHUB_TOKEN: ${{ github.token }}

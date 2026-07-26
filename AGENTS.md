@@ -2,12 +2,17 @@
 
 ## Show visual changes in every PR
 
-If a PR changes anything user-visible (runtime CSS, page chrome, components, themes, examples), show it — best as **before & after screenshots** (base branch vs this branch) in the PR, or as a **live preview**:
+If a PR changes anything user-visible (runtime CSS, page chrome, components, themes, examples), show it.
 
-1. Build the branch runtime: `yarn workspace @wix/htmdx build:library`.
-2. Copy an `examples/*.html` artifact, point its script tag at `./browser.js` (this branch's build, not the CDN), adjust the source to exercise the change.
-3. Deploy the artifact + `browser.js` under `previews/pr-<n>/` on the `gh-pages` branch → served at `https://wix-incubator.github.io/htmdx/previews/pr-<n>/`. Master pushes wipe `previews/`; redeploy if still needed.
-4. Comment on the PR: links/screenshots, what changed, what to look at.
+The **PR preview** workflow does this automatically for same-repo branches: every push builds `browser.js` from the branch, publishes it next to `examples/*.html` under `previews/pr-<n>/` on `gh-pages` → `https://wix-incubator.github.io/htmdx/previews/pr-<n>/`, and keeps one comment on the PR with the links. The examples load `./browser.js`, so a preview always exercises the branch build. Previews survive master deploys and are deleted when the PR closes.
+
+Still worth doing by hand:
+
+1. Add **before & after screenshots** (base branch vs this branch) when the change is subtle.
+2. If the stock examples do not exercise the change, add or adjust an `examples/*.html` artifact in the PR so the preview covers it.
+3. Say in the comment what changed and what to look at.
+
+Fork PRs get no preview (read-only token) — attach screenshots instead. To preview locally, build with `yarn workspace @wix/htmdx build:library` and point an example's script tag at `./browser.js`.
 
 If the change is not visual, show before & after **output** instead — e.g. compiled HTML snippets from `compile()`, generated-file diffs, or CLI/test output on the same input.
 

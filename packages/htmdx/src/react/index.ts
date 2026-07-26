@@ -1144,10 +1144,22 @@ export function diagnosticForBlock(
   const message = error instanceof Error ? error.message : String(error);
 
   if (error instanceof HtmdxSourceError) {
-    const tagName = source.slice(block.offset).match(/^<([A-Za-z][A-Za-z0-9]*)/)?.[1] ?? '';
-    const offset =
+    const openingTag = source.slice(block.offset).match(/^<([A-Za-z][A-Za-z0-9]*)[^>]*>/);
+    const tagName = openingTag?.[1] ?? '';
+    const rebased =
       error.offset === undefined ? block.offset : block.offset + 1 + tagName.length + error.offset;
-    return toDiagnostic(source, error.code, message, offset, error.length ?? 1);
+    // An attribute offset is relative to its own tag. When the failing tag is
+    // nested inside the block's body, rebasing it against the block's opening
+    // tag lands on an unrelated character, so fall back to the block itself.
+    const withinOpeningTag = rebased < block.offset + (openingTag?.[0].length ?? 0);
+    const offset = withinOpeningTag ? rebased : block.offset;
+    return toDiagnostic(
+      source,
+      error.code,
+      message,
+      offset,
+      withinOpeningTag ? (error.length ?? 1) : 1,
+    );
   }
 
   const code: HtmdxDiagnosticCode = message.startsWith('Invalid body for <')

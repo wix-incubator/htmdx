@@ -39,4 +39,17 @@ describe('validate', () => {
   test('returns no diagnostics for valid source', () => {
     expect(validate('# Title\n\n<Callout>All good.</Callout>\n')).toEqual([]);
   });
+
+  // A nested component's attribute offset is relative to the nested tag, not
+  // the outer block, so rebasing it against the outer tag would point at a
+  // character that has nothing to do with the failure. Anchoring to the block
+  // is less precise but never misleading.
+  test('anchors a nested failure to its enclosing block instead of a rebased offset', () => {
+    const source = ['<Card>', '  <Callout tone="x">Nope.</Callout>', '</Card>', ''].join('\n');
+
+    const diagnostics = validate(source);
+
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0]).toMatchObject({ code: 'unknown-prop', line: 1, column: 1, offset: 0 });
+  });
 });

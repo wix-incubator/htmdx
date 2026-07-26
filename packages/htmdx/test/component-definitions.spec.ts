@@ -440,41 +440,27 @@ const bundledDefinitions: readonly HtmdxComponent[] = [
   ...Object.values(shadcnDefinitions),
 ];
 
-const markdownBodyDefinitions = bundledDefinitions.filter(
-  (candidate) => candidate.body === 'markdown',
-);
+const markdownBodyFormats = bundledDefinitions
+  .filter((candidate) => candidate.body === 'markdown')
+  .map((candidate) => [candidate.name, candidate.bodyFormat ?? 'markdown'] as const);
 
-const requiredAttributes = (candidate: HtmdxComponent) =>
-  (candidate.props ?? [])
-    .filter((prop) => prop.required)
-    .map((prop) => {
-      const value = prop.default ?? prop.values?.[0] ?? (prop.type === 'number' ? 1 : 'value');
-      return ` ${prop.name}="${typeof value === 'object' ? JSON.stringify(value) : String(value)}"`;
-    })
-    .join('');
-
-const compileNeutralBody = (candidate: HtmdxComponent) =>
-  compile(
-    `<${candidate.name}${requiredAttributes(candidate)}>\n${NEUTRAL_BODY}\n</${candidate.name}>`,
-  );
+const compileNeutralBody = (name: string) => compile(`<${name}>\n${NEUTRAL_BODY}\n</${name}>`);
 
 describe('declared body formats match what the runtime enforces', () => {
-  test.each(
-    markdownBodyDefinitions
-      .filter((candidate) => candidate.bodyFormat && candidate.bodyFormat !== 'markdown')
-      .map((candidate) => [candidate.name, candidate] as const),
-  )('%s rejects a body that violates its declared format', (_name, candidate) => {
-    expect(compileNeutralBody(candidate)).toMatchObject({
-      ok: false,
-      error: expect.stringContaining(bodyFormatExpectation(candidate.bodyFormat!)),
-    });
-  });
+  test.each(markdownBodyFormats.filter(([, format]) => format !== 'markdown'))(
+    '%s rejects a body that violates its declared %s',
+    (name, format) => {
+      expect(compileNeutralBody(name)).toMatchObject({
+        ok: false,
+        error: expect.stringContaining(bodyFormatExpectation(format)),
+      });
+    },
+  );
 
-  test.each(
-    markdownBodyDefinitions
-      .filter((candidate) => (candidate.bodyFormat ?? 'markdown') === 'markdown')
-      .map((candidate) => [candidate.name, candidate] as const),
-  )('%s accepts plain Markdown as its declared format promises', (_name, candidate) => {
-    expect(compileNeutralBody(candidate)).toMatchObject({ ok: true });
-  });
+  test.each(markdownBodyFormats.filter(([, format]) => format === 'markdown'))(
+    '%s accepts plain Markdown as its declared %s promises',
+    (name) => {
+      expect(compileNeutralBody(name)).toMatchObject({ ok: true });
+    },
+  );
 });

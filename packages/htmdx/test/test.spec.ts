@@ -12,6 +12,12 @@ import {
   tokenizeBlocks,
 } from '../src';
 
+const readPre = (rendered: ReturnType<typeof compile>) => {
+  const container = document.createElement('div');
+  container.innerHTML = rendered.ok ? rendered.html : '';
+  return container.querySelector('pre')?.outerHTML ?? null;
+};
+
 describe('htmdx', () => {
   test('renders markdown and artifact components', () => {
     const rendered = compile(`# Title
@@ -459,6 +465,101 @@ Context.</script>`;
 
     expect(html).not.toContain('<img');
     expect(html).toContain('![Screenshot](screenshots/result.png)');
+  });
+
+  test('keeps fenced angle placeholders literal inside component bodies', () => {
+    const rendered = compile(
+      '<Card>\n<CardHeader><CardTitle>T</CardTitle></CardHeader>\n<CardContent>\n\n```md\nobjective: <observable outcome>\n```\n\n</CardContent>\n</Card>\n',
+    );
+    const container = document.createElement('div');
+    container.innerHTML = rendered.ok ? rendered.html : '';
+
+    expect(rendered).toMatchObject({ ok: true });
+    expect(container.querySelector('pre')?.textContent).toBe('objective: <observable outcome>');
+  });
+
+  test('does not turn comma-bearing fenced placeholders into attributes', () => {
+    const rendered = compile(
+      '<Card>\n<CardHeader><CardTitle>T</CardTitle></CardHeader>\n<CardContent>\n\n```md\nscope: <surfaces, workflows>\n```\n\n</CardContent>\n</Card>\n',
+    );
+    const container = document.createElement('div');
+    container.innerHTML = rendered.ok ? rendered.html : '';
+
+    expect(rendered).toMatchObject({ ok: true });
+    expect(container.querySelector('pre')?.textContent).toBe('scope: <surfaces, workflows>');
+    expect(rendered.ok && rendered.html).not.toContain('=""');
+  });
+
+  test('compiles multi-line fenced placeholders inside htmdx bodies', () => {
+    const rendered = compile(
+      '<Tabs defaultValue="a">\n<TabsList>\n<TabsTrigger value="a">A</TabsTrigger>\n</TabsList>\n\n<TabsContent value="a">\n\n```markdown\n## Goal Contract\n- Implementation objective: <observable outcome>\n- Scope: <surfaces, workflows, files, or systems>\n```\n\n</TabsContent>\n</Tabs>\n',
+    );
+    const container = document.createElement('div');
+    container.innerHTML = rendered.ok ? rendered.html : '';
+
+    expect(rendered).toMatchObject({ ok: true });
+    expect(container.querySelector('pre')?.textContent).toBe(
+      '## Goal Contract\n- Implementation objective: <observable outcome>\n- Scope: <surfaces, workflows, files, or systems>',
+    );
+  });
+
+  test('keeps inline code spans literal inside component bodies', () => {
+    const rendered = compile(
+      '<Card>\n<CardHeader><CardTitle>T</CardTitle></CardHeader>\n<CardContent>\n\nUse `<port>` here.\n\n</CardContent>\n</Card>\n',
+    );
+    const container = document.createElement('div');
+    container.innerHTML = rendered.ok ? rendered.html : '';
+
+    expect(rendered).toMatchObject({ ok: true });
+    expect(container.querySelector('code')?.textContent).toBe('<port>');
+    expect(container.textContent).toContain('Use <port> here.');
+  });
+
+  test('keeps escaped angle brackets literal inside component bodies', () => {
+    const rendered = compile(
+      '<Card>\n<CardHeader><CardTitle>T</CardTitle></CardHeader>\n<CardContent>\n\nUse \\<port\\> here.\n\n</CardContent>\n</Card>\n',
+    );
+    const container = document.createElement('div');
+    container.innerHTML = rendered.ok ? rendered.html : '';
+
+    const topLevel = compile('Use \\<port\\> here.\n');
+    const topLevelContainer = document.createElement('div');
+    topLevelContainer.innerHTML = topLevel.ok ? topLevel.html : '';
+
+    expect(rendered).toMatchObject({ ok: true });
+    expect(container.textContent).toContain(topLevelContainer.textContent ?? '');
+  });
+
+  test('renders fenced bodies the same way inside a component and at top level', () => {
+    const fence = '```md\nobjective: <observable outcome>\n```\n';
+    const inBody = compile(
+      `<Card>\n<CardHeader><CardTitle>T</CardTitle></CardHeader>\n<CardContent>\n\n${fence}\n</CardContent>\n</Card>\n`,
+    );
+    const topLevel = compile(fence);
+
+    expect(readPre(inBody)).toBe(readPre(topLevel));
+  });
+
+  test('does not double-decode entities inside fenced component bodies', () => {
+    const rendered = compile(
+      '<Card>\n<CardHeader><CardTitle>T</CardTitle></CardHeader>\n<CardContent>\n\n```md\nA &amp; B\n```\n\n</CardContent>\n</Card>\n',
+    );
+    const container = document.createElement('div');
+    container.innerHTML = rendered.ok ? rendered.html : '';
+
+    expect(rendered).toMatchObject({ ok: true });
+    expect(container.querySelector('pre')?.textContent).toBe('A &amp; B');
+  });
+
+  test('does not leak fence markers as text inside component bodies', () => {
+    const rendered = compile(
+      '<Card>\n<CardHeader><CardTitle>T</CardTitle></CardHeader>\n<CardContent>\n\n```md\nobjective: <observable outcome>\n```\n\n</CardContent>\n</Card>\n',
+    );
+    const container = document.createElement('div');
+    container.innerHTML = rendered.ok ? rendered.html : '';
+
+    expect(container.querySelector('pre')).not.toBeNull();
+    expect(container.textContent).not.toContain('```');
   });
 
   test('keeps rendered images within the content width', async () => {

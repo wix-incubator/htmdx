@@ -3,6 +3,7 @@
 import { readFileSync } from 'node:fs';
 import { defineConfig, type Plugin } from 'vite';
 import { packageVersionPlugin } from './build/package-version-plugin.js';
+import { validateProductionBundle } from './build/production-bundle-validation.js';
 
 const { version } = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
 
@@ -13,7 +14,7 @@ const { version } = JSON.parse(readFileSync(new URL('./package.json', import.met
 process.env.NODE_ENV = 'production';
 
 export default defineConfig({
-  plugins: [packageVersionPlugin(version), assertProductionJsx()],
+  plugins: [packageVersionPlugin(version), assertProductionBundle()],
   // Lib mode leaves process.env.NODE_ENV for consumers to replace; this bundle
   // runs directly in a browser, so replace it or the IIFE dies on `process`.
   define: { 'process.env.NODE_ENV': JSON.stringify('production') },
@@ -31,17 +32,20 @@ export default defineConfig({
   },
 });
 
-// A bundle carrying `jsxDEV` calls renders nothing but a blank page, and only
-// once a document uses a component, so fail the build instead of shipping it.
-function assertProductionJsx(): Plugin {
+// These breakages render a blank page, and only once a document uses a
+// component, so fail the build instead of shipping the bundle.
+function assertProductionBundle(): Plugin {
   return {
-    name: 'htmdx-assert-production-jsx',
+    name: 'htmdx-assert-production-bundle',
     generateBundle(_options, bundle) {
       for (const [fileName, chunk] of Object.entries(bundle)) {
-        if (chunk.type === 'chunk' && chunk.code.includes('jsxDEV')) {
-          this.error(
-            `${fileName} was compiled with the development JSX transform; the bundled React runtime has no jsxDEV`,
-          );
+        if (chunk.type !== 'chunk') {
+          continue;
+        }
+        try {
+          validateProductionBundle(fileName, chunk.code);
+        } catch (error) {
+          this.error((error as Error).message);
         }
       }
     },

@@ -176,7 +176,7 @@ describe('inline SVG', () => {
     );
 
     expect(rendered.ok && rendered.html).toContain(
-      '<code>&lt;svg&gt;&lt;circle/&gt;&lt;/svg&gt;</code>',
+      '<code class="language-html">&lt;svg&gt;&lt;circle/&gt;&lt;/svg&gt;</code>',
     );
     expect(rendered.ok && rendered.html).toContain('<code>&lt;svg viewBox="0 0 1 1"&gt;</code>');
   });

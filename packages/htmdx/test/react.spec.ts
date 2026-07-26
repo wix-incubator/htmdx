@@ -60,6 +60,29 @@ describe('React renderer definition boundary', () => {
     expect(html.indexOf('shipped')).toBeGreaterThan(html.indexOf('Decision'));
   });
 
+  test('carries the fence info string onto the code element', () => {
+    const html = renderToStaticMarkup(compileToReact('```ts\nconst a = 1;\n```'));
+    expect(html).toContain('<code class="language-ts">');
+
+    const bare = renderToStaticMarkup(compileToReact('```\nplain\n```'));
+    expect(bare).toContain('<code>plain</code>');
+  });
+
+  test('keeps only the language word of a fence info string', () => {
+    const html = renderToStaticMarkup(
+      compileToReact('```js title="a b" onload=alert(1)\nconst a = 1;\n```'),
+    );
+    expect(html).toContain('<code class="language-js">');
+    expect(html).not.toContain('onload');
+    expect(html).not.toContain('title=');
+  });
+
+  test('drops an info string that is not a plain language word', () => {
+    const html = renderToStaticMarkup(compileToReact('```"><img src=x>\nplain\n```'));
+    expect(html).toContain('<code>');
+    expect(html).not.toContain('class="language-');
+  });
+
   test('handles nested same-name tags and self-closing typed props', () => {
     const nested = renderToStaticMarkup(
       compileToReact('<CardFixture>outer<CardFixture>inner</CardFixture></CardFixture>', {

@@ -188,7 +188,23 @@ function renderFencedCode(block: string, key: number) {
   const marker = opening[1];
   const closing = new RegExp(`^ {0,3}${marker[0]}{${marker.length},}\\s*$`);
   const codeLines = closing.test(lines.at(-1) || '') ? lines.slice(1, -1) : lines.slice(1);
-  return createElement('pre', { key }, createElement('code', null, codeLines.join('\n')));
+  const code = codeLines.join('\n');
+  const language = fenceLanguage(lines[0].slice(lines[0].indexOf(marker) + marker.length));
+
+  return createElement(
+    'pre',
+    { key },
+    createElement('code', language ? { className: `language-${language}` } : null, code),
+  );
+}
+
+// Only the first word of the info string, and only when it is a bare language
+// name. CommonMark lets the rest carry anything, and it lands in a class
+// attribute, so a value that is not a plain identifier is dropped rather than
+// escaped.
+function fenceLanguage(info: string) {
+  const word = info.trim().split(/\s+/)[0]?.toLowerCase() || '';
+  return /^[a-z][a-z0-9+#._-]*$/.test(word) ? word : '';
 }
 
 function findNextImage(source: string, syntax: string, from: number): ParsedImage | null {

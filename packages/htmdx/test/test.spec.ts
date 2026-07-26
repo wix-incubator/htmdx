@@ -311,8 +311,10 @@ Loaded after runtime.
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(document.querySelector('htmdx-late-extension')?.innerHTML).toContain(
-      'unknown component',
+    // The tag is unknown until the component registers, so the page degrades
+    // rather than disappearing behind a full-page error.
+    expect(document.querySelector('htmdx-late-extension .htmdx-degraded')?.textContent).toContain(
+      '1 block on this page didn’t render',
     );
 
     await registerComponent({
@@ -326,9 +328,7 @@ Loaded after runtime.
     expect(document.querySelector('htmdx-late-extension')?.innerHTML).toContain(
       'Loaded after runtime.',
     );
-    expect(document.querySelector('htmdx-late-extension')?.innerHTML).not.toContain(
-      'unknown component',
-    );
+    expect(document.querySelector('htmdx-late-extension .htmdx-degraded')).toBeNull();
   });
 
   test('scrolls TOC targets explicitly instead of relying on hash nav', async () => {

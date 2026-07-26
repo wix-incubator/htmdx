@@ -32,7 +32,7 @@ import { safeImageAttributes, uniqueSlug, type RenderContext } from '../componen
 import { BUILT_IN_LOGOS } from '../logos';
 import { getLayout, resolveLayoutName, resolveLayoutSlots } from '../layout';
 import { renderInline, renderMarkdown, type HtmlRenderer } from './markdown';
-import { COPY_LABEL } from '../fix-request';
+import { COPY_LABEL, errorDiagnostics, formatErrorDetails } from '../fix-request';
 import { THEME_IDS } from '../themes';
 import {
   HtmdxSourceError,
@@ -123,12 +123,18 @@ export function compileDocument(source: string, options: HtmdxDocumentOptions = 
     normalized,
     catalog.names,
     onBlockError &&
-      ((error) =>
+      ((error) => {
+        // An unclosed tag leaves no reliable body boundary, so everything after
+        // it is guesswork. That is a document-level failure, not a block one.
+        if (error.code === 'unclosed-component') {
+          throw error;
+        }
         onBlockError({
           offset: error.offset ?? 0,
           name: error.message.match(/<([A-Za-z][A-Za-z0-9]*)>/)?.[1] ?? 'unknown',
           error,
-        })),
+        });
+      }),
   );
   const context: RenderContext = { headings: [], slugCounts: new Map() };
 
@@ -374,6 +380,21 @@ function blockErrorCard(block: GuardedBlock, error: unknown, key?: string): Reac
         'data-htmdx-fix': String(block.offset),
       },
       COPY_LABEL,
+    ),
+    createElement(
+      'details',
+      null,
+      createElement('summary', null, 'Error details'),
+      // Same shape as the whole-page panel, minus the artifact position: only
+      // the runtime scans the surrounding source, and the copied fix request
+      // is where that position belongs.
+      createElement(
+        'pre',
+        null,
+        formatErrorDetails(
+          errorDiagnostics(error instanceof HtmdxSourceError ? 'compile' : 'render', error),
+        ),
+      ),
     ),
   );
 }

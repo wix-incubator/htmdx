@@ -253,6 +253,42 @@ component tags keep working inside it.
 
 </details>
 
+## Code
+
+Inline spans mark identifiers such as `compile()` or the `--htmdx-mono` token.
+A fence carries a whole snippet: its info string names the language, which
+drives the label, the `language-ts` class, and the highlighting.
+
+```ts
+import { compile } from '@wix/htmdx';
+
+// Highlighting is a built-in tokenizer: no WASM, no async setup, no CDN.
+const rendered = compile('# Title\n\nBody with `code`.');
+if (rendered.ok) {
+  document.body.innerHTML = rendered.html;
+}
+```
+
+Component tags and HTML stay literal inside a fence:
+
+```html
+<Callout title="not a component here">Just text.</Callout>
+```
+
+```bash
+yarn workspace @wix/htmdx build:library --watch # rebuilds browser.js
+```
+
+```diff
+-  <pre><code>plain</code></pre>
++  <figure class="htmdx-code-figure">…</figure>
+```
+
+An author-written `<pre>` gets the same treatment, and a `language-*` class on
+its `<code>` picks the grammar:
+
+<pre><code class="language-json">{ "theme": "creator", "layout": "doc" }</code></pre>
+
 ## Inline SVG
 
 Vector graphics are written in the source, so a chart or diagram needs no image

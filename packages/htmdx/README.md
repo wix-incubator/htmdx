@@ -75,7 +75,57 @@ whole compile, and browser hosts show the error with the raw source. Imports,
 exports, brace expressions, event handlers, and function-valued props cannot
 be expressed — the source is data, not code.
 
-Images can use Markdown or allowlisted HTML syntax:
+## Raw HTML
+
+Ordinary HTML renders alongside Markdown, from an allowlist:
+
+```mdx
+Watch <a href="https://wix.com">the announcement</a> or play it here.
+
+<video controls width="640" poster="poster.png">
+  <source src="clip.webm" type="video/webm">
+</video>
+
+<iframe src="https://example.com/embed" width="560" height="315" allowfullscreen></iframe>
+
+<div class="grid gap-4">
+
+## Still Markdown in here
+
+<Badge>Shipped</Badge>
+
+</div>
+```
+
+Structural, text-level, table, and media elements are allowed — `p`, `div`,
+`section`, `figure`, `details`, `table`, `a`, `span`, `br`, `video`, `audio`,
+`iframe`, and friends. Anything outside the list (`form`, `input`, `object`,
+`svg`, unknown tags) is not markup at the top level, so it stays literal text
+the way it always has.
+
+Inside a component body, a tag outside the list still renders the way it did
+before the allowlist existed — it is passed through with its attributes — so
+documents written against the old behavior keep compiling. The exception is the
+handful of elements that turn source into code (`script`, `style`, `link`,
+`meta`, `base`, `embed`, `object`, `template`), which fail the compile.
+
+A registered component still wins on name collision, as before: with the shadcn
+pack registered, `<table>` and `<button>` resolve to `Table` and `Button`.
+
+A block element that opens a line owns everything up to its close tag, so blank
+lines, Markdown, and nested component tags inside it keep working. HTML written
+mid-sentence renders inline. HTML inside code fences and code spans stays
+literal, as before.
+
+Only allowlisted attributes survive: global ones (`class`, `id`, `title`,
+`lang`, `dir`, `role`, `style`, `tabindex`, `hidden`), `aria-*`, `data-*`, and a
+per-element set. `href`, `src`, `cite`, `poster`, and `srcset` are scheme
+checked the same way Markdown links are; `style` is parsed into a React style
+object with `url()` values checked and `expression()` dropped; `on*` attributes
+fail the compile; `iframe` cannot set `srcdoc`. The source still cannot express
+code, only data.
+
+Images can use Markdown or HTML syntax:
 
 ```md
 ![Build result](screenshots/result.png 'Completed build')

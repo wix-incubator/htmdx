@@ -11,6 +11,7 @@ import {
   renderHost,
   tokenizeBlocks,
 } from '../src';
+import { shadcnThemeCss } from '../src/components/shadcn/shared/theme';
 
 const readPre = (rendered: ReturnType<typeof compile>) => {
   const container = document.createElement('div');
@@ -640,6 +641,42 @@ Context.</script>`;
     expect(container.querySelector('figure.htmdx-code-figure')).toBeNull();
     expect(container.querySelector('pre#example')?.textContent).toBe('snippet');
     expect(container.querySelector('pre > code')?.className).toBe('language-ts theme-dark');
+  });
+
+  // An inline span is a chip; a block is already a card. The chip rules run on
+  // an inline box, so one that also matched the block's <code> would repaint its
+  // background once per wrapped line. Both stylesheets carry the same guard.
+  test('keeps the inline code chip off a code block', () => {
+    register({ automount: false });
+    const runtimeCss = document.getElementById('htmdx-runtime-v1-styles')?.textContent ?? '';
+    const sheet = document.createElement('style');
+    sheet.textContent = runtimeCss + shadcnThemeCss;
+    document.head.append(sheet);
+
+    const rendered = compile('## Code\n\nAn inline `span`.\n\n```ts\nconst x = 1;\n```\n');
+    const host = document.createElement('div');
+    host.innerHTML = rendered.ok ? rendered.html : '';
+    document.body.append(host);
+
+    const inline = host.querySelector('p code');
+    const block = host.querySelector('.htmdx-code-block code');
+    const chipSelectors = Array.from(sheet.sheet?.cssRules ?? [])
+      .filter(
+        (rule): rule is CSSStyleRule =>
+          rule instanceof CSSStyleRule &&
+          rule.selectorText.includes('code:not([data-slot])') &&
+          rule.style.background !== '',
+      )
+      .map((rule) => rule.selectorText);
+
+    expect(chipSelectors.length).toBeGreaterThan(0);
+    expect(chipSelectors.filter((selector) => inline?.matches(selector))).toHaveLength(
+      chipSelectors.length,
+    );
+    expect(chipSelectors.filter((selector) => block?.matches(selector))).toHaveLength(0);
+
+    host.remove();
+    sheet.remove();
   });
 
   test('copies the block source to the clipboard', async () => {

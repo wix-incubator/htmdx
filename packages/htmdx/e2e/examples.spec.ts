@@ -33,6 +33,20 @@ for (const { path, heading } of EXAMPLES) {
   });
 }
 
+// degraded.html is broken on purpose, so it is the one example that proves a
+// failure does not cost the reader the page.
+test('/degraded.html renders around its failing blocks', async ({ page }) => {
+  await page.goto('/degraded.html');
+  await page.evaluate(() => (window as Window & { htmdxReady: Promise<void> }).htmdxReady);
+
+  await expect(page.locator('.htmdx-degraded h1')).toHaveText(
+    '2 blocks on this page didn’t render',
+  );
+  await expect(page.locator('.htmdx-block-error')).toHaveCount(2);
+  await expect(page.getByText('Ship the bulk importer')).toBeVisible();
+  await expect(page.getByText('Confirm the mapping table lands')).toBeVisible();
+});
+
 // The only test that needs the network: mermaid is fetched from a CDN, and the
 // point of the assertion is that a fence really does become a drawn graphic.
 test('/diagrams.html draws its mermaid fences', async ({ page }) => {

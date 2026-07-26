@@ -169,7 +169,7 @@ register({ layout: 'blank' });
 compileDocument(source, { layout: 'blank' });
 ```
 
-Omitting `layout` uses `default`, preserving the existing document chrome and automatic `##` section grouping. `blank` omits the hero, sticky header, navigation, and grouping while retaining the stable root, catalog, theme, and Tailwind. `Htmdx` and `compileToReact()` remain content-only React entrypoints; use `compileDocument(source).element` for the selected full-document layout.
+Omitting `layout` uses `default`, preserving the existing document chrome and automatic `##` section grouping. `creator-kit` is a built-in alias for `default`, so an artifact can pin the chrome it was authored against by name. `blank` omits the hero, sticky header, navigation, and grouping while retaining the stable root, catalog, theme, and Tailwind. `Htmdx` and `compileToReact()` remain content-only React entrypoints; use `compileDocument(source).element` for the selected full-document layout.
 
 Trusted hosts register custom React layouts with explicit frontmatter-backed slots:
 

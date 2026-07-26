@@ -28,7 +28,7 @@ import {
 } from '../components/html-elements';
 import { safeImageAttributes, uniqueSlug, type RenderContext } from '../components/rendering';
 import { BUILT_IN_LOGOS } from '../logos';
-import { getLayout, resolveLayoutSlots } from '../layout';
+import { getLayout, resolveLayoutName, resolveLayoutSlots } from '../layout';
 import { renderInline, renderMarkdown, type HtmlRenderer } from './markdown';
 import { THEME_IDS } from '../themes';
 import {
@@ -100,7 +100,7 @@ export function compileDocument(source: string, options: HtmdxDocumentOptions = 
   const blocks = tokenize(normalized, catalog.names);
   const context: RenderContext = { headings: [], slugCounts: new Map() };
 
-  const layout = (options.layout || meta.layout || 'default').trim().toLowerCase();
+  const layout = resolveLayoutName(options.layout || meta.layout || 'default');
   if (layout === 'blank') {
     const theme = themeFromMeta(meta);
     return {
@@ -1451,7 +1451,7 @@ export function collectStructuralDiagnostics(
     }
   }
 
-  const layout = (options.layout || meta.layout || 'default').trim().toLowerCase();
+  const layout = resolveLayoutName(options.layout || meta.layout || 'default');
   if (layout !== 'default' && layout !== 'blank' && !getLayout(layout)) {
     diagnostics.push(
       toDiagnostic(

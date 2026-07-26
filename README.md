@@ -119,7 +119,7 @@ logo-alt: Creator Kit
 
 | Field | Effect |
 | --- | --- |
-| `layout` | `default`, `blank`, or a trusted host-registered layout name. |
+| `layout` | `default`, `creator-kit`, `blank`, or a trusted host-registered layout name. |
 | `title` | Hero and sticky-header title; overrides the first `# heading`. |
 | `project` | Project name in the hero and sticky header. |
 | `owner` | Owner label. |
@@ -133,7 +133,7 @@ logo-alt: Creator Kit
 
 ## Layouts
 
-Omitting `layout` uses `default`, which preserves the existing hero, sticky header, section navigation, and automatic `##` section grouping. Use `blank` for source-order composition without that document chrome:
+Omitting `layout` uses `default`, which preserves the existing hero, sticky header, section navigation, and automatic `##` section grouping. `creator-kit` is a built-in alias for `default`, for artifacts that want to name the chrome they were authored against instead of inheriting whatever the default becomes. Use `blank` for source-order composition without that document chrome:
 
 ```mdx
 ---
@@ -173,7 +173,7 @@ window.Htmdx.registerLayout({
 });
 ```
 
-The layout receives only its declared slot keys. Missing fields are present with `undefined`; raw frontmatter is not passed. Layout names are case-insensitive, cannot replace `default` or `blank`, and unknown names fail compilation rather than falling back. Host `layout` options take precedence over frontmatter.
+The layout receives only its declared slot keys. Missing fields are present with `undefined`; raw frontmatter is not passed. Layout names are case-insensitive, cannot replace `default`, `creator-kit`, or `blank`, and unknown names fail compilation rather than falling back. Host `layout` options take precedence over frontmatter.
 
 ## Themes
 

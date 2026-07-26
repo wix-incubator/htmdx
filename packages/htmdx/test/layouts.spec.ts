@@ -1,7 +1,14 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, test } from 'vitest';
-import { compile, register, registerLayout, rerender, type HtmdxLayoutProps } from '../src';
+import {
+  compile,
+  register,
+  registerLayout,
+  rerender,
+  validate,
+  type HtmdxLayoutProps,
+} from '../src';
 import type { HtmdxComponent } from '../src/components';
 import { compileDocument } from '../src/react';
 
@@ -13,6 +20,16 @@ describe('document layouts', () => {
     const source = '# Existing artifact\n\n## First\n\nOne.\n\n## Second\n\nTwo.';
 
     expect(compile(source, { layout: 'default' })).toEqual(compile(source));
+  });
+
+  test('creator-kit is an alias for the default layout', () => {
+    const source = '# Existing artifact\n\n## First\n\nOne.\n\n## Second\n\nTwo.';
+
+    expect(compile(`---\nlayout: creator-kit\n---\n\n${source}`)).toEqual(
+      compile(`---\nlayout: default\n---\n\n${source}`),
+    );
+    expect(compile(source, { layout: 'creator-kit' })).toEqual(compile(source));
+    expect(validate(`---\nlayout: creator-kit\n---\n\n${source}`)).toEqual([]);
   });
 
   test('blank preserves source order without document chrome or section grouping', () => {
@@ -266,5 +283,11 @@ project: Atlas
     expect(() =>
       registerLayout({ name: 'Blank', Component: layoutFixtureComponent }, { rerender: false }),
     ).toThrow('layout name "Blank" collides with built-in layout "blank"');
+    expect(() =>
+      registerLayout(
+        { name: 'Creator-Kit', Component: layoutFixtureComponent },
+        { rerender: false },
+      ),
+    ).toThrow('layout name "Creator-Kit" collides with built-in layout "creator-kit"');
   });
 });

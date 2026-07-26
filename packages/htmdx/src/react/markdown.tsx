@@ -12,6 +12,7 @@ import {
   uniqueSlug,
   type RenderContext,
 } from '../components/rendering';
+import { MermaidDiagram } from './mermaid';
 
 const INLINE = /\*\*([^*]+)\*\*|`([^`]+)`|\[([^\]]+)\]\(([^)]+)\)/g;
 const HTML_TAG = /<\/?([A-Za-z][A-Za-z0-9]*)(?:\s[^>]*)?\/?>/g;
@@ -190,6 +191,13 @@ function renderFencedCode(block: string, key: number) {
   const codeLines = closing.test(lines.at(-1) || '') ? lines.slice(1, -1) : lines.slice(1);
   const code = codeLines.join('\n');
   const language = fenceLanguage(lines[0].slice(lines[0].indexOf(marker) + marker.length));
+
+  // The diagram renders itself into the same fence markup until mermaid has
+  // loaded, so compile() stays synchronous and an artifact that never reaches
+  // a browser still shows the diagram source.
+  if (language === 'mermaid') {
+    return createElement(MermaidDiagram, { key, source: code });
+  }
 
   return createElement(
     'pre',

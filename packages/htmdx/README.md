@@ -125,6 +125,49 @@ object with `url()` values checked and `expression()` dropped; `on*` attributes
 fail the compile; `iframe` cannot set `srcdoc`. The source still cannot express
 code, only data.
 
+## Inline SVG
+
+Vector graphics are written in the source, so a chart, diagram, or icon needs no
+image file and no component:
+
+```mdx
+<svg viewBox="0 0 320 120" width="320" height="120" role="img">
+  <title>Quarterly revenue</title>
+  <defs>
+    <linearGradient id="bars" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6366f1"></stop>
+      <stop offset="1" stop-color="#a855f7"></stop>
+    </linearGradient>
+  </defs>
+  <rect x="16" y="70" width="48" height="40" rx="4" fill="url(#bars)"></rect>
+  <text x="16" y="12" font-size="11">
+    Revenue by quarter
+  </text>
+</svg>
+```
+
+SVG answers to its own allowlist, separate from the HTML one, because it has its
+own element and attribute space. Shapes, `g`, `defs`, gradients, `pattern`,
+`clipPath`, `mask`, `marker`, `symbol`, `text`/`tspan`/`textPath`, and a filter
+subset are allowed. Element names keep their casing, so `<linearGradient>` and
+`<clipPath>` work as written — and `<lineargradient>` is corrected to match.
+
+Left out on purpose: `<script>`, `<foreignObject>`, `<use>`, `<image>`, `<a>`,
+and the animation elements. Each is a way to reach out of the graphic — into
+script, into HTML, or into another document. Inside an `<svg>` they render as
+the text they were written as, the same way a non-allowlisted HTML tag does.
+
+References stay inside the document. `fill="url(#bars)"` resolves against the
+graphic, while `fill="url(https://example.com/x)"` is dropped, and `href` is
+accepted only on `textPath` and only as a `#fragment`. `on*` attributes fail the
+compile and `style` is sanitized the same way it is in HTML.
+
+Text inside `<text>` and `<tspan>` renders as written — Markdown does not apply
+there. An SVG element written outside a graphic, like a bare `<path>` in prose,
+stays literal text. Inside an `<svg>`, SVG wins over a registered component of
+the same name, and a component tag written there fails the compile rather than
+rendering into the graphic.
+
 Images can use Markdown or HTML syntax:
 
 ```md

@@ -26,6 +26,7 @@ import {
   HTML_VOID_ELEMENTS,
   safeElementProps,
 } from '../components/html-elements';
+import { SVG_ELEMENTS, safeSvgProps } from '../components/svg-elements';
 import { safeImageAttributes, uniqueSlug, type RenderContext } from '../components/rendering';
 import { BUILT_IN_LOGOS } from '../logos';
 import { getLayout, resolveLayoutSlots } from '../layout';
@@ -637,6 +638,8 @@ type NodeContext = {
   componentBody?: boolean;
   blockMarkdownText?: boolean;
   discardWhitespaceText?: boolean;
+  /** Inside an `<svg>` subtree, where SVG's element and attribute space applies. */
+  svg?: boolean;
 };
 
 function nodeToReact(
@@ -650,12 +653,18 @@ function nodeToReact(
     componentBody = false,
     blockMarkdownText = true,
     discardWhitespaceText = false,
+    svg = false,
   } = context;
 
   if (node.nodeType === Node.TEXT_NODE) {
     const text = node.textContent || '';
     if (!text) {
       return null;
+    }
+    // Text in a graphic belongs to `<text>`/`<tspan>`, which render it as is.
+    // Markdown and the wrapper elements it produces have no meaning there.
+    if (svg) {
+      return text;
     }
     // HTML forbids text directly inside table structure containers. Treat
     // their whitespace as source formatting while keeping spaces elsewhere.
@@ -677,6 +686,14 @@ function nodeToReact(
 
   const element = node as Element;
   const lower = element.tagName.toLowerCase();
+
+  // Inside a graphic, SVG's element space wins. A registered component or an
+  // HTML tag that happens to share a name with `<text>` or `<path>` has no
+  // meaning between `<svg>` and `</svg>`.
+  if (svg) {
+    return svgToReact(element, catalog, key, sourceElements);
+  }
+
   if (lower === 'img') {
     const attributes = Object.fromEntries(
       element.getAttributeNames().map((name) => [name, element.getAttribute(name) ?? '']),
@@ -703,6 +720,10 @@ function nodeToReact(
       catalog,
       key,
     );
+  }
+
+  if (lower === 'svg') {
+    return svgToReact(element, catalog, key, sourceElements);
   }
 
   // The allowlist decides before casing does. The HTML fallback parse uppercases
@@ -745,6 +766,55 @@ function nodeToReact(
     .filter((child) => child !== null);
 
   return createElement(target, props, ...children);
+}
+
+// SVG element names are case sensitive and the forgiving HTML parse uppercases
+// them, so the canonical name comes from the allowlist rather than from the
+// parsed node. Both parse paths therefore reach the same `linearGradient`.
+function svgToReact(
+  element: Element,
+  catalog: RuntimeCatalog,
+  key: string,
+  sourceElements: WeakMap<Element, SourceElement>,
+): ReactNode {
+  const canonical = SVG_ELEMENTS.get(element.tagName.toLowerCase());
+  if (!canonical) {
+    const authored = sourceElements.get(element)?.name || element.tagName.toLowerCase();
+    // A registered component is registered for the document, not for the
+    // inside of a graphic. Say that, rather than reporting it as unknown.
+    if (catalog.definitions.has(authored.toLowerCase())) {
+      throw new HtmdxSourceError(
+        'html-element-not-allowed',
+        `component <${authored}> is not allowed inside <svg>`,
+      );
+    }
+    if (/^[A-Z]/.test(authored)) {
+      throw new HtmdxSourceError('unknown-component', `unknown component <${authored}>`);
+    }
+    // `<foreignObject>`, `<script>`, and friends are the reason this allowlist
+    // exists. They degrade to the text they were written as, the same way a
+    // non-allowlisted HTML tag does outside a component body.
+    return unescapeCodeSpans(serializeElement(element));
+  }
+
+  const props: Record<string, unknown> = {
+    key,
+    ...safeSvgProps(
+      canonical,
+      element.getAttributeNames().map((name) => ({
+        name,
+        value: element.getAttribute(name) ?? '',
+      })),
+    ),
+  };
+
+  const children = Array.from(element.childNodes)
+    .map((child, index) =>
+      nodeToReact(child, catalog, `${key}-${index}`, { sourceElements, svg: true }),
+    )
+    .filter((child) => child !== null);
+
+  return createElement(canonical, props, ...children);
 }
 
 // Elements that turn source into code once they reach the DOM. Everything else
@@ -927,15 +997,22 @@ function tokenize(
         continue;
       }
 
-      // Unknown tags stay literal Markdown text.
+      // Unknown tags stay literal Markdown text. Only `<svg>` itself is scanned
+      // for: everything between it and its close tag is one block, so the
+      // element names inside a graphic never reach this loop.
       const lower = rawName.toLowerCase();
-      if (selfClosing || HTML_VOID_ELEMENTS.has(lower) || !HTML_ELEMENTS.has(lower)) {
+      const isSvgRoot = lower === 'svg';
+      if (
+        selfClosing ||
+        HTML_VOID_ELEMENTS.has(lower) ||
+        !(HTML_ELEMENTS.has(lower) || isSvgRoot)
+      ) {
         continue;
       }
 
       // An allowlisted block element that opens a line owns everything up to
       // its close tag, so blank lines and nested components stay in one block.
-      if (HTML_BLOCK_ELEMENTS.has(lower) && opensLine(syntax, match.index)) {
+      if ((HTML_BLOCK_ELEMENTS.has(lower) || isSvgRoot) && opensLine(syntax, match.index)) {
         const close = findMatchingClose(syntax, rawName, openTag.lastIndex);
         if (close) {
           pushMarkdown(blocks, source.slice(cursor, match.index), cursor);
@@ -1381,7 +1458,13 @@ function structureNodes(
     const source = sourceElements.get(element);
     structure.push({
       type: 'element',
-      name: catalog.names.get(tag.toLowerCase()) ?? source?.name ?? tag,
+      // SVG_ELEMENTS restores the casing the forgiving HTML parse flattened;
+      // an authored name, when one was recovered, is still closer to the source.
+      name:
+        catalog.names.get(tag.toLowerCase()) ??
+        source?.name ??
+        SVG_ELEMENTS.get(tag.toLowerCase()) ??
+        tag,
       props: propsFromSourceAttributes(
         source?.attributes ??
           Array.from(element.attributes, (attribute) => ({

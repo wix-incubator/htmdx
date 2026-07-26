@@ -1,8 +1,10 @@
 // Raw HTML in HTMDX source is allowlisted, never passed through: only these
 // elements render, only these attributes survive, URL-bearing attributes are
-// scheme-checked, and event handlers are rejected. Elements outside the list
-// stay literal Markdown text at the top level and fail inside component bodies,
-// so agent-authored HTML still cannot express code.
+// scheme-checked, and event handlers are rejected. An element outside the list
+// stays literal Markdown text at the top level; inside a component body it
+// keeps the passthrough that predates this allowlist, so existing documents
+// still compile. Either way, agent-authored HTML cannot express code.
+// Inline SVG answers to its own allowlist in `svg-elements.ts`.
 import { HtmdxSourceError } from '../diagnostics';
 import { safeHref } from './rendering';
 
@@ -275,7 +277,7 @@ function reactPropName(attribute: string) {
 // React needs a style object, and the string form is where CSS can smuggle in
 // script-ish values, so declarations are parsed one at a time and any whose
 // value carries an unsafe url() or a legacy expression() is dropped.
-function safeStyle(value: string): Record<string, string> | null {
+export function safeStyle(value: string): Record<string, string> | null {
   const style: Record<string, string> = {};
   for (const declaration of value.split(';')) {
     const separator = declaration.indexOf(':');

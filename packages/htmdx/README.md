@@ -1,10 +1,12 @@
 # @wix/htmdx
 
-Render editable MDX-like source inside a plain HTML file. `@wix/htmdx@4.0.0` uses one component definition model for Built-ins, shadcn, and host extensions. HTMDX is built for artifacts that should be easy for people to view and easy for agents to edit.
+Render editable MDX-like source inside a plain HTML file. `@wix/htmdx` v4 uses one component definition model for Built-ins, shadcn, and host extensions. HTMDX is built for artifacts that should be easy for people to view and easy for agents to edit.
 
 **Live examples:** [examples index](https://wix-incubator.github.io/htmdx/) · [decision brief](https://wix-incubator.github.io/htmdx/decision-brief.html) · [blank canvas](https://wix-incubator.github.io/htmdx/blank-layout.html) · [component tour](https://wix-incubator.github.io/htmdx/component-tour.html) · [Storybook](https://wix-incubator.github.io/htmdx/storybook/) — every page is itself an htmdx artifact; view source to see what an agent edits.
 
 Start with one HTML file:
+
+<!-- x-release-please-start-version -->
 
 ```html
 <!doctype html>
@@ -29,6 +31,8 @@ Agents edit source. Users view rendered HTML.
 </html>
 ```
 
+<!-- x-release-please-end-version -->
+
 The runtime auto-mounts each bare source block: it wraps the script in a generated `<htmdx-code>` host in place and renders there. Write `<htmdx-code>` yourself only when you need explicit output placement or `src`; disable scanning with `register({ automount: false })`.
 
 Source block notes:
@@ -46,9 +50,13 @@ CDN caveats:
 
 Every release includes its machine-readable component contract at:
 
+<!-- x-release-please-start-version -->
+
 ```text
 https://cdn.jsdelivr.net/npm/@wix/htmdx@4.0.0/dist/components.json
 ```
+
+<!-- x-release-please-end-version -->
 
 Use the same exact version as the artifact's runtime URL. The `htmdx@2`
 manifest lists the full runtime catalog — Built-ins plus the shadcn/ui pack,
@@ -293,10 +301,14 @@ The same checks run from a terminal or CI through the `htmdx` bin this package
 ships. Pin the invocation to the version an artifact declares and you lint
 against exactly what ships:
 
+<!-- x-release-please-start-version -->
+
 ```bash
 npx @wix/htmdx lint report.html
 npx @wix/htmdx@4.5.1 lint docs/*.htmdx --strict
 ```
+
+<!-- x-release-please-end-version -->
 
 | Option                    | Description                      |
 | ------------------------- | -------------------------------- |

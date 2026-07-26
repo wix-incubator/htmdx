@@ -4,7 +4,13 @@ import { describe, expect, test, vi } from 'vitest';
 import { compile, validate } from '../src';
 import { extractSource } from '../src/testing';
 
-const examples = ['index.html', 'decision-brief.html', 'blank-layout.html', 'component-tour.html'];
+const examples = [
+  'index.html',
+  'decision-brief.html',
+  'blank-layout.html',
+  'component-tour.html',
+  'diagrams.html',
+];
 
 function readHtmdxSource(file: string): string {
   return extractSource(

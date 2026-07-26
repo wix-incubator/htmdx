@@ -311,6 +311,40 @@ window.Htmdx.register({ tailwind: { src: './tailwind-browser.js' } });
 
 Use the browser compiler for portable artifacts and prototypes. Production hosts that need a compiled CSS pipeline can disable it and provide their own CSS with `registerTheme`.
 
+## Diagrams
+
+A fenced code block tagged `mermaid` renders as a diagram:
+
+````mdx
+```mermaid
+flowchart LR
+  Source --> Runtime --> Diagram
+```
+````
+
+Mermaid is not bundled — it is several times the size of the whole runtime — so
+the first diagram on a page fetches it from a CDN, the same trade the Tailwind
+compiler makes. `compile()` stays synchronous: it emits the fence, and the
+browser upgrades it in place. An artifact that never reaches a browser, or one
+where the fetch fails, still shows the diagram source.
+
+Hosts can disable it or point at a local mirror:
+
+```js
+window.Htmdx.register({ mermaid: false });
+window.Htmdx.register({ mermaid: { src: './mermaid.esm.min.mjs' } });
+```
+
+The rendered SVG does not go into the DOM as markup. It is re-parsed and vetted
+against the same allowlist authored SVG passes, so `<foreignObject>`,
+`<script>`, `on*`, and references to other documents cannot reach the page no
+matter what the library emits. Mermaid runs at `securityLevel: 'strict'` with
+`htmlLabels` off, and those keys are locked against an in-source
+`%%{init: ...}%%` directive, so a `click` directive in a diagram binds nothing.
+Mermaid's own stylesheet is lifted out of the graphic and filtered the same way
+a `style` attribute is. A diagram that fails any of this keeps its fence text on
+the page and says why in the console.
+
 ## React runtime (MDX minus JavaScript)
 
 htmdx renders through React everywhere: Built-ins and the shadcn/ui pack are

@@ -84,6 +84,14 @@ accepted. HTML images allow `alt`, `title`, `width`, `height`, `loading`,
 <img src="screenshots/result.png" alt="Build result" width="960" loading="lazy">
 ```
 
+A fenced code block tagged `mermaid` renders as a diagram in the browser.
+Mermaid itself is fetched from a CDN the first time a page turns out to contain
+one, so `compile()` stays synchronous and a document without a diagram pays
+nothing. The rendered SVG is vetted against the same allowlist authored SVG
+passes, and a diagram that cannot load keeps its fence text. Disable it with
+`register({ mermaid: false })` or mirror it with
+`register({ mermaid: { src: './mermaid.esm.min.mjs' } })`.
+
 ## Components
 
 The runtime ships 87 components. Its `htmdx@2` exact-version `dist/components.json` manifest documents every component's purpose, canonical example, body mode, props, and source.

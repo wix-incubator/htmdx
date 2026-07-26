@@ -187,7 +187,9 @@ describe('raw HTML', () => {
   test('keeps HTML inside code fences and spans literal', () => {
     const rendered = compile('```html\n<p>hi</p>\n```\n\nInline `<video controls>` stays text.');
 
-    expect(rendered.ok && rendered.html).toContain('<code>&lt;p&gt;hi&lt;/p&gt;</code>');
+    expect(rendered.ok && rendered.html).toContain(
+      '<code class="language-html">&lt;p&gt;hi&lt;/p&gt;</code>',
+    );
     expect(rendered.ok && rendered.html).toContain('<code>&lt;video controls&gt;</code>');
   });
 

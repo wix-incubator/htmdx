@@ -20,7 +20,7 @@ export type HtmdxComponentManifest = {
 };
 
 const MANIFEST_NOTE =
-  'Body values: markdown passes raw Markdown and does not allow nested tags; htmdx allows Markdown, HTML, and nested registered component tags; none allows no body. Every component accepts class, id, aria-*, and data-* attributes; all other props must be declared. Declared string values stay strings, number values must be finite numbers, boolean values use a bare attribute or true/false, and JSON values must parse as valid JSON before declared constraints run. HTMDX is declarative: imports, exports, brace expressions, event handlers, and function-valued props are not allowed.';
+  'Body values: markdown passes raw Markdown and does not allow nested tags; htmdx allows Markdown, HTML, and nested registered component tags; none allows no body. Every component accepts class, id, aria-*, and data-* attributes; all other props must be declared. Declared string values stay strings, number values must be finite numbers, boolean values use a bare attribute or true/false, and JSON values must parse as valid JSON before declared constraints run. HTMDX is declarative: imports, exports, brace expressions, event handlers, and function-valued props are not allowed. A fenced code block tagged mermaid renders as a diagram in the browser; every other fence keeps its language as a class.';
 
 function projectDefinition(
   definition: HtmdxComponent,

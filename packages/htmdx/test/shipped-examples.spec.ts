@@ -43,4 +43,16 @@ describe('shipped examples', () => {
   test.each(examples)('%s validates clean', (file) => {
     expect(validate(readHtmdxSource(file))).toEqual([]);
   });
+
+  // degraded.html is the artifact the degraded error page is demonstrated on,
+  // so its failures are pinned rather than forbidden. If either one stops
+  // failing, the example stops showing what it exists to show.
+  test('degraded.html breaks in exactly the two ways it demonstrates', () => {
+    const diagnostics = validate(readHtmdxSource('degraded.html'));
+    expect(diagnostics.map((diagnostic) => diagnostic.code)).toEqual([
+      'body-contract',
+      'unknown-prop',
+    ]);
+    expect(compile(readHtmdxSource('degraded.html')).ok).toBe(false);
+  });
 });

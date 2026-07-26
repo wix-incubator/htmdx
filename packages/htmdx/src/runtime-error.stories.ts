@@ -30,3 +30,33 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const SyntaxError: Story = {};
+
+// Everything that compiles still renders; the two failures become cards in
+// place, under a banner that copies a fix request for both at once.
+export const DegradedBlocks: StoryObj<RuntimeErrorStoryArgs> = {
+  args: {
+    htmdx: `# Importer Rollout
+
+<ExecutiveSummary>
+Ship the bulk importer to the remaining **80%** of stores in four weekly waves.
+</ExecutiveSummary>
+
+## Priorities
+
+<RiskTable>
+- **Must-have:** Publish the field-mapping table before wave one.
+- Ship a dry-run mode
+</RiskTable>
+
+## Rollout by wave
+
+<ChartBar unit="stores">
+- Wave 1: 120
+- Wave 2: 240
+</ChartBar>
+
+<Callout>
+**Owner:** platform team.
+</Callout>`,
+  },
+};

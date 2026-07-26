@@ -349,6 +349,27 @@ describe('inline SVG', () => {
     },
   );
 
+  // A component body passes unknown tags through with their attributes, which
+  // is how documents written before the allowlist keep compiling. That leniency
+  // stops at `<svg>`: inside a graphic the SVG rules apply wherever the graphic
+  // was written.
+  test('keeps the attributeName rule inside a component body', () => {
+    registerComponent(
+      definition({
+        name: 'SvgAnimationBody',
+        body: 'htmdx',
+        Component: ({ children }: { children?: ReactNode }) =>
+          createElement('section', null, children),
+      }),
+    );
+    const rendered = compile(
+      '<SvgAnimationBody>\n<svg viewBox="0 0 10 10"><rect width="10" height="10"><animateTransform attributeName="href" to="x"></animateTransform></rect></svg>\n</SvgAnimationBody>',
+    );
+
+    expect(rendered.ok && rendered.html).toContain('<animateTransform to="x">');
+    expect(rendered.ok && rendered.html).not.toContain('attributeName');
+  });
+
   test('drops an <mpath> reference that leaves the document', () => {
     const rendered = compile(
       '<svg viewBox="0 0 10 10"><circle r="4"><animateMotion dur="1s"><mpath href="https://evil.example/x.svg#track"></mpath></animateMotion></circle></svg>',

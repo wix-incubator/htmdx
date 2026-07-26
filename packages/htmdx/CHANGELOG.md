@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.7.0](https://github.com/wix-incubator/htmdx/compare/v4.6.0...v4.7.0) (2026-07-26)
+
+
+### Features
+
+* **cli:** add compile and components commands, and a validate alias ([#64](https://github.com/wix-incubator/htmdx/issues/64)) ([d363c65](https://github.com/wix-incubator/htmdx/commit/d363c65902fab2d3e5cb8700cbaaeaf0f4e922a8))
+* **layout:** accept creator-kit as an alias for the default layout ([#61](https://github.com/wix-incubator/htmdx/issues/61)) ([f46e5d4](https://github.com/wix-incubator/htmdx/commit/f46e5d4a9c58c91003526836dcc49d6b8d8a0f26))
+
 ## [4.6.0](https://github.com/wix-incubator/htmdx/compare/v4.5.1...v4.6.0) (2026-07-26)
 
 

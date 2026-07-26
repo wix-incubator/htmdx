@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 import { validate } from '../src';
 
 // Three failures from three different phases: the tokenizer scan, attribute
@@ -38,6 +38,39 @@ describe('validate', () => {
 
   test('returns no diagnostics for valid source', () => {
     expect(validate('# Title\n\n<Callout>All good.</Callout>\n')).toEqual([]);
+  });
+
+  test('warns about images with no alt text', () => {
+    const source = ['![](chart.png)', '', '<img src="logo.png">', ''].join('\n');
+
+    const diagnostics = validate(source);
+
+    expect(diagnostics.map(({ code, severity, line }) => ({ code, severity, line }))).toEqual([
+      { code: 'image-missing-alt', severity: 'warning', line: 1 },
+      { code: 'image-missing-alt', severity: 'warning', line: 3 },
+    ]);
+  });
+
+  test('does not warn when alt text is present', () => {
+    expect(validate('![Revenue by quarter](chart.png)\n')).toEqual([]);
+  });
+
+  // React only reports invalid nesting through console.error during render, so
+  // validate() has to listen for it rather than re-deriving HTML content models.
+  test('reports invalid HTML nesting React only logs at render time', () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    try {
+      const diagnostics = validate(
+        '<Foldout title="t">\n<p>Outer <div>inner</div></p>\n</Foldout>\n',
+      );
+
+      expect(diagnostics.map(({ code, severity }) => ({ code, severity }))).toEqual([
+        { code: 'invalid-html-nesting', severity: 'warning' },
+      ]);
+    } finally {
+      consoleError.mockRestore();
+    }
   });
 
   // A nested component's attribute offset is relative to the nested tag, not

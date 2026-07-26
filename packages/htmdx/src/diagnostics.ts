@@ -24,7 +24,9 @@ export type HtmdxDiagnosticCode =
   | 'body-contract'
   | 'render-failed'
   | 'unknown-theme'
-  | 'unknown-frontmatter-field';
+  | 'unknown-frontmatter-field'
+  | 'image-missing-alt'
+  | 'invalid-html-nesting';
 
 export type HtmdxDiagnostic = {
   code: HtmdxDiagnosticCode;

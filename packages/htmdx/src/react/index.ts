@@ -1053,6 +1053,47 @@ const FRONTMATTER_FIELDS = new Set([
   'logo-alt',
 ]);
 
+// Scanned on the masked syntax so an image inside a code fence or inline code
+// is documentation, not a finding. Markdown has no way to mark an image as
+// decorative, so an empty alt is always a warning; `<img alt="">` is the
+// standard way to say "decorative" and is left alone.
+function imagesMissingAlt(source: string, normalized: string): HtmdxDiagnostic[] {
+  const scannable = markdownSyntaxSource(normalized);
+  const diagnostics: HtmdxDiagnostic[] = [];
+
+  for (const match of scannable.matchAll(/!\[([^\]]*)]\([^)]*\)/g)) {
+    if (!match[1].trim()) {
+      diagnostics.push(
+        toDiagnostic(
+          source,
+          'image-missing-alt',
+          'image has no alt text',
+          match.index,
+          match[0].length,
+          'warning',
+        ),
+      );
+    }
+  }
+
+  for (const match of scannable.matchAll(/<img\b[^>]*>/gi)) {
+    if (!/\balt\s*=/i.test(match[0])) {
+      diagnostics.push(
+        toDiagnostic(
+          source,
+          'image-missing-alt',
+          'image has no alt attribute',
+          match.index,
+          match[0].length,
+          'warning',
+        ),
+      );
+    }
+  }
+
+  return diagnostics;
+}
+
 export type HtmdxStructureNode =
   | { type: 'markdown'; value: string }
   | { type: 'text'; value: string }
@@ -1199,7 +1240,10 @@ export function collectStructuralDiagnostics(
     );
   }
 
-  const blocks = tokenize(blankFrontmatterAndComments(source), catalog.names, (error) => {
+  const normalized = blankFrontmatterAndComments(source);
+  diagnostics.push(...imagesMissingAlt(source, normalized));
+
+  const blocks = tokenize(normalized, catalog.names, (error) => {
     diagnostics.push(
       toDiagnostic(source, error.code, error.message, error.offset ?? 0, error.length ?? 1),
     );

@@ -20,7 +20,7 @@ import {
   diagnosticForBlock,
   tokenizeSource,
 } from './react';
-import type { HtmdxDiagnostic } from './diagnostics';
+import { toDiagnostic, type HtmdxDiagnostic } from './diagnostics';
 import { addLayout, type HtmdxLayoutDefinition } from './layout';
 import { THEME_CSS, THEME_IDS } from './themes';
 import { VERSION } from './version';
@@ -115,14 +115,48 @@ export function validate(source: string, options: HtmdxCompileOptions = {}): Htm
   const { diagnostics, probes } = collectStructuralDiagnostics(source, runtimeOptionsFor(options));
 
   for (const probe of probes) {
-    try {
-      renderStaticHtml(createElement(Fragment, null, probe.render()));
-    } catch (error) {
-      diagnostics.push(diagnosticForBlock(source, probe, error));
+    const nesting = captureNestingWarnings(() => {
+      try {
+        renderStaticHtml(createElement(Fragment, null, probe.render()));
+      } catch (error) {
+        diagnostics.push(diagnosticForBlock(source, probe, error));
+      }
+    });
+
+    for (const message of nesting) {
+      diagnostics.push(
+        toDiagnostic(source, 'invalid-html-nesting', message, probe.offset, 1, 'warning'),
+      );
     }
   }
 
   return diagnostics.toSorted((left, right) => left.offset - right.offset);
+}
+
+// React reports invalid nesting through console.error during render and
+// nowhere else, so the only way to surface it is to listen while rendering.
+// Anything else React logs is passed through untouched.
+function captureNestingWarnings(render: () => void): string[] {
+  const captured: string[] = [];
+  // oxlint-disable no-console
+  const consoleError = console.error;
+  console.error = (...args: unknown[]) => {
+    const message = args.map(String).join(' ');
+    if (/cannot be a child|cannot be a descendant|validateDOMNesting/.test(message)) {
+      captured.push(message.split('\n')[0]);
+      return;
+    }
+    consoleError(...args);
+  };
+
+  try {
+    render();
+  } finally {
+    console.error = consoleError;
+  }
+  // oxlint-enable no-console
+
+  return captured;
 }
 
 // Static snapshot through the client renderer on a detached container.

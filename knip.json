@@ -3,5 +3,19 @@
     "ignore": [
         "**/*.config.{js,ts}",
         "packages/htmdx/bench/scenarios/**/artifact.jsx"
-    ]
+    ],
+    "workspaces": {
+        "packages/htmdx": {
+            "entry": [
+                "src/index.ts",
+                "src/cli/index.ts",
+                "src/react/index.ts",
+                "src/testing/index.ts",
+                "src/components/index.ts",
+                "src/components/builtins/index.ts",
+                "src/components/shadcn/index.ts",
+                "src/component-manifest.ts"
+            ]
+        }
+    }
 }

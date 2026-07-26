@@ -2,8 +2,8 @@
 // validate(), and add the two findings only an artifact can carry — how it
 // loads the runtime, and which version it pins.
 
-import type { HtmdxDiagnostic } from '@wix/htmdx';
-import { installDom } from './dom.js';
+import type { HtmdxDiagnostic } from '../diagnostics';
+import { installDom } from './dom';
 
 export type LintDiagnosticCode =
   | HtmdxDiagnostic['code']
@@ -23,34 +23,25 @@ export type LintReport = {
   warningCount: number;
 };
 
-export type LintOptions = {
-  /** Module specifier of the runtime to validate against. Defaults to the bundled one. */
-  runtime?: string;
-};
-
 const HTMDX_SCRIPT = /<script\s+type="text\/htmdx"[^>]*>([\s\S]*?)<\/script>/;
 const RUNTIME_SCRIPT = /<script[^>]+src=["']([^"']*@wix\/htmdx[^"']*)["']/i;
 const PINNED_VERSION = /@wix\/htmdx@(\d+\.\d+\.\d+(?:-[\w.]+)?)/;
 
-type Runtime = {
-  validate: (source: string) => HtmdxDiagnostic[];
-  VERSION: string;
-};
+type Runtime = typeof import('../index');
 
 let runtimeCache: Promise<Runtime> | undefined;
 
-async function loadRuntime(specifier = '@wix/htmdx'): Promise<Runtime> {
+// react-dom decides whether it has a DOM when its module first evaluates, so
+// the globals have to exist before the runtime is imported — hence the lazy
+// import rather than a static one at the top of the file.
+async function loadRuntime(): Promise<Runtime> {
   installDom();
-  runtimeCache ??= import(specifier) as Promise<Runtime>;
+  runtimeCache ??= import('../index');
   return runtimeCache;
 }
 
-export async function lintFile(
-  file: string,
-  content: string,
-  options: LintOptions = {},
-): Promise<LintFileResult> {
-  const runtime = await loadRuntime(options.runtime);
+export async function lintFile(file: string, content: string): Promise<LintFileResult> {
+  const runtime = await loadRuntime();
   const isArtifact = /\.html?$/i.test(file) || HTMDX_SCRIPT.test(content);
   const source = isArtifact ? extractEmbeddedSource(content) : content;
 

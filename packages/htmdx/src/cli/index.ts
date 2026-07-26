@@ -1,25 +1,25 @@
-#!/usr/bin/env node
 // htmdx lint <files...> — validates HTMDX artifacts and source files.
+// The build prepends the shebang and sets the executable bit; see rollup.config.js.
 //
 // Exit codes: 0 clean, 1 problems found, 2 the command could not run.
 
 import { readFile } from 'node:fs/promises';
 import { relative } from 'node:path';
-import { lintFile, summarize, type LintDiagnostic, type LintReport } from './lint.js';
+import { lintFile, summarize, type LintDiagnostic, type LintReport } from './lint';
 
 const USAGE = `Usage: htmdx lint <files...> [options]
 
 Options:
   --format <pretty|json>  Output format (default: pretty)
   --strict                Treat warnings as failures
-  --runtime <specifier>   Validate against a specific @wix/htmdx build
-  -h, --help              Show this message`;
+  -h, --help              Show this message
+
+Lint with the runtime an artifact pins: npx @wix/htmdx@<version> lint <file>`;
 
 type Args = {
   files: string[];
   format: 'pretty' | 'json';
   strict: boolean;
-  runtime?: string;
 };
 
 async function main(argv: string[]): Promise<number> {
@@ -49,7 +49,7 @@ async function main(argv: string[]): Promise<number> {
       process.stderr.write(`cannot read ${file}\n`);
       return 2;
     }
-    results.push(await lintFile(file, content, { runtime: args.runtime }));
+    results.push(await lintFile(file, content));
   }
 
   const report = summarize(results);
@@ -75,11 +75,6 @@ function parseArgs(argv: string[]): Args {
     if (argument === '--format') {
       index += 1;
       args.format = argv[index] === 'json' ? 'json' : 'pretty';
-      continue;
-    }
-    if (argument === '--runtime') {
-      index += 1;
-      args.runtime = argv[index];
       continue;
     }
     args.files.push(argument);

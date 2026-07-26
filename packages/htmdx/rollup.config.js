@@ -1,4 +1,4 @@
-import { readFile, unlink, writeFile } from 'node:fs/promises';
+import { chmod, readFile, unlink, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import terser from '@rollup/plugin-terser';
@@ -20,6 +20,7 @@ const externalDependencies = (id) =>
 const moduleConfig = {
   input: {
     index: './src/index.ts',
+    cli: './src/cli/index.ts',
     react: './src/react/index.ts',
     testing: './src/testing/index.ts',
     components: './src/components/index.ts',
@@ -34,8 +35,25 @@ const moduleConfig = {
     chunkFileNames: '[name].js',
     sourcemap: true,
   },
-  plugins: [packageVersionPlugin(packageVersion), typescript(), terser()],
+  plugins: [packageVersionPlugin(packageVersion), typescript(), terser(), executableBin('cli')],
 };
+
+// The bin is one entry among several, so the shebang and the executable bit
+// have to be applied to that chunk alone rather than to the whole output.
+function executableBin(entryName) {
+  return {
+    name: 'executable-bin',
+    renderChunk(code, chunk) {
+      if (chunk.name !== entryName) {
+        return null;
+      }
+      return { code: `#!/usr/bin/env node\n${code}`, map: null };
+    },
+    async writeBundle(outputOptions) {
+      await chmod(resolve(packageDirectory, outputOptions.dir, `${entryName}.js`), 0o755);
+    },
+  };
+}
 
 function emitComponentManifest(targetFile) {
   return {

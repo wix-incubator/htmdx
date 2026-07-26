@@ -289,12 +289,32 @@ Positions are 1-based `line`/`column` plus a 0-based `offset` and `length`, so
 editors and language servers can underline the exact span. An empty array means
 the source is clean. Like `compile()`, this needs a DOM (a browser or jsdom).
 
-To lint files from a terminal or CI, use
-[`@wix/htmdx-cli`](https://github.com/wix-incubator/htmdx/tree/master/packages/htmdx-cli):
+The same checks run from a terminal or CI through the `htmdx` bin this package
+ships. Pin the invocation to the version an artifact declares and you lint
+against exactly what ships:
 
 ```bash
-npx @wix/htmdx-cli lint report.html
+npx @wix/htmdx lint report.html
+npx @wix/htmdx@4.5.1 lint docs/*.htmdx --strict
 ```
+
+| Option                    | Description                      |
+| ------------------------- | -------------------------------- |
+| `--format <pretty\|json>` | Output format. Default `pretty`. |
+| `--strict`                | Treat warnings as failures.      |
+
+Exit codes are `0` clean, `1` problems found, and `2` could not run. It accepts
+an HTML artifact — the source comes from its `<script type="text/htmdx">` block
+and positions are reported against the artifact — or a bare source file. On top
+of everything `validate()` reports, two findings only exist at the artifact
+level: `unpinned-runtime` (the runtime `<script>` has no pinned version, so a
+future release can change the artifact) and `runtime-version-mismatch` (the
+artifact pins a version other than the one linting it).
+
+`invalid-html-nesting` comes from React, which remembers which nesting warnings
+it has already logged in module state no API resets. Linting many files in one
+run reports each distinct violation once, on the first file that has it; lint a
+file on its own to see all of them.
 
 ## Testing documents
 

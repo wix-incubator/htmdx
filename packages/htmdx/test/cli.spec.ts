@@ -32,8 +32,8 @@ const BROKEN = ['# Report', '', '<Nope>unknown</Nope>', ''].join('\n');
 
 beforeAll(async () => {
   // The bin is the artifact under test; a stale dist would test nothing.
-  await run('yarn', ['build'], { cwd: resolve(import.meta.dirname, '..'), shell: true });
-}, 120_000);
+  await run('yarn', ['build:library'], { cwd: resolve(import.meta.dirname, '..'), shell: true });
+}, 300_000);
 
 describe('htmdx lint', () => {
   test('exits 0 and says so for a clean source file', async () => {

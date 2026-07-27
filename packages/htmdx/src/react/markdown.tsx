@@ -1,7 +1,7 @@
 // The block + inline Markdown renderer for the React runtime. Produces real
 // React elements (no HTML strings, no dangerouslySetInnerHTML): text is escaped
 // by React, links and images are scheme-checked, and headings register into the TOC.
-import { createElement, type ReactNode } from 'react';
+import { createElement, Fragment, type ReactNode } from 'react';
 import { markdownSyntaxSource } from '../components/body-contracts';
 import { HTML_ELEMENTS } from '../components/html-elements';
 import {
@@ -17,6 +17,11 @@ import { MermaidDiagram } from './mermaid';
 
 const INLINE = /\*\*([^*]+)\*\*|`([^`]+)`|\[([^\]]+)\]\(([^)]+)\)/g;
 const HTML_TAG = /<\/?([A-Za-z][A-Za-z0-9]*)(?:\s[^>]*)?\/?>/g;
+const LIST_BLOCK = /^(?:-|\d{1,9}[.)])\s/;
+const LIST_ITEM = /^(\s*)(?:-|(\d{1,9})[.)])\s+(.*)$/;
+// Indentation is author-controlled, so a document with runaway indentation would
+// otherwise build a React tree deep enough to exhaust the render stack.
+const MAX_LIST_DEPTH = 6;
 
 // Raw HTML is parsed by the caller: it owns the component catalog, so a
 // registered tag nested in allowlisted markup still resolves to its component.
@@ -111,14 +116,8 @@ function renderBlock(
   if (block.startsWith('# ')) {
     return createElement('h1', { key }, renderInline(block.slice(2), html));
   }
-  if (block.startsWith('- ')) {
-    return createElement(
-      'ul',
-      { key },
-      parseList(block).map((item, index) =>
-        createElement('li', { key: index }, renderInline(item, html)),
-      ),
-    );
+  if (isListBlock(block)) {
+    return createElement(Fragment, { key }, ...renderLists(parseList(block), 'list', html));
   }
   return createElement('p', { key }, renderInline(block.replace(/\n/g, ' '), html));
 }
@@ -360,10 +359,78 @@ function parseHtmlAttributes(source: string) {
   return Object.fromEntries(attributes);
 }
 
-function parseList(body: string) {
-  return body
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter((line) => line.startsWith('- '))
-    .map((line) => line.slice(2).trim());
+type List = { ordered: boolean; start: number; items: ListItem[] };
+type ListItem = { text: string; children: List[] };
+
+export function isListBlock(block: string) {
+  return LIST_BLOCK.test(block);
+}
+
+// One indent level holds the sibling lists written at that depth: `- a` followed
+// by `1. b` is two lists, the way CommonMark reads a change of marker.
+type Level = { indent: number; lists: List[]; item: ListItem | null };
+
+function parseList(body: string): List[] {
+  const lists: List[] = [];
+  const levels: Level[] = [{ indent: 0, lists, item: null }];
+  let current: ListItem | null = null;
+
+  for (const line of body.split(/\r?\n/)) {
+    const match = line.match(LIST_ITEM);
+    if (!match) {
+      // A line the parser does not recognize belongs to the item above it.
+      // Dropping it is how nested content used to disappear without a trace.
+      const text = line.trim();
+      if (text && current) {
+        current.text = `${current.text} ${text}`.trim();
+      }
+      continue;
+    }
+
+    const [, indentation, number, text] = match;
+    const indent = indentation.length;
+    const ordered = number !== undefined;
+
+    while (levels.length > 1 && indent < levels[levels.length - 1].indent) {
+      levels.pop();
+    }
+
+    const enclosing = levels[levels.length - 1];
+    if (indent > enclosing.indent && enclosing.item && levels.length < MAX_LIST_DEPTH) {
+      levels.push({ indent, lists: enclosing.item.children, item: null });
+    }
+
+    const level = levels[levels.length - 1];
+    let list = level.lists[level.lists.length - 1];
+    if (!list || list.ordered !== ordered) {
+      list = { ordered, start: ordered ? Number(number) : 1, items: [] };
+      level.lists.push(list);
+    }
+
+    current = { text: text.trim(), children: [] };
+    level.item = current;
+    list.items.push(current);
+  }
+
+  return lists;
+}
+
+function renderLists(lists: List[], keyPrefix: string, html?: HtmlRenderer): ReactNode[] {
+  return lists.map((list, index) =>
+    createElement(
+      list.ordered ? 'ol' : 'ul',
+      {
+        key: `${keyPrefix}-${index}`,
+        ...(list.ordered && list.start !== 1 ? { start: list.start } : {}),
+      },
+      list.items.map((item, itemIndex) =>
+        createElement(
+          'li',
+          { key: itemIndex },
+          renderInline(item.text, html),
+          ...renderLists(item.children, `${keyPrefix}-${index}-${itemIndex}`, html),
+        ),
+      ),
+    ),
+  );
 }

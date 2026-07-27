@@ -389,8 +389,12 @@ The standard runtime script gives an artifact the full catalog:
 
 `dist/browser.js` bundles React, the built-in catalog (ExecutiveSummary,
 MetricStrip, charts, ...), the shadcn/ui pack (Card, Badge, Button, Tabs,
-Accordion), and the shadcn theme (~147KB gzip, including the static-render
-path that powers `compile()`).
+Accordion), and the shadcn theme, including the static-render path that powers
+`compile()`. It stays under 160KB gzip: the build measures the written bundle
+against
+[`build/bundle-budget.json`](https://github.com/wix-incubator/htmdx/blob/master/packages/htmdx/build/bundle-budget.json)
+and fails when it grows past the ceiling, so the figure cannot drift without a
+reviewed change to the budget.
 
 Authoring htmdx source instead of rendered markup is measurably cheaper for
 agents: the full single-file artifact is about 4.3x smaller in tokens than the

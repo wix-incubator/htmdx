@@ -124,4 +124,50 @@ describe('list lines are never dropped', () => {
     expect(container.textContent).toContain('Two point one');
     expect(container.querySelector('ol')?.children).toHaveLength(3);
   });
+
+  test('keeps every line of a block indented past the nesting cap', () => {
+    const lines = Array.from(
+      { length: 12 },
+      (_, level) => `${' '.repeat(level * 2)}1. Level${level}`,
+    ).join('\n');
+    const container = article(`## Case\n\n${lines}`);
+
+    for (let level = 0; level < 12; level += 1) {
+      expect(container.textContent).toContain(`Level${level}`);
+    }
+  });
+});
+
+describe('list markers in prose', () => {
+  test('leaves a decimal number in a paragraph alone', () => {
+    const container = article('## Case\n\n12.5 million users signed up.');
+
+    expect(container.querySelector('ol')).toBeNull();
+    expect(container.querySelector('p')?.textContent).toContain('12.5 million');
+  });
+
+  test('reads a paragraph opening with a year as a list, the way CommonMark does', () => {
+    const list = article('## Case\n\n2026. A big year.').querySelector('ol');
+
+    expect(list?.getAttribute('start')).toBe('2026');
+  });
+
+  test('renders inline markup inside items', () => {
+    const container = article('## Case\n\n1. **Bold** step\n2. `code` step');
+
+    expect(container.querySelector('ol li strong')?.textContent).toBe('Bold');
+    expect(container.querySelector('ol li code')?.textContent).toBe('code');
+  });
+
+  test('parses carriage-return line endings', () => {
+    const container = article('## Case\r\n\r\n1. First\r\n2. Second');
+
+    expect(container.querySelector('ol')?.children).toHaveLength(2);
+  });
+
+  test('renders an empty item without dropping its siblings', () => {
+    const container = article('## Case\n\n- \n- Beta');
+
+    expect(container.querySelector('ul')?.children).toHaveLength(2);
+  });
 });

@@ -151,10 +151,15 @@ htmdx-code {
   color: var(--primary);
   text-underline-offset: 2px;
 }
+/* Tint from the artifact accent when the runtime theme is present, so inline
+   code reads as an accent chip instead of gray-on-gray; a bare shadcn host
+   falls back to its own primary. This rule wins over the runtime's own inline
+   code rule, so the two have to stay in sync. */
 .htmdx-doc-section-card :not(pre) > code:not([data-slot]) {
   font-family: ui-monospace, monospace;
   font-size: 0.8125rem;
-  background: var(--muted);
+  background: color-mix(in oklab, var(--htmdx-accent, var(--primary)) 10%, transparent);
+  color: var(--htmdx-accent-ink, var(--primary));
   border-radius: 4px;
   padding: 0.125rem 0.375rem;
 }

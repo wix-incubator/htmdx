@@ -944,10 +944,15 @@ htmdx-code {
   color: var(--primary);
   text-underline-offset: 2px;
 }
+/* Tint from the artifact accent when the runtime theme is present, so inline
+   code reads as an accent chip instead of gray-on-gray; a bare shadcn host
+   falls back to its own primary. This rule wins over the runtime's own inline
+   code rule, so the two have to stay in sync. */
 .htmdx-doc-section-card :not(pre) > code:not([data-slot]) {
   font-family: ui-monospace, monospace;
   font-size: 0.8125rem;
-  background: var(--muted);
+  background: color-mix(in oklab, var(--htmdx-accent, var(--primary)) 10%, transparent);
+  color: var(--htmdx-accent-ink, var(--primary));
   border-radius: 4px;
   padding: 0.125rem 0.375rem;
 }
@@ -1015,6 +1020,7 @@ htmdx-code {
     --htmdx-panel: var(--md-sys-color-surface-container);
     --htmdx-accent: var(--md-sys-color-primary);
     --htmdx-accent-soft: var(--md-sys-color-primary-container);
+    --htmdx-accent-ink: var(--md-sys-color-on-primary-container);
     --htmdx-accent-edge: var(--md-sys-color-primary-container);
     --htmdx-green: var(--md-sys-color-secondary);
     --htmdx-green-bg: var(--md-sys-color-secondary-container);
@@ -1395,11 +1401,14 @@ htmdx-code {
     font-weight: 700;
     color: var(--md-sys-color-on-surface);
   }
+  /* A translucent accent tint rather than primary-container: ExecutiveSummary
+     already uses primary-container as its body, so an opaque chip would vanish
+     inside it. */
   .htmdx-doc-section-card :not(pre) > code:not([data-slot]) {
     padding: 0.15em 0.4em;
     border-radius: var(--md-sys-shape-corner-small);
-    background: var(--md-sys-color-surface-container-high);
-    color: var(--md-sys-color-on-surface);
+    background: color-mix(in oklab, var(--md-sys-color-primary) 10%, transparent);
+    color: var(--md-sys-color-on-primary-container);
     font-family: var(--htmdx-mono);
     font-size: 0.875em;
   }

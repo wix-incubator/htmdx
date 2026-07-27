@@ -32,7 +32,13 @@ import { safeImageAttributes, uniqueSlug, type RenderContext } from '../componen
 import { BUILT_IN_LOGOS } from '../logos';
 import { getLayout, resolveLayoutName, resolveLayoutSlots } from '../layout';
 import { CodeBlock } from './CodeBlock';
-import { fenceLanguage, renderInline, renderMarkdown, type HtmlRenderer } from './markdown';
+import {
+  fenceLanguage,
+  isListBlock,
+  renderInline,
+  renderMarkdown,
+  type HtmlRenderer,
+} from './markdown';
 import { COPY_LABEL, errorDiagnostics, formatErrorDetails } from '../fix-request';
 import { THEME_IDS } from '../themes';
 import {
@@ -513,7 +519,7 @@ function extractHeroContent(blocks: Block[]): string {
   const headingLine = markdownSyntaxSource(value).match(/^## +.+$/m);
   const head = headingLine ? value.slice(0, headingLine.index) : value;
   const firstChunk = head.split(/\n{2,}/, 1)[0].trim();
-  if (firstChunk && !/^(#|- |```)/.test(firstChunk)) {
+  if (firstChunk && !/^(#|```)/.test(firstChunk) && !isListBlock(firstChunk)) {
     lead = firstChunk.replace(/\n/g, ' ');
     value = value.slice(value.indexOf(firstChunk) + firstChunk.length).trim();
   }

@@ -6,9 +6,9 @@ runtime it describes. Companion topics:
 <!-- x-release-please-start-version -->
 
 ```bash
-npx @wix/htmdx@4.10.0 skill components    # body grammar for every component
-npx @wix/htmdx@4.10.0 skill integration   # React host, registration, testing
-npx @wix/htmdx@4.10.0 skill starter       # a starter artifact to copy
+npx @wix/htmdx@4.10.1 skill components    # body grammar for every component
+npx @wix/htmdx@4.10.1 skill integration   # React host, registration, testing
+npx @wix/htmdx@4.10.1 skill starter       # a starter artifact to copy
 ```
 
 <!-- x-release-please-end-version -->
@@ -60,7 +60,7 @@ to disk — and replace the title, frontmatter, and body. The shell is:
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Artifact title</title>
-    <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@4.10.0/dist/browser.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@4.10.1/dist/browser.js" defer></script>
   </head>
   <body>
     <!-- prettier-ignore -->
@@ -145,7 +145,7 @@ exact-version manifest is the source of truth when the network is reachable:
 <!-- x-release-please-start-version -->
 
 ```text
-https://cdn.jsdelivr.net/npm/@wix/htmdx@4.10.0/dist/components.json
+https://cdn.jsdelivr.net/npm/@wix/htmdx@4.10.1/dist/components.json
 ```
 
 <!-- x-release-please-end-version -->
@@ -205,7 +205,7 @@ Lint every artifact before presenting it, with the runtime it pins:
 <!-- x-release-please-start-version -->
 
 ```bash
-npx @wix/htmdx@4.10.0 lint path/to/artifact.html --strict
+npx @wix/htmdx@4.10.1 lint path/to/artifact.html --strict
 ```
 
 <!-- x-release-please-end-version -->
@@ -240,10 +240,10 @@ Already a dependency? Use the local bin instead — `yarn htmdx …`,
 <!-- x-release-please-start-version -->
 
 ```bash
-npx @wix/htmdx@4.10.0 lint artifact.html          # one artifact
-npx @wix/htmdx@4.10.0 lint a.html b.html doc.mdx  # several files
-npx @wix/htmdx@4.10.0 lint artifacts/*.html       # let the shell expand it
-npx @wix/htmdx@4.10.0 lint artifact.html --strict --format json
+npx @wix/htmdx@4.10.1 lint artifact.html          # one artifact
+npx @wix/htmdx@4.10.1 lint a.html b.html doc.mdx  # several files
+npx @wix/htmdx@4.10.1 lint artifacts/*.html       # let the shell expand it
+npx @wix/htmdx@4.10.1 lint artifact.html --strict --format json
 ```
 
 <!-- x-release-please-end-version -->
@@ -266,7 +266,7 @@ editor shows.
 ```text
 artifact.html
   2:26     warning  unpinned-runtime
-    runtime is not pinned to a version; a future release can change this artifact (pin @wix/htmdx@4.10.0)
+    runtime is not pinned to a version; a future release can change this artifact (pin @wix/htmdx@4.10.1)
   5:10     error  unknown-prop
     unknown prop "type" for <Callout>
   9:1      error  body-contract
@@ -287,9 +287,9 @@ a pass.
 <!-- x-release-please-start-version -->
 
 ```bash
-npx @wix/htmdx@4.10.0 compile artifact.html --out snapshot.html
-npx @wix/htmdx@4.10.0 components            # the whole catalog, grouped by source
-npx @wix/htmdx@4.10.0 components Foldout    # purpose, body mode, props, example
+npx @wix/htmdx@4.10.1 compile artifact.html --out snapshot.html
+npx @wix/htmdx@4.10.1 components            # the whole catalog, grouped by source
+npx @wix/htmdx@4.10.1 components Foldout    # purpose, body mode, props, example
 ```
 
 <!-- x-release-please-end-version -->
@@ -309,11 +309,11 @@ the runtime that renders the artifact.
 <!-- x-release-please-start-version -->
 
 ```bash
-npx @wix/htmdx@4.10.0 skill                 # this topic (authoring)
-npx @wix/htmdx@4.10.0 skill --list          # available topics
-npx @wix/htmdx@4.10.0 skill components      # one topic
-npx @wix/htmdx@4.10.0 skill --full          # every topic in one stream
-npx @wix/htmdx@4.10.0 skill starter > brief.html
+npx @wix/htmdx@4.10.1 skill                 # this topic (authoring)
+npx @wix/htmdx@4.10.1 skill --list          # available topics
+npx @wix/htmdx@4.10.1 skill components      # one topic
+npx @wix/htmdx@4.10.1 skill --full          # every topic in one stream
+npx @wix/htmdx@4.10.1 skill starter > brief.html
 ```
 
 <!-- x-release-please-end-version -->

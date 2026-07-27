@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.10.1](https://github.com/wix-incubator/htmdx/compare/v4.10.0...v4.10.1) (2026-07-27)
+
+
+### Bug Fixes
+
+* **react:** render ordered lists and stop dropping nested list lines ([#78](https://github.com/wix-incubator/htmdx/issues/78)) ([e88917b](https://github.com/wix-incubator/htmdx/commit/e88917ba6c196c4f4f898f344080ffd7e36e6675))
+* **runtime:** give inline code an accent chip instead of gray-on-gray ([#80](https://github.com/wix-incubator/htmdx/issues/80)) ([c078394](https://github.com/wix-incubator/htmdx/commit/c078394643f84622836c3f18fee13ce6b544f212))
+
 ## [4.10.0](https://github.com/wix-incubator/htmdx/compare/v4.9.0...v4.10.0) (2026-07-26)
 
 

@@ -298,7 +298,7 @@ The authoring guidance ships with the runtime and is printed by `htmdx skill`, s
 
 ## Package
 
-- npm: `@wix/htmdx` · CDN entry: `dist/browser.js` (~145KB gzip) · module entries: `.`, `./react`, `./testing`, `./components`, `./components/builtins`, `./components/shadcn`
+- npm: `@wix/htmdx` · CDN entry: `dist/browser.js` (under 160KB gzip, [budgeted in CI](./packages/htmdx/build/bundle-budget.json)) · module entries: `.`, `./react`, `./testing`, `./components`, `./components/builtins`, `./components/shadcn`
 - custom element: `<htmdx-code>` · browser API: `window.Htmdx`
 - linting: [`validate()`](#validation-and-linting) · CLI: [`lint`, `compile`, `components`](#command-line) — `npx @wix/htmdx lint <files...>`
 - component contract: `dist/components.json`

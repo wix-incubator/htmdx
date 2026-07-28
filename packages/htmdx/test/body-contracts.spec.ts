@@ -100,9 +100,11 @@ describe('component body contracts', () => {
 
   test.each([
     ['`{name}`', '<code>{name}</code>'],
-    ['\\{name\\}', '\\{name\\}'],
+    // The escapes are what keep the braces out of the MDX-expression check;
+    // the reader is meant to see the braces, not the backslashes.
+    ['\\{name\\}', '{name}'],
     ['`<Card>`', '<code>&lt;Card&gt;</code>'],
-    ['<https://wix.com>', '&lt;https://wix.com&gt;'],
+    ['<https://wix.com>', '<a href="https://wix.com">https://wix.com</a>'],
   ])('allows Markdown literal syntax in component bodies: %j', (body, renderedText) => {
     const rendered = compile(`<Card>\n${body}\n</Card>`);
 

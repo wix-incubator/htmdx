@@ -167,6 +167,28 @@ htmdx-code {
   color: var(--primary);
   text-underline-offset: 2px;
 }
+.htmdx-doc-section-card em:not([data-slot]) {
+  font-style: italic;
+}
+.htmdx-doc-section-card del:not([data-slot]) {
+  text-decoration: line-through;
+  color: var(--muted-foreground);
+}
+.htmdx-doc-section-card hr:not([data-slot]) {
+  height: 1px;
+  border: 0;
+  margin: 1.5rem 0;
+  background: var(--border);
+}
+.htmdx-doc-section-card blockquote:not([data-slot]) {
+  margin: 1rem 0;
+  padding: 0.125rem 0 0.125rem 1rem;
+  border-left: 3px solid var(--primary);
+  color: var(--muted-foreground);
+}
+.htmdx-doc-section-card blockquote > :last-child {
+  margin-bottom: 0;
+}
 /* Tint from the artifact accent when the runtime theme is present, so inline
    code reads as an accent chip instead of gray-on-gray; a bare shadcn host
    falls back to its own primary. This rule wins over the runtime's own inline

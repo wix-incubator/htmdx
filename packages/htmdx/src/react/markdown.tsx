@@ -15,14 +15,48 @@ import {
 import { CodeBlock } from './CodeBlock';
 import { MermaidDiagram } from './mermaid';
 
-const INLINE = /\*\*([^*]+)\*\*|`([^`]+)`|\[([^\]]+)\]\(([^)]+)\)/g;
 const HTML_TAG = /<\/?([A-Za-z][A-Za-z0-9]*)(?:\s[^>]*)?\/?>/g;
 const ATX_HEADING = /^(#{1,6}) /;
+// A closing sequence is decoration, not part of the label: `## Title ##`.
+const ATX_CLOSING = /\s+#+$/;
+const THEMATIC_BREAK = /^ {0,3}([-*_])(?:[ \t]*\1){2,}[ \t]*$/;
+const BLOCKQUOTE = /^ {0,3}>/;
+const BLOCKQUOTE_MARKER = /^ {0,3}> ?/;
 const LIST_BLOCK = /^(?:-|\d{1,9}[.)])\s/;
 const LIST_ITEM = /^(\s*)(?:-|(\d{1,9})[.)])\s+(.*)$/;
+// Mirrors the autolink form `markdownSyntaxSource` masks, so what the mask
+// hides from emphasis is exactly what renders as a link.
+const AUTOLINK = /^<((?:https?:\/\/|mailto:)[^<>\s]+)>|^<([^<>\s@]+@[^<>\s@]+)>/i;
+// CommonMark escapes ASCII punctuation only, so `C:\path` keeps its backslash.
+const ESCAPABLE = /[!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/;
+const WORD_CHARACTER = /[\p{L}\p{N}]/u;
 // Indentation is author-controlled, so a document with runaway indentation would
 // otherwise build a React tree deep enough to exhaust the render stack.
 const MAX_LIST_DEPTH = 6;
+// Emphasis nests by recursion, and the delimiters come from the document, so
+// the same ceiling applies here.
+const MAX_INLINE_DEPTH = 6;
+
+// Matched against the masked syntax, so a delimiter inside code or behind a
+// backslash cannot open a span. Longest run first: `***` before `**` before
+// `*`. Underscore forms are flagged `word` because CommonMark refuses them
+// mid-word — `snake_case_name` is an identifier, not emphasis.
+type Delimiter = { pattern: RegExp; tags: string[]; word?: boolean };
+
+const DELIMITERS: Delimiter[] = [
+  { pattern: /\*\*\*([^\n]+?)\*\*\*/y, tags: ['strong', 'em'] },
+  { pattern: /___([^\n]+?)___/y, tags: ['strong', 'em'], word: true },
+  { pattern: /\*\*([^\n]+?)\*\*/y, tags: ['strong'] },
+  { pattern: /__([^\n]+?)__/y, tags: ['strong'], word: true },
+  { pattern: /~~([^\n]+?)~~/y, tags: ['del'] },
+  { pattern: /\*([^\n]+?)\*/y, tags: ['em'] },
+  { pattern: /_([^\n]+?)_/y, tags: ['em'], word: true },
+];
+
+const LINK = /\[([^\]]+)\]\(([^)]+)\)/y;
+// Ordinary prose is mostly letters: without this, every character would pay for
+// a sticky match against each delimiter in turn.
+const MARKUP_STARTERS = new Set(['*', '_', '~', '[']);
 
 // Raw HTML is parsed by the caller: it owns the component catalog, so a
 // registered tag nested in allowlisted markup still resolves to its component.
@@ -41,46 +75,209 @@ export function renderInline(text: string, html?: HtmlRenderer): ReactNode {
     return html(text, 'html');
   }
 
-  const nodes: ReactNode[] = [];
-  let cursor = 0;
-  let key = 0;
-  let image = findNextImage(text, syntax, cursor);
-
-  while (image) {
-    appendInlineText(nodes, text.slice(cursor, image.start), key);
-    key = nodes.length;
-    const attributes = safeImageAttributes(image.attributes);
-    nodes.push(attributes ? createElement('img', { key: key++, ...attributes }) : image.fallback);
-    cursor = image.end;
-    image = findNextImage(text, syntax, cursor);
-  }
-
-  appendInlineText(nodes, text.slice(cursor), key);
+  const nodes = renderInlineNodes(text, syntax, 0);
   return nodes.length === 1 ? nodes[0] : nodes;
 }
 
-function appendInlineText(nodes: ReactNode[], text: string, initialKey: number) {
-  let last = 0;
-  let key = initialKey;
-  let match: RegExpExecArray | null;
-  INLINE.lastIndex = 0;
-  while ((match = INLINE.exec(text))) {
-    if (match.index > last) {
-      nodes.push(text.slice(last, match.index));
+// One linear pass over the source, paired with the masked syntax that
+// `markdownSyntaxSource` produces. A position whose syntax character differs
+// from its source character is code, an escape, or an autolink: it is consumed
+// as that, and never read as a delimiter. Everything else is free to open a
+// span, whose content is rendered by the same pass so markup nests.
+function renderInlineNodes(source: string, syntax: string, depth: number): ReactNode[] {
+  const nodes: ReactNode[] = [];
+  let pending = '';
+  let key = 0;
+
+  const flush = () => {
+    if (pending) {
+      nodes.push(pending);
+      pending = '';
     }
-    if (match[1] !== undefined) {
-      nodes.push(createElement('strong', { key: key++ }, match[1]));
-    } else if (match[2] !== undefined) {
-      nodes.push(createElement('code', { key: key++ }, match[2]));
-    } else {
-      const href = safeHref(match[4]);
-      nodes.push(href ? createElement('a', { key: key++, href }, match[3]) : match[3]);
+  };
+  const push = (node: ReactNode) => {
+    flush();
+    nodes.push(node);
+  };
+
+  let index = 0;
+  while (index < source.length) {
+    const character = source[index];
+    const masked = syntax[index] !== character;
+
+    if (masked && character === '\\') {
+      const escaped = source[index + 1] ?? '';
+      pending += ESCAPABLE.test(escaped) ? escaped : `${character}${escaped}`;
+      index += escaped ? 2 : 1;
+      continue;
     }
-    last = INLINE.lastIndex;
+
+    if (masked && character === '`') {
+      const span = parseCodeSpan(source, index);
+      if (span) {
+        push(createElement('code', { key: key++ }, span.code));
+        index = span.end;
+        continue;
+      }
+    }
+
+    if (masked && character === '<') {
+      const link = parseAutolink(source, index);
+      if (link) {
+        push(
+          link.href ? createElement('a', { key: key++, href: link.href }, link.label) : link.label,
+        );
+        index = link.end;
+        continue;
+      }
+    }
+
+    if (!masked) {
+      const image = parseImage(source, syntax, index);
+      if (image) {
+        const attributes = safeImageAttributes(image.attributes);
+        push(attributes ? createElement('img', { key: key++, ...attributes }) : image.fallback);
+        index = image.end;
+        continue;
+      }
+
+      const markup = MARKUP_STARTERS.has(character)
+        ? parseMarkup(source, syntax, index, depth, key)
+        : null;
+      if (markup) {
+        push(markup.node);
+        key += 1;
+        index = markup.end;
+        continue;
+      }
+    }
+
+    pending += character;
+    index += 1;
   }
-  if (last < text.length) {
-    nodes.push(text.slice(last));
+
+  flush();
+  return nodes;
+}
+
+function parseImage(source: string, syntax: string, index: number) {
+  if (source[index] === '!' && source[index + 1] === '[') {
+    return parseMarkdownImage(source, syntax, index);
   }
+  if (source[index] === '<' && source.slice(index + 1, index + 4).toLowerCase() === 'img') {
+    return parseHtmlImage(source, index);
+  }
+  return null;
+}
+
+function parseMarkup(
+  source: string,
+  syntax: string,
+  index: number,
+  depth: number,
+  key: number,
+): { node: ReactNode; end: number } | null {
+  LINK.lastIndex = index;
+  const link = LINK.exec(syntax);
+  if (link) {
+    const end = LINK.lastIndex;
+    const href = safeHref(source.slice(end - 1 - link[2].length, end - 1));
+    const children = renderChildren(source, syntax, index + 1, index + 1 + link[1].length, depth);
+    return {
+      node: href
+        ? createElement('a', { key, href }, children)
+        : createElement(Fragment, { key }, children),
+      end,
+    };
+  }
+
+  for (const { pattern, tags, word } of DELIMITERS) {
+    pattern.lastIndex = index;
+    const match = pattern.exec(syntax);
+    if (!match) {
+      continue;
+    }
+
+    const opening = (pattern.lastIndex - index - match[1].length) / 2;
+    const contentStart = index + opening;
+    // A lazy match stops at the first closing run, which cuts a longer run in
+    // the wrong place: in `**a *b***` the strong has to close on the last two
+    // stars so the `*` left over can close the emphasis inside it.
+    const overrun = runLength(syntax, pattern.lastIndex - opening, source[index]) - opening;
+    const contentEnd = pattern.lastIndex - opening + Math.max(overrun, 0);
+    const end = contentEnd + opening;
+    const content = source.slice(contentStart, contentEnd);
+    // A delimiter run only opens a span when it hugs its content, so `2 * 3 * 4`
+    // and `a _ b _ c` stay arithmetic and prose.
+    if (/^\s|\s$/.test(content)) {
+      continue;
+    }
+    if (word && !isWordBoundary(source, index, end)) {
+      continue;
+    }
+
+    const children = renderChildren(source, syntax, contentStart, contentEnd, depth);
+    const node = tags.reduceRight<ReactNode>(
+      (inner, tag, position) => createElement(tag, position === 0 ? { key } : {}, inner),
+      children,
+    );
+    return { node, end };
+  }
+
+  return null;
+}
+
+function renderChildren(
+  source: string,
+  syntax: string,
+  start: number,
+  end: number,
+  depth: number,
+): ReactNode {
+  const content = source.slice(start, end);
+  if (depth >= MAX_INLINE_DEPTH) {
+    return content;
+  }
+  const nodes = renderInlineNodes(content, syntax.slice(start, end), depth + 1);
+  return nodes.length === 1 ? nodes[0] : nodes;
+}
+
+function runLength(syntax: string, start: number, character: string) {
+  let length = 0;
+  while (syntax[start + length] === character) {
+    length += 1;
+  }
+  return length;
+}
+
+// Underscore emphasis is refused mid-word, so identifiers survive intact.
+function isWordBoundary(source: string, start: number, end: number) {
+  const before = source[start - 1];
+  const after = source[end];
+  return !(before && WORD_CHARACTER.test(before)) && !(after && WORD_CHARACTER.test(after));
+}
+
+function parseCodeSpan(source: string, start: number) {
+  const fence = source.slice(start).match(/^`+/)?.[0] ?? '';
+  const closing = source.indexOf(fence, start + fence.length);
+  if (closing < 0) {
+    return null;
+  }
+  const raw = source.slice(start + fence.length, closing);
+  // One space either side is stripping, not content: it is what lets a span
+  // hold a backtick of its own.
+  const code = raw.trim() && /^ [\s\S]* $/.test(raw) ? raw.slice(1, -1) : raw;
+  return { code, end: closing + fence.length };
+}
+
+function parseAutolink(source: string, start: number) {
+  const match = AUTOLINK.exec(source.slice(start));
+  if (!match) {
+    return null;
+  }
+  const label = match[1] ?? match[2];
+  const target = match[1] ? label : `mailto:${label}`;
+  return { label, href: safeHref(target), end: start + match[0].length };
 }
 
 export function renderMarkdown(
@@ -103,10 +300,14 @@ function renderBlock(
   if (fencedCode) {
     return fencedCode;
   }
+  // Ahead of the list check: `- - -` is a break, not three empty bullets.
+  if (THEMATIC_BREAK.test(block)) {
+    return createElement('hr', { key });
+  }
   const heading = ATX_HEADING.exec(block);
   if (heading) {
     const level = heading[1].length;
-    const label = block.slice(level + 1);
+    const label = block.slice(level + 1).replace(ATX_CLOSING, '');
     // Only `##` anchors the table of contents; deeper levels are body structure.
     if (level !== 2) {
       return createElement(`h${level}`, { key }, renderInline(label, html));
@@ -116,6 +317,15 @@ function renderBlock(
       context.headings.push({ id, label });
     }
     return createElement('h2', { key, id }, renderInline(label, html));
+  }
+  if (BLOCKQUOTE.test(block)) {
+    // The quoted body is markdown in its own right, so it goes back through the
+    // block renderer: a list or a heading inside a quote stays one.
+    const quoted = block
+      .split('\n')
+      .map((line) => line.replace(BLOCKQUOTE_MARKER, ''))
+      .join('\n');
+    return createElement('blockquote', { key }, ...renderMarkdown(quoted, context, html));
   }
   if (isListBlock(block)) {
     return createElement(Fragment, { key }, ...renderLists(parseList(block), 'list', html));
@@ -210,24 +420,6 @@ function renderFencedCode(block: string, key: number) {
 export function fenceLanguage(info: string) {
   const word = info.trim().split(/\s+/)[0]?.toLowerCase() || '';
   return /^[a-z][a-z0-9+#._-]*$/.test(word) ? word : '';
-}
-
-function findNextImage(source: string, syntax: string, from: number): ParsedImage | null {
-  for (let index = from; index < syntax.length; index += 1) {
-    if (syntax[index] === '!' && syntax[index + 1] === '[') {
-      const image = parseMarkdownImage(source, syntax, index);
-      if (image) {
-        return image;
-      }
-    }
-    if (syntax[index] === '<' && syntax.slice(index + 1, index + 4).toLowerCase() === 'img') {
-      const image = parseHtmlImage(source, index);
-      if (image) {
-        return image;
-      }
-    }
-  }
-  return null;
 }
 
 function parseMarkdownImage(source: string, syntax: string, start: number): ParsedImage | null {

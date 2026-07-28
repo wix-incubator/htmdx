@@ -91,7 +91,7 @@ For CI, lint the files instead:
 <!-- x-release-please-start-version -->
 
 ```bash
-npx @wix/htmdx@4.10.1 lint artifacts/*.html --strict
+npx @wix/htmdx@4.11.0 lint artifacts/*.html --strict
 ```
 
 <!-- x-release-please-end-version -->

@@ -20,7 +20,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@4.10.1/dist/browser.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@4.11.0/dist/browser.js" defer></script>
   </head>
   <body>
     <!-- prettier-ignore -->
@@ -196,7 +196,7 @@ Host code registers standard React components and themes through `window.Htmdx`;
 <!-- x-release-please-start-version -->
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@4.10.1/dist/browser.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@4.11.0/dist/browser.js" defer></script>
 <script>
   window.addEventListener('htmdx:ready', () => {
     const { createElement } = window.Htmdx.React;
@@ -269,10 +269,10 @@ The package ships an `htmdx` bin, so `npx` runs the toolchain without an install
 <!-- x-release-please-start-version -->
 
 ```bash
-npx @wix/htmdx@4.10.1 lint docs/*.htmdx --strict
-npx @wix/htmdx@4.10.1 compile report.htmdx --out report-body.html
-npx @wix/htmdx@4.10.1 components Callout
-npx @wix/htmdx@4.10.1 skill
+npx @wix/htmdx@4.11.0 lint docs/*.htmdx --strict
+npx @wix/htmdx@4.11.0 compile report.htmdx --out report-body.html
+npx @wix/htmdx@4.11.0 components Callout
+npx @wix/htmdx@4.11.0 skill
 ```
 
 <!-- x-release-please-end-version -->

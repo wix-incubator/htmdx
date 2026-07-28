@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.11.0](https://github.com/wix-incubator/htmdx/compare/v4.10.1...v4.11.0) (2026-07-28)
+
+
+### Features
+
+* **markdown:** add emphasis, blockquotes, breaks, autolinks and escapes ([#84](https://github.com/wix-incubator/htmdx/issues/84)) ([622b546](https://github.com/wix-incubator/htmdx/commit/622b546baec4e77d6ab9327e671eb7a36dc9fa86))
+* **markdown:** render heading levels four through six ([#82](https://github.com/wix-incubator/htmdx/issues/82)) ([4c3d438](https://github.com/wix-incubator/htmdx/commit/4c3d438e0a59bc4ce89b358a1ce01640a217ceab))
+
 ## [4.10.1](https://github.com/wix-incubator/htmdx/compare/v4.10.0...v4.10.1) (2026-07-27)
 
 

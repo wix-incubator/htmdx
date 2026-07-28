@@ -17,6 +17,7 @@ import { MermaidDiagram } from './mermaid';
 
 const INLINE = /\*\*([^*]+)\*\*|`([^`]+)`|\[([^\]]+)\]\(([^)]+)\)/g;
 const HTML_TAG = /<\/?([A-Za-z][A-Za-z0-9]*)(?:\s[^>]*)?\/?>/g;
+const ATX_HEADING = /^(#{1,6}) /;
 const LIST_BLOCK = /^(?:-|\d{1,9}[.)])\s/;
 const LIST_ITEM = /^(\s*)(?:-|(\d{1,9})[.)])\s+(.*)$/;
 // Indentation is author-controlled, so a document with runaway indentation would
@@ -102,19 +103,19 @@ function renderBlock(
   if (fencedCode) {
     return fencedCode;
   }
-  if (block.startsWith('### ')) {
-    return createElement('h3', { key }, renderInline(block.slice(4), html));
-  }
-  if (block.startsWith('## ')) {
-    const label = block.slice(3);
+  const heading = ATX_HEADING.exec(block);
+  if (heading) {
+    const level = heading[1].length;
+    const label = block.slice(level + 1);
+    // Only `##` anchors the table of contents; deeper levels are body structure.
+    if (level !== 2) {
+      return createElement(`h${level}`, { key }, renderInline(label, html));
+    }
     const id = context ? uniqueSlug(label, context) : slugify(label);
     if (context) {
       context.headings.push({ id, label });
     }
     return createElement('h2', { key, id }, renderInline(label, html));
-  }
-  if (block.startsWith('# ')) {
-    return createElement('h1', { key }, renderInline(block.slice(2), html));
   }
   if (isListBlock(block)) {
     return createElement(Fragment, { key }, ...renderLists(parseList(block), 'list', html));

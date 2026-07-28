@@ -1475,6 +1475,30 @@ const RUNTIME_CSS = `
   .htmdx-doc-section-card > h3:first-child:not([data-slot]) {
     margin-top: 0;
   }
+  .htmdx-doc-section-card h4:not([data-slot]) {
+    font-family: var(--md-ref-typeface-brand);
+    font-size: 1.25rem;
+    line-height: 1.5rem;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+    margin: 18px 0 8px;
+  }
+  .htmdx-doc-section-card h5:not([data-slot]) {
+    font-family: var(--md-ref-typeface-brand);
+    font-size: 1.05rem;
+    line-height: 1.4rem;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+    margin: 16px 0 6px;
+  }
+  .htmdx-doc-section-card h6:not([data-slot]) {
+    font-family: var(--md-ref-typeface-brand);
+    font-size: 0.95rem;
+    line-height: 1.35rem;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface-variant);
+    margin: 16px 0 6px;
+  }
   .htmdx-doc-section-card > p,
   .htmdx-doc-section-card > ul,
   .htmdx-doc-section-card > div > p,

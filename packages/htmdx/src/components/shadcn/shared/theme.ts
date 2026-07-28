@@ -129,6 +129,22 @@ htmdx-code {
   font-weight: 600;
   margin: 1rem 0 0.5rem;
 }
+.htmdx-doc-section-card h4:not([data-slot]) {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 1rem 0 0.375rem;
+}
+.htmdx-doc-section-card h5:not([data-slot]) {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin: 0.875rem 0 0.375rem;
+}
+.htmdx-doc-section-card h6:not([data-slot]) {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  margin: 0.875rem 0 0.375rem;
+}
 .htmdx-doc-section-card p:not([data-slot]) {
   font-size: 0.875rem;
   line-height: 1.6;

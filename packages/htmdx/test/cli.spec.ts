@@ -343,6 +343,26 @@ describe('htmdx components', () => {
     expect(result.stdout).toContain('no components');
   });
 
+  test('--used points at the components it left out', async () => {
+    const result = await cli('components', '--used', fixture('used-rest.htmdx', CLEAN));
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toMatch(/\d+ other component\(s\) available: htmdx components/);
+  });
+
+  test('--used keeps the pointer out of json output', async () => {
+    const result = await cli(
+      'components',
+      '--used',
+      fixture('used-json.htmdx', CLEAN),
+      '--format',
+      'json',
+    );
+
+    expect(result.code).toBe(0);
+    expect(() => JSON.parse(result.stdout)).not.toThrow();
+  });
+
   test('--used exits 2 for a file it cannot read', async () => {
     const result = await cli('components', '--used', join(fixtures, 'missing.html'));
 

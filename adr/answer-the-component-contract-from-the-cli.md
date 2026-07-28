@@ -1,6 +1,6 @@
 # Answer the component contract from the CLI, not the manifest
 
-- Status: accepted
+- Status: proposed
 - Date: 2026-07-28
 - Extends [component-definitions-as-agent-contracts](component-definitions-as-agent-contracts.md),
   which made `dist/components.json` the contract, and
@@ -80,9 +80,31 @@ callers working, at the cost of a response shape that varies with the request.
   it is consumed as data: the package README and the integration topic.
 - `--used` reports what a file mentions, not what it renders. A component named
   only inside a code fence appears in the output.
+- `--used` optimizes for conforming to a file rather than picking the right
+  component, so its output ends by naming how many components it left out and
+  the command that lists them.
 - The manifest's own size is unaddressed. Family examples are the next lever:
   60 of 89 components sit in compound families whose canonical examples largely
   repeat each other (Avatar's three members ship one identical example,
   Breadcrumb's seven ship three), and 3,178 of the 4,174 example tokens belong
   to them. Deduplicating in a projection rather than in the manifest would keep
   the per-definition example validation this repo's build depends on.
+
+## What this decision does not establish
+
+Status is `proposed` because the token argument above is measured but not
+validated end to end.
+
+- 13,634 is the manifest's size, not a proven context cost. An agent reaching it
+  through a URL may get a summary rather than the bytes, in which case the
+  saving is smaller than the table suggests.
+- A manifest fetched from a stable URL is a good prompt-cache prefix; `--used`
+  output varies per file and caches nothing. Cheaper in tokens is not
+  automatically cheaper in billed compute.
+- `npx @wix/htmdx@<version> components <name>` costs about 2.8s of cold start
+  against roughly 0.2s for a local `dist/cli.js` run. Naming several components
+  in one call is what keeps that from multiplying.
+- Nothing here measures whether artifacts come out better. The edit-reliability
+  eval named in `bench/RESULTS.md` is the test that would move this to
+  `accepted`, and it should run before family-example dedupe or a compact
+  projection is built on top of this.

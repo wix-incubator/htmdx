@@ -153,7 +153,10 @@ npx @wix/htmdx@4.11.0 components                     # every name with its purpo
 
 <!-- x-release-please-end-version -->
 
-Each command answers for the version that runs it. `dist/components.json` holds
+Each command answers for the version that runs it. Writing something new starts
+from the full list, since `--used` reports only what a file already contains and
+cannot suggest the component you have not reached for yet; editing starts from
+`--used`. `dist/components.json` holds
 the same contract as machine-readable data, but it is the whole catalog in one
 document — reach for it when a tool consumes it, not to answer a question about
 a handful of components.

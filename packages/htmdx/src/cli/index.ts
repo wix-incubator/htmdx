@@ -163,7 +163,17 @@ async function runComponents(args: Args): Promise<number> {
       process.stderr.write(`${args.used}: no <script type="text/htmdx"> block found\n`);
       return 2;
     }
-    return writeComponents(componentsUsedIn(manifest, source), args.format);
+    const used = componentsUsedIn(manifest, source);
+    // --used answers "what is already here", which is the wrong question when the
+    // file is missing the component it should have used. Name the rest so the
+    // catalog stays one command away.
+    const rest = manifest.components.length - used.length;
+    return writeComponents(
+      used,
+      args.format,
+      used,
+      rest > 0 ? `\n${rest} other component(s) available: htmdx components\n` : '',
+    );
   }
 
   if (args.files.length === 0) {
@@ -197,6 +207,7 @@ function writeComponents(
   entries: ManifestComponent[],
   format: Args['format'],
   payload: unknown = entries,
+  footer = '',
 ): number {
   if (format === 'json') {
     process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
@@ -206,6 +217,7 @@ function writeComponents(
   // Silence would read as "this file uses nothing", which is also what a bad
   // --used path looks like from the caller's side.
   process.stdout.write(entries.length ? formatComponents(entries) : 'no components\n');
+  process.stdout.write(footer);
   return 0;
 }
 

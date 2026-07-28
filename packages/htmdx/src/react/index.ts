@@ -1236,11 +1236,21 @@ function tokenize(
       // element names inside a graphic never reach this loop.
       const lower = rawName.toLowerCase();
       const isSvgRoot = lower === 'svg';
-      if (
-        selfClosing ||
-        HTML_VOID_ELEMENTS.has(lower) ||
-        !(HTML_ELEMENTS.has(lower) || isSvgRoot)
-      ) {
+      const closeless = selfClosing || HTML_VOID_ELEMENTS.has(lower);
+      // A block element with no close tag still owns its line: left inside the
+      // markdown block, an `<hr>` between two paragraphs would render as
+      // `<p><hr/></p>`, which no browser keeps nested.
+      if (closeless && HTML_BLOCK_ELEMENTS.has(lower) && opensLine(syntax, match.index)) {
+        pushMarkdown(blocks, source.slice(cursor, match.index), cursor);
+        blocks.push({
+          type: 'html',
+          value: source.slice(match.index, openTag.lastIndex),
+          offset: match.index,
+        });
+        cursor = openTag.lastIndex;
+        continue;
+      }
+      if (closeless || !(HTML_ELEMENTS.has(lower) || isSvgRoot)) {
         continue;
       }
 

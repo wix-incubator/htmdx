@@ -39,6 +39,17 @@ describe('atx headings', () => {
     expect(container.querySelector('h5')?.hasAttribute('id')).toBe(false);
   });
 
+  test('drops a closing hash sequence from the label and the anchor', () => {
+    const heading = article('## Title ##').querySelector('h2');
+
+    expect(heading?.textContent).toBe('Title');
+    expect(heading?.getAttribute('id')).toBe('title');
+  });
+
+  test('keeps a hash that is part of the label', () => {
+    expect(article('### Issue #42').querySelector('h3')?.textContent).toBe('Issue #42');
+  });
+
   test('leaves a seventh level as prose, the way CommonMark does', () => {
     const container = article('####### Too deep');
 

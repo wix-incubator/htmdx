@@ -1518,6 +1518,30 @@ const RUNTIME_CSS = `
     font-weight: 700;
     color: var(--md-sys-color-on-surface);
   }
+  .htmdx-doc-section-card em:not([data-slot]) {
+    font-style: italic;
+  }
+  .htmdx-doc-section-card del:not([data-slot]) {
+    text-decoration: line-through;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+  /* The rule reads as a rest between passages, so it carries the section's own
+     outline colour rather than a browser default border. */
+  .htmdx-doc-section-card hr:not([data-slot]) {
+    height: 1px;
+    border: 0;
+    margin: 24px 0;
+    background: var(--md-sys-color-outline-variant);
+  }
+  .htmdx-doc-section-card blockquote:not([data-slot]) {
+    margin: 16px 0;
+    padding: 2px 0 2px 16px;
+    border-left: 3px solid var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-surface-variant);
+  }
+  .htmdx-doc-section-card blockquote > :last-child {
+    margin-bottom: 0;
+  }
   /* A translucent accent tint rather than primary-container: ExecutiveSummary
      already uses primary-container as its body, so an opaque chip would vanish
      inside it. */

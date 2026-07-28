@@ -177,6 +177,11 @@ https://cdn.jsdelivr.net/npm/@wix/htmdx@4.10.1/dist/components.json
 - **Images** work as Markdown or as allowlisted `<img>`. Relative paths resolve
   from the artifact; `http:`, `https:`, and `data:image/*` sources are
   accepted. Give every image `alt` text.
+- **The Markdown is a subset.** Headings `#` to `######`, `*emphasis*`,
+  `**strong**`, `~~strikethrough~~`, `` `code` ``, fenced blocks, links,
+  `<https://autolinks>`, ordered and bulleted lists, `> blockquotes`, `---`
+  breaks, and `\*` escapes all render. Tables belong in `DataTable`; task
+  lists, footnotes, reference links, and setext headings do not render.
 
 Optional frontmatter sets document metadata; unknown fields are ignored:
 

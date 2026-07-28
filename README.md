@@ -94,7 +94,7 @@ passes, and a diagram that cannot load keeps its fence text. Disable it with
 
 ## Components
 
-The runtime ships 87 components. Its `htmdx@2` exact-version `dist/components.json` manifest documents every component's purpose, canonical example, body mode, props, and source.
+The runtime ships 89 components. `npx @wix/htmdx components <name...>` prints a component's purpose, canonical example, body mode, props, and source, and `--used <file>` prints that contract for exactly the components a file already contains. The same data ships in bulk as the `htmdx@2` exact-version `dist/components.json` manifest, for tools that consume the whole catalog.
 
 **Report Built-ins** cover summaries, callouts, metrics, charts, tables, timelines, findings, evidence, and risks. Their `markdown` bodies reject nested tags, and each definition's purpose and example state any stricter list or table grammar. Components with `htmdx` bodies accept Markdown, HTML, and nested registered tags; components with `none` bodies accept only empty or self-closing tags.
 
@@ -288,7 +288,7 @@ Exit codes are `0` clean, `1` problems found, `2` could not run. `--format json`
 
 `lint` accepts an HTML artifact — the source comes from its `<script type="text/htmdx">` block and positions are reported against the artifact — or a bare source file. On top of everything `validate()` reports, it adds two findings that only exist at the artifact level: `unpinned-runtime` (the runtime `<script>` has no pinned version, so a future release can change the artifact) and `runtime-version-mismatch` (the artifact pins a version other than the one linting it). This repo lints its own examples this way in CI.
 
-`components` reads the manifest built next to the bin, so the catalog it prints is the one that version renders — the thing to ask before writing a document rather than guessing at prop names. See the [package README](./packages/htmdx/README.md#command-line) for the full behavior, including how `invalid-html-nesting` dedupes across files in one run.
+`components` reads the manifest built next to the bin, so the catalog it prints is the one that version renders — the thing to ask before writing a document rather than guessing at prop names. Name several components in one call, or pass `--used <file>` to get the contract for exactly what an artifact already contains. See the [package README](./packages/htmdx/README.md#command-line) for the full behavior, including how `invalid-html-nesting` dedupes across files in one run.
 
 ## Agent skill
 
@@ -301,7 +301,7 @@ The authoring guidance ships with the runtime and is printed by `htmdx skill`, s
 - npm: `@wix/htmdx` · CDN entry: `dist/browser.js` (under 160KB gzip, [budgeted in CI](./packages/htmdx/build/bundle-budget.json)) · module entries: `.`, `./react`, `./testing`, `./components`, `./components/builtins`, `./components/shadcn`
 - custom element: `<htmdx-code>` · browser API: `window.Htmdx`
 - linting: [`validate()`](#validation-and-linting) · CLI: [`lint`, `compile`, `components`](#command-line) — `npx @wix/htmdx lint <files...>`
-- component contract: `dist/components.json`
+- component contract: `npx @wix/htmdx components <name...>` · bulk data: `dist/components.json`
 - agent guidance: `npx @wix/htmdx skill` (topics in [`packages/htmdx/skill/`](./packages/htmdx/skill/)), installable skill in [`skills/htmdx/`](./skills/htmdx/SKILL.md)
 - architecture decisions: [`adr/`](./adr/)
 

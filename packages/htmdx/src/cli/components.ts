@@ -37,6 +37,19 @@ export function findComponent(manifest: Manifest, name: string): ManifestCompone
   return manifest.components.find((entry) => entry.name.toLowerCase() === wanted);
 }
 
+const COMPONENT_TAG = /<([A-Z][A-Za-z0-9]*)[\s/>]/g;
+
+// Scans for capitalized tags instead of compiling the source: the artifact
+// whose contract someone needs is often the one that does not compile yet.
+// A tag inside a code fence counts too — over-reporting costs a few lines,
+// missing a component costs the answer.
+export function componentsUsedIn(manifest: Manifest, source: string): ManifestComponent[] {
+  const used = new Set(
+    Array.from(source.matchAll(COMPONENT_TAG), (match) => match[1].toLowerCase()),
+  );
+  return manifest.components.filter((entry) => used.has(entry.name.toLowerCase()));
+}
+
 // A miss is usually a typo or a half-remembered name, so point at the closest
 // things rather than making the user re-read the whole list. Substring catches
 // the half-remembered case ("chart"), edit distance catches the typo ("Calout").
@@ -89,6 +102,10 @@ export function formatList(components: ManifestComponent[], runtime: string): st
   }
 
   return `${lines.join('\n')}\n`;
+}
+
+export function formatComponents(entries: ManifestComponent[]): string {
+  return entries.map(formatComponent).join('\n');
 }
 
 export function formatComponent(entry: ManifestComponent): string {

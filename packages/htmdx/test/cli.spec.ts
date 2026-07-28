@@ -275,6 +275,80 @@ describe('htmdx components', () => {
     expect(result.code).toBe(1);
     expect(result.stderr).toContain('unknown component');
   });
+
+  test('describes several named components in one call', async () => {
+    const result = await cli('components', 'Callout', 'Foldout');
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain('<Callout');
+    expect(result.stdout).toContain('<Foldout');
+  });
+
+  test('emits an array for several names and a bare entry for one', async () => {
+    const many = await cli('components', 'Callout', 'Foldout', '--format', 'json');
+    const one = await cli('components', 'Callout', '--format', 'json');
+
+    expect(JSON.parse(many.stdout).map((entry: { name: string }) => entry.name)).toEqual([
+      'Callout',
+      'Foldout',
+    ]);
+    expect(Array.isArray(JSON.parse(one.stdout))).toBe(false);
+  });
+
+  test('fails the whole call when one of several names is unknown', async () => {
+    const result = await cli('components', 'Callout', 'Zzzzzzzz');
+
+    expect(result.code).toBe(1);
+    expect(result.stderr).toContain('unknown component');
+  });
+
+  test('--used describes only what an artifact contains', async () => {
+    const artifact = fixture(
+      'used.html',
+      [
+        '<!doctype html>',
+        '<script type="text/htmdx">',
+        '# Report',
+        '',
+        '<Callout>Ship it.</Callout>',
+        '</script>',
+      ].join('\n'),
+    );
+    const result = await cli('components', '--used', artifact);
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain('Callout');
+    expect(result.stdout).not.toContain('Foldout');
+  });
+
+  test('--used reads a bare source file too', async () => {
+    const result = await cli('components', '--used', fixture('used.htmdx', CLEAN));
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain('Callout');
+  });
+
+  test('--used answers for source that does not compile', async () => {
+    const broken = fixture('used-broken.htmdx', '<Callout>Unclosed\n\n<Nope>unknown</Nope>\n');
+    const result = await cli('components', '--used', broken);
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain('Callout');
+  });
+
+  test('--used says so when an artifact uses no components', async () => {
+    const result = await cli('components', '--used', fixture('used-plain.htmdx', '# Just prose\n'));
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain('no components');
+  });
+
+  test('--used exits 2 for a file it cannot read', async () => {
+    const result = await cli('components', '--used', join(fixtures, 'missing.html'));
+
+    expect(result.code).toBe(2);
+    expect(result.stderr).toContain('cannot read');
+  });
 });
 
 describe('htmdx skill', () => {

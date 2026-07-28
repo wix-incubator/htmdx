@@ -139,16 +139,24 @@ in order is not an alternate view, and tabbing it hides content for no gain.
 starts with `Must-have`, `Differentiator`, `Not now`, or `Won't do`.
 
 Body grammar is per component and is enforced at compile time. The `components`
-topic has the grammar for every built-in family with a working example. The
-exact-version manifest is the source of truth when the network is reachable:
+topic has the grammar for every built-in family with a working example. Ask the
+CLI for the contract of the components in play rather than reading the whole
+catalog:
 
 <!-- x-release-please-start-version -->
 
-```text
-https://cdn.jsdelivr.net/npm/@wix/htmdx@4.11.0/dist/components.json
+```bash
+npx @wix/htmdx@4.11.0 components Callout DataTable   # the ones you plan to use
+npx @wix/htmdx@4.11.0 components --used report.html  # the ones a file already uses
+npx @wix/htmdx@4.11.0 components                     # every name with its purpose
 ```
 
 <!-- x-release-please-end-version -->
+
+Each command answers for the version that runs it. `dist/components.json` holds
+the same contract as machine-readable data, but it is the whole catalog in one
+document — reach for it when a tool consumes it, not to answer a question about
+a handful of components.
 
 ## Author the source
 

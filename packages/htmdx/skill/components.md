@@ -1,21 +1,25 @@
 # Component grammar
 
 The runtime ships two catalogs: 24 report built-ins and a 65-component
-shadcn/ui pack. Its exact-version manifest documents every component's purpose,
-canonical example, body mode, and props:
+shadcn/ui pack. Ask the CLI for a component's purpose, canonical example, body
+mode, and props:
 
 <!-- x-release-please-start-version -->
 
-```text
-https://cdn.jsdelivr.net/npm/@wix/htmdx@4.11.0/dist/components.json
+```bash
+npx @wix/htmdx@4.11.0 components Callout DataTable   # the ones you plan to use
+npx @wix/htmdx@4.11.0 components --used report.html  # the ones a file already uses
+npx @wix/htmdx@4.11.0 components                     # every name with its purpose
 ```
 
 <!-- x-release-please-end-version -->
 
-Read the manifest when the network is reachable. This file covers the grammar
-the manifest's `body` field alone does not spell out: the built-ins with a
-`markdown` body still parse that Markdown against a fixed row or table shape,
-and an invalid body fails the artifact.
+`--used` scans for tags rather than compiling, so it still answers for an
+artifact that is mid-edit and does not compile yet.
+
+This file covers the grammar a component's `body` field alone does not spell
+out: the built-ins with a `markdown` body still parse that Markdown against a
+fixed row or table shape, and an invalid body fails the artifact.
 
 ## Body modes
 

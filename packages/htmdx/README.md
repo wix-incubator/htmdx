@@ -48,6 +48,11 @@ CDN caveats:
 
 ## Exact-version component manifest
 
+`htmdx components` is the way to read this contract — it answers for the
+version that runs it, and it answers for the components asked about rather than
+all 89. The manifest below is the same contract as bulk machine-readable data,
+for tools that consume the whole catalog.
+
 Every release includes its machine-readable component contract at:
 
 <!-- x-release-please-start-version -->
@@ -535,8 +540,19 @@ browser bundle injects.
 
 Prints the [component manifest](#exact-version-component-manifest) built next to
 the bin, so the catalog is the one that version renders. With no argument it
-lists every component grouped by source; with a name it prints that component's
-purpose, body mode, props, and canonical example.
+lists every component grouped by source; with one or more names it prints each
+component's purpose, body mode, props, and canonical example.
+
+`--used <file>` prints that contract for exactly the components a file already
+contains, which is the shape an edit needs: the catalog for this artifact, not
+the catalog for everything. It scans for capitalized tags instead of compiling,
+so it still answers for source that is mid-edit and does not compile — and a tag
+inside a code fence counts, because over-reporting costs a few lines while
+missing a component costs the answer.
+
+```bash
+$ npx @wix/htmdx components --used report.html
+```
 
 ```bash
 $ npx @wix/htmdx components Foldout
@@ -560,9 +576,10 @@ example:
 
 A name that does not match exits `1` and suggests the closest entries, by
 substring and by edit distance, so a typo or a half-remembered name still lands:
-`unknown component "Calout"; did you mean Callout?`. `--format json` prints the
-manifest entry, or the whole manifest when no name is given — the shape to read
-before writing a document rather than guessing at prop names.
+`unknown component "Calout"; did you mean Callout?`. One unknown name among
+several fails the whole call, so a partial answer never reads as a complete one.
+`--format json` prints the manifest entry for a single name, an array for
+several or for `--used`, and the whole manifest when no name is given.
 
 ## Agent guidance
 

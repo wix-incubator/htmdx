@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { promisify } from 'node:util';
 import { beforeAll, describe, expect, test } from 'vitest';
+import { componentsUsedIn } from '../src/cli/components';
 import { SKILL_TOPICS } from '../src/cli/skill';
 
 const run = promisify(execFile);
@@ -487,5 +488,24 @@ describe('published package', () => {
     ]);
 
     expect(stdout).toContain('# Component grammar');
+  });
+});
+
+describe('componentsUsedIn', () => {
+  const manifest = {
+    format: 'htmdx@2',
+    runtime: '0.0.0',
+    components: [
+      { name: 'Callout', purpose: '', example: '', body: 'markdown' as const, source: 'report' },
+      { name: 'Stat', purpose: '', example: '', body: 'markdown' as const, source: 'report' },
+    ],
+  };
+
+  test('finds a tag that ends the file with no trailing character', () => {
+    expect(componentsUsedIn(manifest, '<Callout').map((entry) => entry.name)).toEqual(['Callout']);
+  });
+
+  test('still ignores a bare word that is not a tag', () => {
+    expect(componentsUsedIn(manifest, 'The Callout component')).toEqual([]);
   });
 });

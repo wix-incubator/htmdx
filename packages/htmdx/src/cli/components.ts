@@ -37,7 +37,9 @@ export function findComponent(manifest: Manifest, name: string): ManifestCompone
   return manifest.components.find((entry) => entry.name.toLowerCase() === wanted);
 }
 
-const COMPONENT_TAG = /<([A-Z][A-Za-z0-9]*)[\s/>]/g;
+// The `|$` arm matches a tag left dangling at end of file — `<Callout` with
+// nothing after it is exactly the half-typed state this command exists to answer.
+const COMPONENT_TAG = /<([A-Z][A-Za-z0-9]*)(?:[\s/>]|$)/g;
 
 // Scans for capitalized tags instead of compiling the source: the artifact
 // whose contract someone needs is often the one that does not compile yet.

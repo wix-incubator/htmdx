@@ -1,21 +1,35 @@
 # Component grammar
 
 The runtime ships two catalogs: 24 report built-ins and a 65-component
-shadcn/ui pack. Its exact-version manifest documents every component's purpose,
-canonical example, body mode, and props:
+shadcn/ui pack. Ask the CLI for a component's purpose, canonical example, body
+mode, and props:
 
 <!-- x-release-please-start-version -->
 
-```text
-https://cdn.jsdelivr.net/npm/@wix/htmdx@4.11.0/dist/components.json
+```bash
+npx @wix/htmdx@4.11.0 components Callout DataTable   # the ones you plan to use
+npx @wix/htmdx@4.11.0 components --used report.html  # the ones a file already uses
+npx @wix/htmdx@4.11.0 components                     # every name with its purpose
 ```
 
 <!-- x-release-please-end-version -->
 
-Read the manifest when the network is reachable. This file covers the grammar
-the manifest's `body` field alone does not spell out: the built-ins with a
-`markdown` body still parse that Markdown against a fixed row or table shape,
-and an invalid body fails the artifact.
+Read the full list when writing something new — `--used` only reports what a
+file already contains, so it cannot tell you about the component you should
+have reached for. Use it when editing, where matching the file matters more.
+
+The list gives you names and purposes, never grammar. Once it points you at a
+component, ask for that component by name before you write it; a body invented
+from the purpose line is the single most common way to produce an invalid
+artifact (`bench/live/`). `--used` already carries the grammar for what the
+file has.
+It scans for tags rather than compiling, so it still answers for an artifact
+that is mid-edit and does not compile yet, and it names the absent members of
+any compound family it finds.
+
+This file covers the grammar a component's `body` field alone does not spell
+out: the built-ins with a `markdown` body still parse that Markdown against a
+fixed row or table shape, and an invalid body fails the artifact.
 
 ## Body modes
 

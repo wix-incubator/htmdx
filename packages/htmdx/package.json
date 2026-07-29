@@ -79,6 +79,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest",
     "bench": "vitest run --config bench/vitest.config.ts",
+    "eval": "vitest run --config bench/live/vitest.config.ts",
     "e2e": "playwright test"
   },
   "dependencies": {

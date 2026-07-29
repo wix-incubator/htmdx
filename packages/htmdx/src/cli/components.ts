@@ -37,6 +37,59 @@ export function findComponent(manifest: Manifest, name: string): ManifestCompone
   return manifest.components.find((entry) => entry.name.toLowerCase() === wanted);
 }
 
+// The `|$` arm matches a tag left dangling at end of file — `<Callout` with
+// nothing after it is exactly the half-typed state this command exists to answer.
+const COMPONENT_TAG = /<([A-Z][A-Za-z0-9]*)(?:[\s/>]|$)/g;
+
+// Scans for capitalized tags instead of compiling the source: the artifact
+// whose contract someone needs is often the one that does not compile yet.
+// A tag inside a code fence counts too — over-reporting costs a few lines,
+// missing a component costs the answer.
+export function componentsUsedIn(manifest: Manifest, source: string): ManifestComponent[] {
+  const used = new Set(
+    Array.from(source.matchAll(COMPONENT_TAG), (match) => match[1].toLowerCase()),
+  );
+  return manifest.components.filter((entry) => used.has(entry.name.toLowerCase()));
+}
+
+// A compound component is invalid without its children, so the member a file is
+// missing is the one an edit most likely needs — and it is exactly what a scan of
+// that file cannot report. Names only: the contracts stay one call away, and
+// printing them would re-inflate the read this command exists to shrink.
+export function missingFamilyMembers(
+  manifest: Manifest,
+  used: ManifestComponent[],
+): ManifestComponent[] {
+  const present = new Set(used.map((entry) => entry.name));
+  // A parent is any used component whose name prefixes another component's;
+  // `Card` claims `CardHeader`, and `Stat` claims nothing.
+  const parents = used.filter((entry) =>
+    manifest.components.some(
+      (other) => other.name !== entry.name && other.name.startsWith(entry.name),
+    ),
+  );
+
+  return manifest.components.filter(
+    (entry) =>
+      !present.has(entry.name) &&
+      parents.some((parent) => entry.name.startsWith(parent.name) && entry.name !== parent.name),
+  );
+}
+
+// --used answers "what is already here", which is the wrong question when the
+// file is missing the component it should have used. Name the absent family
+// members first — those are the likeliest next edit — then how many are left.
+export function usedFooter(manifest: Manifest, used: ManifestComponent[]): string {
+  const family = missingFamilyMembers(manifest, used);
+  const rest = manifest.components.length - used.length;
+  return [
+    family.length
+      ? `\nnot in this file, same family:\n  ${family.map((entry) => entry.name).join(', ')}\n`
+      : '',
+    rest > 0 ? `\n${rest} other component(s) available: htmdx components\n` : '',
+  ].join('');
+}
+
 // A miss is usually a typo or a half-remembered name, so point at the closest
 // things rather than making the user re-read the whole list. Substring catches
 // the half-remembered case ("chart"), edit distance catches the typo ("Calout").
@@ -89,6 +142,10 @@ export function formatList(components: ManifestComponent[], runtime: string): st
   }
 
   return `${lines.join('\n')}\n`;
+}
+
+export function formatComponents(entries: ManifestComponent[]): string {
+  return entries.map(formatComponent).join('\n');
 }
 
 export function formatComponent(entry: ManifestComponent): string {

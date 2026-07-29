@@ -8,13 +8,17 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { relative } from 'node:path';
 import { compileFile } from './compile';
 import {
+  componentsUsedIn,
   findComponent,
-  formatComponent,
+  formatComponents,
   formatList,
   loadManifest,
   suggestNames,
+  usedFooter,
+  type ManifestComponent,
 } from './components';
 import { lintFile, summarize, type LintDiagnostic, type LintReport } from './lint';
+import { extractEmbeddedSource, isArtifact } from './runtime';
 import {
   DEFAULT_SKILL_TOPIC,
   formatTopicList,
@@ -31,7 +35,7 @@ Commands:
   lint <files...>      Report problems in artifacts and source files
   validate <files...>  Alias for lint
   compile <file>       Print the static HTML snapshot
-  components [name]    List the component catalog, or describe one component
+  components [name...] List the component catalog, or describe named components
   skill [topic]        Print the authoring guidance for this runtime
 
 Options:
@@ -39,6 +43,7 @@ Options:
   --strict                Treat lint warnings as failures
   -o, --out <file>        Write compile output to a file instead of stdout
   --layout <name>         Document layout for compile
+  --used <file>           Describe only the components that <file> already uses
   --list, --full, --json  Topic selection and format for skill
   -h, --help              Show this message
 
@@ -50,6 +55,7 @@ type Args = {
   strict: boolean;
   out?: string;
   layout?: string;
+  used?: string;
 };
 
 async function main(argv: string[]): Promise<number> {
@@ -148,8 +154,21 @@ async function runComponents(args: Args): Promise<number> {
     return 2;
   }
 
-  const [name] = args.files;
-  if (!name) {
+  if (args.used !== undefined) {
+    const content = await read(args.used);
+    if (content === undefined) {
+      return 2;
+    }
+    const source = isArtifact(args.used, content) ? extractEmbeddedSource(content) : content;
+    if (source === undefined) {
+      process.stderr.write(`${args.used}: no <script type="text/htmdx"> block found\n`);
+      return 2;
+    }
+    const used = componentsUsedIn(manifest, source);
+    return writeComponents(used, args.format, used, usedFooter(manifest, used));
+  }
+
+  if (args.files.length === 0) {
     process.stdout.write(
       args.format === 'json'
         ? `${JSON.stringify(manifest, null, 2)}\n`
@@ -158,18 +177,39 @@ async function runComponents(args: Args): Promise<number> {
     return 0;
   }
 
-  const entry = findComponent(manifest, name);
-  if (!entry) {
-    const near = suggestNames(manifest, name);
-    process.stderr.write(
-      `unknown component "${name}"${near.length ? `; did you mean ${near.join(', ')}?` : ''}\n`,
-    );
-    return 1;
+  const entries: ManifestComponent[] = [];
+  for (const name of args.files) {
+    const entry = findComponent(manifest, name);
+    if (!entry) {
+      const near = suggestNames(manifest, name);
+      process.stderr.write(
+        `unknown component "${name}"${near.length ? `; did you mean ${near.join(', ')}?` : ''}\n`,
+      );
+      return 1;
+    }
+    entries.push(entry);
   }
 
-  process.stdout.write(
-    args.format === 'json' ? `${JSON.stringify(entry, null, 2)}\n` : formatComponent(entry),
-  );
+  // One name has always emitted the bare entry; keep scripts that read it working.
+  const payload = entries.length === 1 ? entries[0] : entries;
+  return writeComponents(entries, args.format, payload);
+}
+
+function writeComponents(
+  entries: ManifestComponent[],
+  format: Args['format'],
+  payload: unknown = entries,
+  footer = '',
+): number {
+  if (format === 'json') {
+    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+    return 0;
+  }
+
+  // Silence would read as "this file uses nothing", which is also what a bad
+  // --used path looks like from the caller's side.
+  process.stdout.write(entries.length ? formatComponents(entries) : 'no components\n');
+  process.stdout.write(footer);
   return 0;
 }
 
@@ -240,6 +280,11 @@ function parseArgs(argv: string[]): Args {
     if (argument === '--layout') {
       index += 1;
       args.layout = argv[index];
+      continue;
+    }
+    if (argument === '--used') {
+      index += 1;
+      args.used = argv[index];
       continue;
     }
     args.files.push(argument);

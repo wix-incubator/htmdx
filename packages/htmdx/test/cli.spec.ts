@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { promisify } from 'node:util';
 import { beforeAll, describe, expect, test } from 'vitest';
+import { componentsUsedIn } from '../src/cli/components';
 import { SKILL_TOPICS } from '../src/cli/skill';
 
 const run = promisify(execFile);
@@ -275,6 +276,123 @@ describe('htmdx components', () => {
     expect(result.code).toBe(1);
     expect(result.stderr).toContain('unknown component');
   });
+
+  test('describes several named components in one call', async () => {
+    const result = await cli('components', 'Callout', 'Foldout');
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain('<Callout');
+    expect(result.stdout).toContain('<Foldout');
+  });
+
+  test('emits an array for several names and a bare entry for one', async () => {
+    const many = await cli('components', 'Callout', 'Foldout', '--format', 'json');
+    const one = await cli('components', 'Callout', '--format', 'json');
+
+    expect(JSON.parse(many.stdout).map((entry: { name: string }) => entry.name)).toEqual([
+      'Callout',
+      'Foldout',
+    ]);
+    expect(Array.isArray(JSON.parse(one.stdout))).toBe(false);
+  });
+
+  test('fails the whole call when one of several names is unknown', async () => {
+    const result = await cli('components', 'Callout', 'Zzzzzzzz');
+
+    expect(result.code).toBe(1);
+    expect(result.stderr).toContain('unknown component');
+  });
+
+  test('--used describes only what an artifact contains', async () => {
+    const artifact = fixture(
+      'used.html',
+      [
+        '<!doctype html>',
+        '<script type="text/htmdx">',
+        '# Report',
+        '',
+        '<Callout>Ship it.</Callout>',
+        '</script>',
+      ].join('\n'),
+    );
+    const result = await cli('components', '--used', artifact);
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain('Callout');
+    expect(result.stdout).not.toContain('Foldout');
+  });
+
+  test('--used reads a bare source file too', async () => {
+    const result = await cli('components', '--used', fixture('used.htmdx', CLEAN));
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain('Callout');
+  });
+
+  test('--used answers for source that does not compile', async () => {
+    const broken = fixture('used-broken.htmdx', '<Callout>Unclosed\n\n<Nope>unknown</Nope>\n');
+    const result = await cli('components', '--used', broken);
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain('Callout');
+  });
+
+  test('--used says so when an artifact uses no components', async () => {
+    const result = await cli('components', '--used', fixture('used-plain.htmdx', '# Just prose\n'));
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain('no components');
+  });
+
+  test('--used points at the components it left out', async () => {
+    const result = await cli('components', '--used', fixture('used-rest.htmdx', CLEAN));
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toMatch(/\d+ other component\(s\) available: htmdx components/);
+  });
+
+  test('--used keeps the pointer out of json output', async () => {
+    const result = await cli(
+      'components',
+      '--used',
+      fixture('used-json.htmdx', CLEAN),
+      '--format',
+      'json',
+    );
+
+    expect(result.code).toBe(0);
+    expect(() => JSON.parse(result.stdout)).not.toThrow();
+  });
+
+  // The gap the pointer exists to close: an edit that should add DialogFooter
+  // learns nothing from a file that does not have one yet.
+  test('--used names the family members a file is missing', async () => {
+    const draft = fixture(
+      'used-family.htmdx',
+      '<Dialog>\n<DialogTrigger>Open</DialogTrigger>\n<DialogContent>Body</DialogContent>\n</Dialog>\n',
+    );
+    const result = await cli('components', '--used', draft);
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain('same family');
+    expect(result.stdout).toContain('DialogFooter');
+    // Names only — the contracts stay behind a follow-up call.
+    expect(result.stdout).not.toContain('Footer row for a dialog');
+  });
+
+  test('--used says nothing about families when every member is present', async () => {
+    const result = await cli('components', '--used', fixture('used-solo.htmdx', CLEAN));
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).not.toContain('same family');
+  });
+
+  test('--used exits 2 for a file it cannot read', async () => {
+    const result = await cli('components', '--used', join(fixtures, 'missing.html'));
+
+    expect(result.code).toBe(2);
+    expect(result.stderr).toContain('cannot read');
+  });
 });
 
 describe('htmdx skill', () => {
@@ -393,5 +511,24 @@ describe('published package', () => {
     ]);
 
     expect(stdout).toContain('# Component grammar');
+  });
+});
+
+describe('componentsUsedIn', () => {
+  const manifest = {
+    format: 'htmdx@2',
+    runtime: '0.0.0',
+    components: [
+      { name: 'Callout', purpose: '', example: '', body: 'markdown' as const, source: 'report' },
+      { name: 'Stat', purpose: '', example: '', body: 'markdown' as const, source: 'report' },
+    ],
+  };
+
+  test('finds a tag that ends the file with no trailing character', () => {
+    expect(componentsUsedIn(manifest, '<Callout').map((entry) => entry.name)).toEqual(['Callout']);
+  });
+
+  test('still ignores a bare word that is not a tag', () => {
+    expect(componentsUsedIn(manifest, 'The Callout component')).toEqual([]);
   });
 });

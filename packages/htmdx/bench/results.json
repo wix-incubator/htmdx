@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "htmdxVersion": "4.0.0",
+    "htmdxVersion": "4.11.0",
     "encoding": "o200k_base",
     "gptTokenizerVersion": "3.4.0"
   },
@@ -8,12 +8,237 @@
     {
       "id": "decision-brief",
       "title": "Checkout Migration — Decision Brief",
+      "contract": [
+        {
+          "task": {
+            "id": "update-metric",
+            "description": "Change the legacy support-ticket volume from 340/month to 290/month",
+            "needs": []
+          },
+          "reads": [
+            {
+              "mode": "manifest",
+              "read": {
+                "tokens": 13634,
+                "chars": 55512
+              },
+              "missing": [],
+              "followUp": {
+                "tokens": 0,
+                "chars": 0
+              },
+              "total": 13634,
+              "discovers": true
+            },
+            {
+              "mode": "list",
+              "read": {
+                "tokens": 1600,
+                "chars": 8497
+              },
+              "missing": [],
+              "followUp": {
+                "tokens": 0,
+                "chars": 0
+              },
+              "total": 1600,
+              "discovers": true
+            },
+            {
+              "mode": "used",
+              "read": {
+                "tokens": 1576,
+                "chars": 6383
+              },
+              "missing": [],
+              "followUp": {
+                "tokens": 0,
+                "chars": 0
+              },
+              "total": 1576,
+              "discovers": false
+            }
+          ]
+        },
+        {
+          "task": {
+            "id": "add-badge",
+            "description": "Add a \"source: support dashboard\" badge to the Numbers card",
+            "needs": [
+              "Badge"
+            ]
+          },
+          "reads": [
+            {
+              "mode": "manifest",
+              "read": {
+                "tokens": 13634,
+                "chars": 55512
+              },
+              "missing": [],
+              "followUp": {
+                "tokens": 0,
+                "chars": 0
+              },
+              "total": 13634,
+              "discovers": true
+            },
+            {
+              "mode": "list",
+              "read": {
+                "tokens": 1600,
+                "chars": 8497
+              },
+              "missing": [
+                "Badge"
+              ],
+              "followUp": {
+                "tokens": 52,
+                "chars": 198
+              },
+              "total": 1652,
+              "discovers": true
+            },
+            {
+              "mode": "used",
+              "read": {
+                "tokens": 1576,
+                "chars": 6383
+              },
+              "missing": [],
+              "followUp": {
+                "tokens": 0,
+                "chars": 0
+              },
+              "total": 1576,
+              "discovers": false
+            }
+          ]
+        },
+        {
+          "task": {
+            "id": "add-accordion-item",
+            "description": "Add a fourth risk item about the refund audit trail",
+            "needs": [
+              "AccordionContent",
+              "AccordionItem",
+              "AccordionTrigger"
+            ]
+          },
+          "reads": [
+            {
+              "mode": "manifest",
+              "read": {
+                "tokens": 13634,
+                "chars": 55512
+              },
+              "missing": [],
+              "followUp": {
+                "tokens": 0,
+                "chars": 0
+              },
+              "total": 13634,
+              "discovers": true
+            },
+            {
+              "mode": "list",
+              "read": {
+                "tokens": 1600,
+                "chars": 8497
+              },
+              "missing": [
+                "AccordionContent",
+                "AccordionItem",
+                "AccordionTrigger"
+              ],
+              "followUp": {
+                "tokens": 257,
+                "chars": 1107
+              },
+              "total": 1857,
+              "discovers": true
+            },
+            {
+              "mode": "used",
+              "read": {
+                "tokens": 1576,
+                "chars": 6383
+              },
+              "missing": [],
+              "followUp": {
+                "tokens": 0,
+                "chars": 0
+              },
+              "total": 1576,
+              "discovers": false
+            }
+          ]
+        },
+        {
+          "task": {
+            "id": "add-risk-table",
+            "description": "Add a risk tier breakdown",
+            "name": "RiskTable",
+            "needs": [
+              "RiskTable"
+            ]
+          },
+          "reads": [
+            {
+              "mode": "manifest",
+              "read": {
+                "tokens": 13634,
+                "chars": 55512
+              },
+              "missing": [],
+              "followUp": {
+                "tokens": 0,
+                "chars": 0
+              },
+              "total": 13634,
+              "discovers": true
+            },
+            {
+              "mode": "list",
+              "read": {
+                "tokens": 1600,
+                "chars": 8497
+              },
+              "missing": [
+                "RiskTable"
+              ],
+              "followUp": {
+                "tokens": 94,
+                "chars": 375
+              },
+              "total": 1694,
+              "discovers": true
+            },
+            {
+              "mode": "used",
+              "read": {
+                "tokens": 1576,
+                "chars": 6383
+              },
+              "missing": [
+                "RiskTable"
+              ],
+              "followUp": {
+                "tokens": 94,
+                "chars": 375
+              },
+              "total": 1670,
+              "discovers": false
+            }
+          ]
+        }
+      ],
       "formats": [
         {
           "format": "htmdx",
           "artifact": {
             "tokens": 950,
-            "chars": 3796
+            "chars": 3797
           },
           "artifactAltTokens": 950,
           "payload": {
@@ -215,12 +440,229 @@
     {
       "id": "executive-decision-report",
       "title": "Executive Decision Report: Support Platform Consolidation",
+      "contract": [
+        {
+          "task": {
+            "id": "update-savings",
+            "description": "Change the annual-savings metric from $1.2M to $1.4M",
+            "needs": []
+          },
+          "reads": [
+            {
+              "mode": "manifest",
+              "read": {
+                "tokens": 13634,
+                "chars": 55512
+              },
+              "missing": [],
+              "followUp": {
+                "tokens": 0,
+                "chars": 0
+              },
+              "total": 13634,
+              "discovers": true
+            },
+            {
+              "mode": "list",
+              "read": {
+                "tokens": 1600,
+                "chars": 8497
+              },
+              "missing": [],
+              "followUp": {
+                "tokens": 0,
+                "chars": 0
+              },
+              "total": 1600,
+              "discovers": true
+            },
+            {
+              "mode": "used",
+              "read": {
+                "tokens": 539,
+                "chars": 2235
+              },
+              "missing": [],
+              "followUp": {
+                "tokens": 0,
+                "chars": 0
+              },
+              "total": 539,
+              "discovers": false
+            }
+          ]
+        },
+        {
+          "task": {
+            "id": "add-callout",
+            "description": "Add a data-freshness callout right after the executive summary",
+            "needs": [
+              "Callout"
+            ]
+          },
+          "reads": [
+            {
+              "mode": "manifest",
+              "read": {
+                "tokens": 13634,
+                "chars": 55512
+              },
+              "missing": [],
+              "followUp": {
+                "tokens": 0,
+                "chars": 0
+              },
+              "total": 13634,
+              "discovers": true
+            },
+            {
+              "mode": "list",
+              "read": {
+                "tokens": 1600,
+                "chars": 8497
+              },
+              "missing": [
+                "Callout"
+              ],
+              "followUp": {
+                "tokens": 50,
+                "chars": 209
+              },
+              "total": 1650,
+              "discovers": true
+            },
+            {
+              "mode": "used",
+              "read": {
+                "tokens": 539,
+                "chars": 2235
+              },
+              "missing": [],
+              "followUp": {
+                "tokens": 0,
+                "chars": 0
+              },
+              "total": 539,
+              "discovers": false
+            }
+          ]
+        },
+        {
+          "task": {
+            "id": "change-date",
+            "description": "Move the decision date from 15 to 22 September 2026",
+            "needs": []
+          },
+          "reads": [
+            {
+              "mode": "manifest",
+              "read": {
+                "tokens": 13634,
+                "chars": 55512
+              },
+              "missing": [],
+              "followUp": {
+                "tokens": 0,
+                "chars": 0
+              },
+              "total": 13634,
+              "discovers": true
+            },
+            {
+              "mode": "list",
+              "read": {
+                "tokens": 1600,
+                "chars": 8497
+              },
+              "missing": [],
+              "followUp": {
+                "tokens": 0,
+                "chars": 0
+              },
+              "total": 1600,
+              "discovers": true
+            },
+            {
+              "mode": "used",
+              "read": {
+                "tokens": 539,
+                "chars": 2235
+              },
+              "missing": [],
+              "followUp": {
+                "tokens": 0,
+                "chars": 0
+              },
+              "total": 539,
+              "discovers": false
+            }
+          ]
+        },
+        {
+          "task": {
+            "id": "add-data-table",
+            "description": "Add a segment breakdown table",
+            "name": "DataTable",
+            "needs": [
+              "DataTable"
+            ]
+          },
+          "reads": [
+            {
+              "mode": "manifest",
+              "read": {
+                "tokens": 13634,
+                "chars": 55512
+              },
+              "missing": [],
+              "followUp": {
+                "tokens": 0,
+                "chars": 0
+              },
+              "total": 13634,
+              "discovers": true
+            },
+            {
+              "mode": "list",
+              "read": {
+                "tokens": 1600,
+                "chars": 8497
+              },
+              "missing": [
+                "DataTable"
+              ],
+              "followUp": {
+                "tokens": 78,
+                "chars": 287
+              },
+              "total": 1678,
+              "discovers": true
+            },
+            {
+              "mode": "used",
+              "read": {
+                "tokens": 539,
+                "chars": 2235
+              },
+              "missing": [
+                "DataTable"
+              ],
+              "followUp": {
+                "tokens": 78,
+                "chars": 287
+              },
+              "total": 617,
+              "discovers": false
+            }
+          ]
+        }
+      ],
       "formats": [
         {
           "format": "htmdx",
           "artifact": {
             "tokens": 853,
-            "chars": 4094
+            "chars": 4095
           },
           "artifactAltTokens": 857,
           "payload": {
@@ -261,20 +703,20 @@
         {
           "format": "compiled",
           "artifact": {
-            "tokens": 3686,
-            "chars": 14143
+            "tokens": 3720,
+            "chars": 14253
           },
-          "artifactAltTokens": 3701,
+          "artifactAltTokens": 3735,
           "payload": {
-            "tokens": 3591,
-            "chars": 13796
+            "tokens": 3625,
+            "chars": 13906
           },
           "edits": [
             {
               "id": "update-savings",
               "description": "Change the annual-savings metric from $1.2M to $1.4M",
               "cost": {
-                "tokens": 26,
+                "tokens": 30,
                 "chars": 68
               }
             },
@@ -296,7 +738,7 @@
             }
           ],
           "editTotal": {
-            "tokens": 168,
+            "tokens": 172,
             "chars": 592
           }
         },

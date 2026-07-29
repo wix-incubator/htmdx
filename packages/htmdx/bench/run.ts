@@ -4,6 +4,16 @@ import { join } from 'node:path';
 import { expect, test } from 'vitest';
 import { compile } from '../src';
 import { VERSION } from '../src/version';
+import type { Manifest } from '../src/cli/components';
+import { createComponentManifest } from '../src/component-manifest';
+import {
+  CONTRACT_MODE_LABELS,
+  CONTRACT_MODES,
+  evaluateTask,
+  needsOf,
+  type ContractRead,
+  type ContractTask,
+} from './contract';
 import { applyEdit, deriveEditPairs, editCost, type EditPair, type EditTask } from './edits';
 import * as decisionBrief from './scenarios/decision-brief/edits';
 import * as executiveDecisionReport from './scenarios/executive-decision-report/edits';
@@ -18,13 +28,31 @@ const tokenizerVersion: string = require('gpt-tokenizer/package.json').version;
 const BENCH_DIR = join(process.cwd(), 'bench');
 
 const SCENARIOS = [
-  { id: 'decision-brief', title: decisionBrief.title, editTasks: decisionBrief.editTasks },
+  {
+    id: 'decision-brief',
+    title: decisionBrief.title,
+    editTasks: decisionBrief.editTasks,
+    // A component the source does not already carry, so the read modes are
+    // measured on the case that separates them rather than only on reuse.
+    introduces: {
+      id: 'add-risk-table',
+      description: 'Add a risk tier breakdown',
+      name: 'RiskTable',
+    },
+  },
   {
     id: 'executive-decision-report',
     title: executiveDecisionReport.title,
     editTasks: executiveDecisionReport.editTasks,
+    introduces: {
+      id: 'add-data-table',
+      description: 'Add a segment breakdown table',
+      name: 'DataTable',
+    },
   },
 ];
+
+const MANIFEST = createComponentManifest() as Manifest;
 
 const FORMATS = ['htmdx', 'compiled', 'hand', 'jsx', 'md'] as const;
 type FormatId = (typeof FORMATS)[number];
@@ -48,11 +76,23 @@ type FormatResult = {
   editTotal: Measure | null;
 };
 
+type ContractResult = { task: ContractTask; reads: ContractRead[] };
+
 type ScenarioResult = {
   id: string;
   title: string;
   formats: FormatResult[];
+  contract: ContractResult[];
 };
+
+function contractTasks(scenario: (typeof SCENARIOS)[number]): ContractTask[] {
+  const derived = scenario.editTasks.map((task) => ({
+    id: task.id,
+    description: task.description,
+    needs: needsOf(MANIFEST, task.htmdx.newString),
+  }));
+  return [...derived, { ...scenario.introduces, needs: [scenario.introduces.name] }];
+}
 
 function fixture(scenarioId: string, file: string): string {
   return readFileSync(join(BENCH_DIR, 'scenarios', scenarioId, file), 'utf8');
@@ -145,6 +185,10 @@ function buildScenario(scenario: (typeof SCENARIOS)[number]): ScenarioResult {
   return {
     id: scenario.id,
     title: scenario.title,
+    contract: contractTasks(scenario).map((task) => ({
+      task,
+      reads: evaluateTask(MANIFEST, source, task),
+    })),
     formats: FORMATS.map((format) => {
       const payload = payloadTexts[format];
       return {
@@ -273,6 +317,51 @@ function renderMarkdown(scenarios: ScenarioResult[]): string {
     lines.push('');
   }
 
+  lines.push(
+    '## Contract-read cost',
+    '',
+    'The other half of the edit loop: what an agent pays to learn the component',
+    'contract *before* it edits. Three modes answer the same question. Cost is the',
+    'initial read plus the follow-up needed to obtain any contract the read did not',
+    'supply — `htmdx components` always pays a follow-up, because it carries names',
+    'and purposes but no props or examples.',
+    '',
+    'The last task in each scenario introduces a component the source does not',
+    'already contain. That is the case the modes disagree on.',
+    '',
+  );
+  for (const scenario of scenarios) {
+    lines.push(`### ${scenario.title}`, '');
+    lines.push(
+      `| Task | Needs | ${CONTRACT_MODES.map((mode) => CONTRACT_MODE_LABELS[mode]).join(' | ')} |`,
+      `| --- | --- | ${CONTRACT_MODES.map(() => '---:').join(' | ')} |`,
+    );
+    for (const entry of scenario.contract) {
+      const cells = entry.reads.map((read) => {
+        const followUp = read.followUp.tokens > 0 ? ` +${read.followUp.tokens}` : '';
+        return `${read.read.tokens}${followUp} = **${read.total}**`;
+      });
+      lines.push(
+        `| \`${entry.task.id}\` | ${entry.task.needs.join(', ') || '—'} | ${cells.join(' | ')} |`,
+      );
+    }
+    lines.push('');
+  }
+  lines.push(
+    '`--used` is the only mode that cannot name a component outside its own output,',
+    'so it is the only one that cannot surface a component the agent has not already',
+    'thought of. Its cost advantage is also artifact-dependent, because it reads every',
+    'component in the file whether the edit touches it or not:',
+    '',
+    ...scenarios.map((scenario) => {
+      const introduce = scenario.contract[scenario.contract.length - 1];
+      const [, list, used] = introduce.reads;
+      const delta = (((list.total - used.total) / list.total) * 100).toFixed(1);
+      return `- **${scenario.title}** — on \`${introduce.task.id}\`, \`--used\` costs ${used.total} against ${list.total} for the list that also discovers: a ${delta}% saving.`;
+    }),
+    '',
+  );
+
   lines.push('## Tokenizer sensitivity', '');
   lines.push(
     'Markup tokenizes differently across vocabularies, so the artifact ratios',
@@ -359,5 +448,20 @@ test('token-efficiency benchmark', () => {
   expect(scenarios).toHaveLength(SCENARIOS.length);
   for (const scenario of scenarios) {
     expect(scenario.formats).toHaveLength(FORMATS.length);
+
+    for (const entry of scenario.contract) {
+      // Whatever a mode reads, it ends up holding every contract the task needs.
+      for (const read of entry.reads) {
+        expect(read.total).toBe(read.read.tokens + read.followUp.tokens);
+      }
+      const [manifestRead, , usedRead] = entry.reads;
+      expect(manifestRead.missing).toEqual([]);
+      expect(usedRead.discovers).toBe(false);
+    }
+
+    // The introduced component is the discriminating case: --used must miss it,
+    // or the scenario picked a component the source already carried.
+    const introduced = scenario.contract[scenario.contract.length - 1];
+    expect(introduced.reads[2].missing).toEqual(introduced.task.needs);
   }
 });

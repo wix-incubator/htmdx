@@ -20,7 +20,12 @@ function AccordionTrigger({
         )}
         {...props}
       >
-        {children}
+        {/* Deviation from stock shadcn: the label is wrapped so it stays a
+            single flex item. Inline Markdown in a trigger ("Why does `$group`
+            fail?") compiles to several nodes, and the trigger's own
+            `justify-between gap-4` — meant to push the chevron away from the
+            label — would otherwise spread them apart with visible gaps. */}
+        <span className="flex-1">{children}</span>
         <ChevronDownIcon className="text-muted-foreground pointer-events-none size-4 shrink-0 translate-y-0.5 transition-transform duration-200" />
       </AccordionPrimitive.Trigger>
     </AccordionPrimitive.Header>

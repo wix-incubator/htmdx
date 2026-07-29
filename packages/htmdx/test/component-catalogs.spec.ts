@@ -549,6 +549,20 @@ describe('disclosure families at the HTMDX catalog boundary', () => {
     expect(rendered).toMatchObject({ ok: true });
     expect(rendered.ok && rendered.html).toContain('<strong>key metrics</strong>');
   });
+
+  test('keeps an AccordionTrigger label in one flex item so inline Markdown is not spread apart', () => {
+    const rendered = compile(`<Accordion type="multiple">
+  <AccordionItem value="q">
+    <AccordionTrigger>Why does trimming in \`$group\` not fix padded IDs?</AccordionTrigger>
+    <AccordionContent>Because \`$match\` runs first.</AccordionContent>
+  </AccordionItem>
+</Accordion>`);
+
+    expect(rendered).toMatchObject({ ok: true });
+    expect(rendered.ok && rendered.html).toContain(
+      '<span class="flex-1">Why does trimming in <code>$group</code> not fix padded IDs?</span>',
+    );
+  });
 });
 
 describe('Dialog family at the HTMDX catalog boundary', () => {

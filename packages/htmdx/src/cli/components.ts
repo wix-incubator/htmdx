@@ -52,6 +52,30 @@ export function componentsUsedIn(manifest: Manifest, source: string): ManifestCo
   return manifest.components.filter((entry) => used.has(entry.name.toLowerCase()));
 }
 
+// A compound component is invalid without its children, so the member a file is
+// missing is the one an edit most likely needs — and it is exactly what a scan of
+// that file cannot report. Names only: the contracts stay one call away, and
+// printing them would re-inflate the read this command exists to shrink.
+export function missingFamilyMembers(
+  manifest: Manifest,
+  used: ManifestComponent[],
+): ManifestComponent[] {
+  const present = new Set(used.map((entry) => entry.name));
+  // A parent is any used component whose name prefixes another component's;
+  // `Card` claims `CardHeader`, and `Stat` claims nothing.
+  const parents = used.filter((entry) =>
+    manifest.components.some(
+      (other) => other.name !== entry.name && other.name.startsWith(entry.name),
+    ),
+  );
+
+  return manifest.components.filter(
+    (entry) =>
+      !present.has(entry.name) &&
+      parents.some((parent) => entry.name.startsWith(parent.name) && entry.name !== parent.name),
+  );
+}
+
 // A miss is usually a typo or a half-remembered name, so point at the closest
 // things rather than making the user re-read the whole list. Substring catches
 // the half-remembered case ("chart"), edit distance catches the typo ("Calout").

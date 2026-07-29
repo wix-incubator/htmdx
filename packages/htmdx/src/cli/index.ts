@@ -13,6 +13,7 @@ import {
   formatComponents,
   formatList,
   loadManifest,
+  missingFamilyMembers,
   suggestNames,
   type ManifestComponent,
 } from './components';
@@ -165,15 +166,17 @@ async function runComponents(args: Args): Promise<number> {
     }
     const used = componentsUsedIn(manifest, source);
     // --used answers "what is already here", which is the wrong question when the
-    // file is missing the component it should have used. Name the rest so the
-    // catalog stays one command away.
+    // file is missing the component it should have used. Name the absent family
+    // members first — those are the likeliest next edit — then the rest.
+    const family = missingFamilyMembers(manifest, used);
     const rest = manifest.components.length - used.length;
-    return writeComponents(
-      used,
-      args.format,
-      used,
+    const lines = [
+      family.length
+        ? `\nnot in this file, same family:\n  ${family.map((entry) => entry.name).join(', ')}\n`
+        : '',
       rest > 0 ? `\n${rest} other component(s) available: htmdx components\n` : '',
-    );
+    ];
+    return writeComponents(used, args.format, used, lines.join(''));
   }
 
   if (args.files.length === 0) {

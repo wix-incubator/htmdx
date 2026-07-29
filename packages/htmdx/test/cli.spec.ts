@@ -364,6 +364,29 @@ describe('htmdx components', () => {
     expect(() => JSON.parse(result.stdout)).not.toThrow();
   });
 
+  // The gap the pointer exists to close: an edit that should add DialogFooter
+  // learns nothing from a file that does not have one yet.
+  test('--used names the family members a file is missing', async () => {
+    const draft = fixture(
+      'used-family.htmdx',
+      '<Dialog>\n<DialogTrigger>Open</DialogTrigger>\n<DialogContent>Body</DialogContent>\n</Dialog>\n',
+    );
+    const result = await cli('components', '--used', draft);
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain('same family');
+    expect(result.stdout).toContain('DialogFooter');
+    // Names only — the contracts stay behind a follow-up call.
+    expect(result.stdout).not.toContain('Footer row for a dialog');
+  });
+
+  test('--used says nothing about families when every member is present', async () => {
+    const result = await cli('components', '--used', fixture('used-solo.htmdx', CLEAN));
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).not.toContain('same family');
+  });
+
   test('--used exits 2 for a file it cannot read', async () => {
     const result = await cli('components', '--used', join(fixtures, 'missing.html'));
 

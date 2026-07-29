@@ -63,10 +63,27 @@ is unavailable exactly when it is wanted. The same tolerance means a tag inside 
 code fence counts: over-reporting costs a few lines, and missing a component
 costs the answer.
 
-Measured across the shipped examples, `--used` costs 100 tokens (2 components)
-to 1,576 (16). `component-tour.html` is the outlier at 7,134, because it is a
+Measured across the shipped examples, `--used` costs 112 tokens (2 components)
+to 1,600 (16). `component-tour.html` is the outlier at 7,146, because it is a
 catalog demo that names 73 components — the case where reading everything is the
 correct answer, and where it still beats the manifest by half.
+
+The manifest is the wrong baseline for that comparison, though, because this
+decision retires it. Against `htmdx components` — the alternative it makes
+canonical — the advantage is real but artifact-dependent. `bench/RESULTS.md`
+measures the full read: the initial read plus the follow-up for any contract it
+did not supply, over each scenario's edit tasks plus one that introduces a
+component the source does not carry.
+
+| Scenario | Components in source | `--used` | `htmdx components` | Saving |
+| --- | ---: | ---: | ---: | ---: |
+| Executive Decision Report | 7 | 617 | 1,678 | 63.2% |
+| Checkout Migration Brief | 16 | 1,670 | 1,694 | 1.4% |
+
+`--used` wins decisively on a small artifact and converges on a large one, where
+it ends up reading every component in the file whether the edit touches it or
+not. It is the cheaper read for the artifacts agents actually edit, not a
+uniformly cheaper read.
 
 `--format json` keeps emitting the bare entry for a single name. Several names
 and `--used` emit an array. Preserving the single-name shape keeps existing
@@ -74,15 +91,17 @@ callers working, at the cost of a response shape that varies with the request.
 
 ## Consequences
 
-- The realistic contract read for an edit drops from 13,634 tokens to 100-1,576.
+- The realistic contract read for an edit drops from 13,634 tokens to 112-1,600.
 - Two documented sources of truth for one catalog is how they drift, so
   agent-facing docs name the CLI only. `components.json` stays documented where
   it is consumed as data: the package README and the integration topic.
 - `--used` reports what a file mentions, not what it renders. A component named
   only inside a code fence appears in the output.
 - `--used` optimizes for conforming to a file rather than picking the right
-  component, so its output ends by naming how many components it left out and
-  the command that lists them.
+  component, so its output ends by naming the absent members of any compound
+  family it reported, then how many components it left out and the command that
+  lists them. Names only — printing those contracts would re-inflate the read.
+  Costs 12 tokens on `decision-brief.html`, 27 on a partial `Dialog`.
 - The manifest's own size is unaddressed. Family examples are the next lever:
   60 of 89 components sit in compound families whose canonical examples largely
   repeat each other (Avatar's three members ship one identical example,
@@ -104,7 +123,9 @@ validated end to end.
 - `npx @wix/htmdx@<version> components <name>` costs about 2.8s of cold start
   against roughly 0.2s for a local `dist/cli.js` run. Naming several components
   in one call is what keeps that from multiplying.
-- Nothing here measures whether artifacts come out better. The edit-reliability
-  eval named in `bench/RESULTS.md` is the test that would move this to
-  `accepted`, and it should run before family-example dedupe or a compact
-  projection is built on top of this.
+- Nothing here measures whether artifacts come out better. `bench/RESULTS.md`
+  now measures what each read mode *contains*; whether a model uses it well is a
+  different question, and answering it needs live model calls this repo has no
+  infrastructure for. That eval is what would move this to `accepted`, and it
+  should run before family-example dedupe or a compact projection is built on
+  top of this.

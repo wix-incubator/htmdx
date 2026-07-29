@@ -18,7 +18,8 @@ Read the full list when writing something new — `--used` only reports what a
 file already contains, so it cannot tell you about the component you should
 have reached for. Use it when editing, where matching the file matters more.
 It scans for tags rather than compiling, so it still answers for an artifact
-that is mid-edit and does not compile yet.
+that is mid-edit and does not compile yet, and it names the absent members of
+any compound family it finds.
 
 This file covers the grammar a component's `body` field alone does not spell
 out: the built-ins with a `markdown` body still parse that Markdown against a

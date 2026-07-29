@@ -550,9 +550,22 @@ so it still answers for source that is mid-edit and does not compile — and a t
 inside a code fence counts, because over-reporting costs a few lines while
 missing a component costs the answer.
 
+It cannot report a component the file does not have yet, so it closes with the
+absent members of any compound family it found, then the count it left out:
+
 ```bash
 $ npx @wix/htmdx components --used report.html
+Dialog
+...
+not in this file, same family:
+  DialogClose, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal
+
+85 other component(s) available: htmdx components
 ```
+
+Read the full list instead when writing something new. `--used` is the cheaper
+read for a small artifact and converges on the full list as the file grows —
+`bench/RESULTS.md` measures both.
 
 ```bash
 $ npx @wix/htmdx components Foldout

@@ -76,6 +76,20 @@ export function missingFamilyMembers(
   );
 }
 
+// --used answers "what is already here", which is the wrong question when the
+// file is missing the component it should have used. Name the absent family
+// members first — those are the likeliest next edit — then how many are left.
+export function usedFooter(manifest: Manifest, used: ManifestComponent[]): string {
+  const family = missingFamilyMembers(manifest, used);
+  const rest = manifest.components.length - used.length;
+  return [
+    family.length
+      ? `\nnot in this file, same family:\n  ${family.map((entry) => entry.name).join(', ')}\n`
+      : '',
+    rest > 0 ? `\n${rest} other component(s) available: htmdx components\n` : '',
+  ].join('');
+}
+
 // A miss is usually a typo or a half-remembered name, so point at the closest
 // things rather than making the user re-read the whole list. Substring catches
 // the half-remembered case ("chart"), edit distance catches the typo ("Calout").

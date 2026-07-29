@@ -36,7 +36,7 @@ const SCENARIOS = [
     // measured on the case that separates them rather than only on reuse.
     introduces: {
       id: 'add-risk-table',
-      description: 'Add a risk tier breakdown',
+      description: 'Add a risk tier breakdown using the RiskTable component',
       name: 'RiskTable',
     },
   },
@@ -46,7 +46,7 @@ const SCENARIOS = [
     editTasks: executiveDecisionReport.editTasks,
     introduces: {
       id: 'add-data-table',
-      description: 'Add a segment breakdown table',
+      description: 'Add a segment breakdown table using the DataTable component',
       name: 'DataTable',
     },
   },
@@ -422,8 +422,12 @@ function renderMarkdown(scenarios: ScenarioResult[]): string {
     '  format benchmarks pair size with a usability dimension: TOON measures',
     '  per-model retrieval accuracy alongside token counts, and aider measures',
     '  how often models emit well-formed edits per edit format. Whether models',
-    '  author and edit htmdx more reliably than HTML/JSX is not measured here;',
-    '  it is the natural follow-up and would require live model calls.',
+    '  author and edit htmdx more reliably than HTML/JSX is still not measured',
+    '  here. `bench/live/` answers the narrower version of that question —',
+    '  whether the contract read changes how often a model produces a valid',
+    "  edit — with real model calls scored by this repo's validator. It is",
+    '  opt-in, costs money, and is not part of `yarn bench` or CI: run',
+    '  `HTMDX_LIVE_EVAL=1 yarn eval`.',
     '',
   );
 

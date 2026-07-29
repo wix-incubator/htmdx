@@ -17,6 +17,12 @@ npx @wix/htmdx@4.11.0 components                     # every name with its purpo
 Read the full list when writing something new — `--used` only reports what a
 file already contains, so it cannot tell you about the component you should
 have reached for. Use it when editing, where matching the file matters more.
+
+The list gives you names and purposes, never grammar. Once it points you at a
+component, ask for that component by name before you write it; a body invented
+from the purpose line is the single most common way to produce an invalid
+artifact (`bench/live/`). `--used` already carries the grammar for what the
+file has.
 It scans for tags rather than compiling, so it still answers for an artifact
 that is mid-edit and does not compile yet, and it names the absent members of
 any compound family it finds.

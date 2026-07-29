@@ -140,5 +140,9 @@ are computed under both `o200k_base` and `cl100k_base`:
   format benchmarks pair size with a usability dimension: TOON measures
   per-model retrieval accuracy alongside token counts, and aider measures
   how often models emit well-formed edits per edit format. Whether models
-  author and edit htmdx more reliably than HTML/JSX is not measured here;
-  it is the natural follow-up and would require live model calls.
+  author and edit htmdx more reliably than HTML/JSX is still not measured
+  here. `bench/live/` answers the narrower version of that question —
+  whether the contract read changes how often a model produces a valid
+  edit — with real model calls scored by this repo's validator. It is
+  opt-in, costs money, and is not part of `yarn bench` or CI: run
+  `HTMDX_LIVE_EVAL=1 yarn eval`.

@@ -177,7 +177,7 @@
         {
           "task": {
             "id": "add-risk-table",
-            "description": "Add a risk tier breakdown",
+            "description": "Add a risk tier breakdown using the RiskTable component",
             "name": "RiskTable",
             "needs": [
               "RiskTable"
@@ -601,7 +601,7 @@
         {
           "task": {
             "id": "add-data-table",
-            "description": "Add a segment breakdown table",
+            "description": "Add a segment breakdown table using the DataTable component",
             "name": "DataTable",
             "needs": [
               "DataTable"

@@ -94,17 +94,37 @@ Two.`);
     expect(rendered.ok && rendered.html).toContain('Updated <b>2026-07-01</b>');
   });
 
-  test('falls back to hero placeholders when frontmatter fields are missing', () => {
+  test('omits hero fields that frontmatter does not populate', () => {
     const rendered = compile(`# Bare Title
 
 ## First
 
 One.`);
 
-    expect(rendered.ok && rendered.html).toContain('{Project Name}');
-    expect(rendered.ok && rendered.html).toContain('Owner <b>{name}</b>');
-    expect(rendered.ok && rendered.html).toContain('Phase <b>{Flow / Skill}</b>');
-    expect(rendered.ok && rendered.html).toContain('Updated <b>{Date}</b>');
+    const html = rendered.ok ? rendered.html : '';
+    expect(html).toContain('htmdx-hero-title');
+    expect(html).not.toContain('htmdx-hero-eyebrow');
+    expect(html).not.toContain('htmdx-hero-labels');
+    expect(html).not.toContain('htmdx-sticky-project');
+    expect(html).not.toContain('htmdx-sticky-divider');
+  });
+
+  test('keeps the hero labels that are populated', () => {
+    const rendered = compile(`---
+owner: Dana
+updated: "  "
+---
+
+# Partial Title
+
+## First
+
+One.`);
+
+    const html = rendered.ok ? rendered.html : '';
+    expect(html).toContain('Owner <b>Dana</b>');
+    expect(html).not.toContain('Phase ');
+    expect(html).not.toContain('Updated ');
   });
 
   test('moves the lead paragraph into the hero description', () => {

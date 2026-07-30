@@ -1297,6 +1297,8 @@ const RUNTIME_CSS = `
     letter-spacing: -0.02em;
     color: var(--md-sys-color-on-primary);
   }
+  /* Without a project eyebrow the title leads the hero and owns the top edge. */
+  .htmdx-hero-title:first-child { margin-top: 0; }
   .htmdx-hero-subtitle {
     margin: 10px 0 0;
     font-family: var(--md-ref-typeface-brand);

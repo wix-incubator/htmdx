@@ -533,6 +533,7 @@ function extractHeroContent(blocks: Block[]): string {
 }
 
 function renderStickyHeader(title: string, meta: Record<string, string>) {
+  const project = meta.project?.trim();
   return createElement(
     'div',
     { className: 'htmdx-sticky-header', 'aria-hidden': 'true', key: 'sticky-header' },
@@ -540,12 +541,16 @@ function renderStickyHeader(title: string, meta: Record<string, string>) {
       'div',
       { className: 'htmdx-sticky-header-inner' },
       createElement('span', { className: 'htmdx-sticky-title', key: 'title' }, renderInline(title)),
-      createElement('span', { className: 'htmdx-sticky-divider', key: 'divider' }, '|'),
-      createElement(
-        'span',
-        { className: 'htmdx-sticky-project', key: 'project' },
-        renderInline(meta.project || '{Project Name}'),
-      ),
+      project
+        ? createElement('span', { className: 'htmdx-sticky-divider', key: 'divider' }, '|')
+        : null,
+      project
+        ? createElement(
+            'span',
+            { className: 'htmdx-sticky-project', key: 'project' },
+            renderInline(project),
+          )
+        : null,
     ),
   );
 }
@@ -559,36 +564,49 @@ function renderHeroLabel(name: string, value: string) {
   );
 }
 
+// Frontmatter drives the hero, and a field nobody filled in is not worth a
+// placeholder on a published page: each line and each label only renders when
+// its field carries a value.
 function renderHero(title: string, lead: string, meta: Record<string, string>) {
+  const project = meta.project?.trim();
+  const subtitle = meta.subtitle?.trim();
+  const labels = (
+    [
+      ['Owner', meta.owner],
+      ['Phase', meta.phase],
+      ['Updated', meta.updated],
+    ] as const
+  )
+    .filter(([, value]) => value?.trim())
+    .map(([name, value]) => renderHeroLabel(name, value!.trim()));
+
   return createElement(
     'header',
     { className: 'htmdx-hero', key: 'hero' },
     createElement(
       'div',
       { className: 'htmdx-hero-inner' },
-      createElement(
-        'p',
-        { className: 'htmdx-hero-eyebrow', key: 'eyebrow' },
-        renderInline(meta.project || '{Project Name}'),
-      ),
+      project
+        ? createElement(
+            'p',
+            { className: 'htmdx-hero-eyebrow', key: 'eyebrow' },
+            renderInline(project),
+          )
+        : null,
       createElement('h1', { className: 'htmdx-hero-title', key: 'title' }, renderInline(title)),
-      meta.subtitle
+      subtitle
         ? createElement(
             'p',
             { className: 'htmdx-hero-subtitle', key: 'subtitle' },
-            renderInline(meta.subtitle),
+            renderInline(subtitle),
           )
         : null,
       lead
         ? createElement('p', { className: 'htmdx-hero-desc', key: 'desc' }, renderInline(lead))
         : null,
-      createElement(
-        'div',
-        { className: 'htmdx-hero-labels', key: 'labels' },
-        renderHeroLabel('Owner', meta.owner || '{name}'),
-        renderHeroLabel('Phase', meta.phase || '{Flow / Skill}'),
-        renderHeroLabel('Updated', meta.updated || '{Date}'),
-      ),
+      labels.length > 0
+        ? createElement('div', { className: 'htmdx-hero-labels', key: 'labels' }, ...labels)
+        : null,
     ),
   );
 }

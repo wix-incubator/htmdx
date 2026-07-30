@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.11.1](https://github.com/wix-incubator/htmdx/compare/v4.11.0...v4.11.1) (2026-07-30)
+
+
+### Bug Fixes
+
+* **components:** keep inline Markdown in an AccordionTrigger together ([#86](https://github.com/wix-incubator/htmdx/issues/86)) ([0ed1ee2](https://github.com/wix-incubator/htmdx/commit/0ed1ee27f62eba5b211f00902953964c263016ca))
+* **hero:** omit frontmatter fields that are not populated ([#88](https://github.com/wix-incubator/htmdx/issues/88)) ([90451e0](https://github.com/wix-incubator/htmdx/commit/90451e0c94155c6f939ab064e442635cd11ee696))
+
 ## [4.11.0](https://github.com/wix-incubator/htmdx/compare/v4.10.1...v4.11.0) (2026-07-28)
 
 

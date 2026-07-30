@@ -183,7 +183,9 @@ https://cdn.jsdelivr.net/npm/@wix/htmdx@4.11.0/dist/components.json
   breaks, and `\*` escapes all render. Tables belong in `DataTable`; task
   lists, footnotes, reference links, and setext headings do not render.
 
-Optional frontmatter sets document metadata; unknown fields are ignored:
+Optional frontmatter sets document metadata; unknown fields are ignored, and
+hero fields you omit are dropped from the hero rather than filled with a
+placeholder:
 
 <!-- prettier-ignore -->
 ```mdx

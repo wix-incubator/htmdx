@@ -112,7 +112,7 @@ The runtime auto-mounts bare source blocks. Use `<htmdx-code>` for explicit plac
 
 ## Frontmatter
 
-Optional frontmatter sets document metadata. Values are single-line strings; unknown fields are ignored.
+Optional frontmatter sets document metadata. Values are single-line strings; unknown fields are ignored. Hero fields you leave out are left out of the page too — no placeholder text.
 
 ```mdx
 ---

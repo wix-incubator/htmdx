@@ -19,6 +19,7 @@ function reloadPreviewOnSourceChange(): Plugin {
 
 const config: StorybookConfig = {
   stories: ['../src/**/*.stories.ts'],
+  staticDirs: ['../src/artifacts'],
   framework: '@storybook/web-components-vite',
   addons: [],
   async viteFinal(viteConfig) {

@@ -1,0 +1,1108 @@
+<!doctype html>
+<!--
+  Creator Kit htmdx artifact. Before you edit ANY part of this document, you
+  MUST read ~/.agents/skills/ck-internal-htmdx/SKILL.md.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="ck-artifact-format" content="htmdx@2">
+    <meta name="ck-renderer" content="@wix/htmdx@4.11.0">
+    <meta name="ck-template-skill" content="ck-research-competitors">
+    <title>Owner Booking Pending Payment · Competitor Research</title>
+    <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@4.11.0/dist/browser.js" defer></script>
+  </head>
+  <body>
+    <script type="text/htmdx" data-ck-source="primary" data-ck-format="htmdx@2">
+---
+title: "Owner Booking Pending Payment"
+layout: creator-kit
+subtitle: "How scheduling tools handle staff-created bookings that stay provisional until the client pays."
+project: "Competitor Research · Owner Booking Pending Payment"
+owner: "Creator Kit"
+phase: Discovery · Competitors
+updated: "2026-07-31"
+theme: magenta
+logo: creator-kit
+logo-alt: Creator Kit
+---
+
+## Overview
+
+<Card class="gap-6 rounded-[28px] border-0 bg-pink-50 p-6 shadow-none">
+  <CardHeader class="p-0">
+    <CardTitle class="text-3xl font-semibold tracking-normal text-zinc-950">Mangomint Express Booking shows what a true pending-until-paid staff flow looks like.</CardTitle>
+  </CardHeader>
+<Callout>
+**Direction** — When a Wix Bookings owner or staff member books for a client, the appointment should enter a **pending state** and only become confirmed after the client completes payment (or another configured commitment such as card-on-file). Staff should be able to **set a payment deadline** — how long the client has to pay before the slot is released. Staff enters minimal details (name, phone, service) and sends a completion link → client opens it on their device → pays deposit/full or adds a card → booking confirms; if the client does not pay within the deadline, the pending booking expires and the slot frees up.
+
+**The gap** — Most tools either **confirm the slot immediately** and chase payment later, or only enforce pay-before-confirm on **client self-booking** — not owner-initiated bookings.
+
+**The opportunity** — Combine a **minimal staff entry point** with a **client completion link**, a **configurable payment window**, visible pending status, and automatic release of unpaid slots.
+</Callout>
+
+<CardContent class="grid auto-rows-fr gap-3 p-0 md:grid-cols-2 xl:grid-cols-4">
+  <Card class="h-full border-zinc-200 bg-white shadow-none">
+    <CardHeader class="flex h-full flex-col gap-3">
+      <CardTitle>2/12 reviewed competitors have a full pending-until-paid staff flow.</CardTitle>
+      <CardDescription>Mangomint Express Booking and SimplyBook.me pay-later + approval come closest; most others use post-booking payment links.</CardDescription>
+      <Badge variant="secondary" class="mt-auto w-fit bg-emerald-100 text-emerald-700">Market position</Badge>
+    </CardHeader>
+  </Card>
+  <Card class="h-full border-zinc-200 bg-white shadow-none">
+    <CardHeader class="flex h-full flex-col gap-3">
+      <CardTitle>Mangomint Express Booking is the benchmark.</CardTitle>
+      <CardDescription>Staff books with minimal fields and sets a payment window → client gets SMS link → pays within deadline → confirmed, or auto-canceled when time runs out.</CardDescription>
+      <Badge variant="secondary" class="mt-auto w-fit bg-blue-100 text-blue-700">Best benchmark</Badge>
+    </CardHeader>
+  </Card>
+  <Card class="h-full border-zinc-200 bg-white shadow-none">
+    <CardHeader class="flex h-full flex-col gap-3">
+      <CardTitle>Phorest and Setmore show appointment-linked payment links.</CardTitle>
+      <CardDescription>Payment status ties back to the booking, but the slot is usually already treated as booked before payment.</CardDescription>
+      <Badge variant="secondary" class="mt-auto w-fit bg-violet-100 text-violet-700">Partial pattern</Badge>
+    </CardHeader>
+  </Card>
+  <Card class="h-full border-zinc-200 bg-white shadow-none">
+    <CardHeader class="flex h-full flex-col gap-3">
+      <CardTitle>Square shows the reconciliation risk.</CardTitle>
+      <CardDescription>Standalone payment links do not attach to appointments — a cautionary pattern for Wix.</CardDescription>
+      <Badge variant="secondary" class="mt-auto w-fit bg-amber-100 text-amber-700">Risk</Badge>
+    </CardHeader>
+  </Card>
+</CardContent>
+</Card>
+
+## Competitor field
+
+Ordered by product relevance: direct tools with the strongest pending-payment support first.
+
+<CardContent class="grid auto-rows-fr gap-3 !p-0 md:grid-cols-2 xl:grid-cols-4">
+  <Card class="h-full overflow-hidden border-zinc-200 bg-white !p-0 shadow-none">
+    <CardContent class="grid h-full grid-rows-[auto_1fr_auto] gap-3 !p-4">
+      <CardContent class="grid grid-cols-[32px_minmax(0,1fr)] items-start gap-2 !p-0">
+        <span class="ck-logo-slot"><img src="https://www.google.com/s2/favicons?domain=mangomint.com&sz=64" alt="Mangomint logo" data-ck-logo /><span class="ck-logo-fallback bg-fuchsia-700 text-white">M</span></span>
+        <CardContent class="min-w-0 !p-0">
+          <CardTitle class="text-sm leading-4">[Mangomint ↗](https://www.mangomint.com/features/express-booking/)</CardTitle>
+          <CardDescription class="text-xs leading-4">Express Booking benchmark</CardDescription>
+        </CardContent>
+      </CardContent>
+      <CardDescription class="text-sm leading-5">Staff toggles Express Booking, texts link; appointment stays Pending completion until client pays deposit/full/card.</CardDescription>
+      <Badge variant="secondary" class="w-fit bg-emerald-100 text-emerald-700">Yes</Badge>
+    </CardContent>
+  </Card>
+  <Card class="h-full overflow-hidden border-zinc-200 bg-white !p-0 shadow-none">
+    <CardContent class="grid h-full grid-rows-[auto_1fr_auto] gap-3 !p-4">
+      <CardContent class="grid grid-cols-[32px_minmax(0,1fr)] items-start gap-2 !p-0">
+        <span class="ck-logo-slot"><img src="https://www.google.com/s2/favicons?domain=phorest.com&sz=64" alt="Phorest logo" data-ck-logo /><span class="ck-logo-fallback bg-zinc-800 text-white">P</span></span>
+        <CardContent class="min-w-0 !p-0">
+          <CardTitle class="text-sm leading-4">[Phorest ↗](https://support.phorest.com/hc/en-us/articles/34681018433938)</CardTitle>
+          <CardDescription class="text-xs leading-4">Payment link + expiry</CardDescription>
+        </CardContent>
+      </CardContent>
+      <CardDescription class="text-sm leading-5">Staff sends deposit/card-capture link from appointment; pending link status, optional auto-cancel on expiry.</CardDescription>
+      <Badge variant="secondary" class="w-fit bg-amber-100 text-amber-700">Partial</Badge>
+    </CardContent>
+  </Card>
+  <Card class="h-full overflow-hidden border-zinc-200 bg-white !p-0 shadow-none">
+    <CardContent class="grid h-full grid-rows-[auto_1fr_auto] gap-3 !p-4">
+      <CardContent class="grid grid-cols-[32px_minmax(0,1fr)] items-start gap-2 !p-0">
+        <span class="ck-logo-slot"><img src="https://www.google.com/s2/favicons?domain=setmore.com&sz=64" alt="Setmore logo" data-ck-logo /><span class="ck-logo-fallback bg-blue-700 text-white">S</span></span>
+        <CardContent class="min-w-0 !p-0">
+          <CardTitle class="text-sm leading-4">[Setmore ↗](https://support.setmore.com/en/articles/15897798)</CardTitle>
+          <CardDescription class="text-xs leading-4">Appointment payment links</CardDescription>
+        </CardContent>
+      </CardContent>
+      <CardDescription class="text-sm leading-5">Generate Stripe payment link from staff-created appointment; marks paid when client completes checkout.</CardDescription>
+      <Badge variant="secondary" class="w-fit bg-amber-100 text-amber-700">Partial</Badge>
+    </CardContent>
+  </Card>
+  <Card class="h-full overflow-hidden border-zinc-200 bg-white !p-0 shadow-none">
+    <CardContent class="grid h-full grid-rows-[auto_1fr_auto] gap-3 !p-4">
+      <CardContent class="grid grid-cols-[32px_minmax(0,1fr)] items-start gap-2 !p-0">
+        <span class="ck-logo-slot"><img src="https://www.google.com/s2/favicons?domain=fresha.com&sz=64" alt="Fresha logo" data-ck-logo /><span class="ck-logo-fallback bg-zinc-900 text-white">F</span></span>
+        <CardContent class="min-w-0 !p-0">
+          <CardTitle class="text-sm leading-4">[Fresha ↗](https://www.fresha.com/help-center/knowledge-base/payments/613)</CardTitle>
+          <CardDescription class="text-xs leading-4">Policy + unpaid sales</CardDescription>
+        </CardContent>
+      </CardContent>
+      <CardDescription class="text-sm leading-5">Manual staff bookings default to no payment policy; deposits via link or Save unpaid sale — slot already booked.</CardDescription>
+      <Badge variant="secondary" class="w-fit bg-amber-100 text-amber-700">Partial</Badge>
+    </CardContent>
+  </Card>
+  <Card class="h-full overflow-hidden border-zinc-200 bg-white !p-0 shadow-none">
+    <CardContent class="grid h-full grid-rows-[auto_1fr_auto] gap-3 !p-4">
+      <CardContent class="grid grid-cols-[32px_minmax(0,1fr)] items-start gap-2 !p-0">
+        <span class="ck-logo-slot"><img src="https://www.google.com/s2/favicons?domain=simplybook.me&sz=64" alt="SimplyBook.me logo" data-ck-logo /><span class="ck-logo-fallback bg-sky-700 text-white">SB</span></span>
+        <CardContent class="min-w-0 !p-0">
+          <CardTitle class="text-sm leading-4">[SimplyBook.me ↗](https://help.simplybook.me/index.php/Accept_payments_custom_feature)</CardTitle>
+          <CardDescription class="text-xs leading-4">Pay later + pending</CardDescription>
+        </CardContent>
+      </CardContent>
+      <CardDescription class="text-sm leading-5">Pay Later bookings stay pending until paid/approved; timeout cancels unpaid online bookings.</CardDescription>
+      <Badge variant="secondary" class="w-fit bg-amber-100 text-amber-700">Partial</Badge>
+    </CardContent>
+  </Card>
+  <Card class="h-full overflow-hidden border-zinc-200 bg-white !p-0 shadow-none">
+    <CardContent class="grid h-full grid-rows-[auto_1fr_auto] gap-3 !p-4">
+      <CardContent class="grid grid-cols-[32px_minmax(0,1fr)] items-start gap-2 !p-0">
+        <span class="ck-logo-slot"><img src="https://www.google.com/s2/favicons?domain=acuityscheduling.com&sz=64" alt="Acuity logo" data-ck-logo /><span class="ck-logo-fallback bg-violet-600 text-white">A</span></span>
+        <CardContent class="min-w-0 !p-0">
+          <CardTitle class="text-sm leading-4">[Acuity ↗](https://help.acuityscheduling.com/hc/en-us/articles/28051970286221)</CardTitle>
+          <CardDescription class="text-xs leading-4">Pay after booking</CardDescription>
+        </CardContent>
+      </CardContent>
+      <CardDescription class="text-sm leading-5">Staff books confirmed appointment; collect later via invoice, payment link, or card on file.</CardDescription>
+      <Badge variant="secondary" class="w-fit bg-amber-100 text-amber-700">Partial</Badge>
+    </CardContent>
+  </Card>
+  <Card class="h-full overflow-hidden border-zinc-200 bg-white !p-0 shadow-none">
+    <CardContent class="grid h-full grid-rows-[auto_1fr_auto] gap-3 !p-4">
+      <CardContent class="grid grid-cols-[32px_minmax(0,1fr)] items-start gap-2 !p-0">
+        <span class="ck-logo-slot"><img src="https://www.google.com/s2/favicons?domain=squareup.com&sz=64" alt="Square logo" data-ck-logo /><span class="ck-logo-fallback bg-zinc-700 text-white">Sq</span></span>
+        <CardContent class="min-w-0 !p-0">
+          <CardTitle class="text-sm leading-4">[Square Appointments ↗](https://community.squareup.com/t5/Feature-Requests/Payment-Links-Attaching-to-Appointments/idi-p/837906)</CardTitle>
+          <CardDescription class="text-xs leading-4">Reconciliation gap</CardDescription>
+        </CardContent>
+      </CardContent>
+      <CardDescription class="text-sm leading-5">Staff books appointment; standalone payment links do not attach — appointment stays unpaid in reporting.</CardDescription>
+      <Badge variant="secondary" class="w-fit bg-amber-100 text-amber-700">Partial</Badge>
+    </CardContent>
+  </Card>
+  <Card class="h-full overflow-hidden border-zinc-200 bg-white !p-0 shadow-none">
+    <CardContent class="grid h-full grid-rows-[auto_1fr_auto] gap-3 !p-4">
+      <CardContent class="grid grid-cols-[32px_minmax(0,1fr)] items-start gap-2 !p-0">
+        <span class="ck-logo-slot"><img src="https://www.google.com/s2/favicons?domain=mindbodyonline.com&sz=64" alt="Mindbody logo" data-ck-logo /><span class="ck-logo-fallback bg-slate-600 text-white">MB</span></span>
+        <CardContent class="min-w-0 !p-0">
+          <CardTitle class="text-sm leading-4">[Mindbody ↗](https://support.mindbodyonline.com/s/article/209234788)</CardTitle>
+          <CardDescription class="text-xs leading-4">Unpaid visit tracking</CardDescription>
+        </CardContent>
+      </CardContent>
+      <CardDescription class="text-sm leading-5">Staff can book unpaid; red-dot unpaid visits reconciled at checkout — no client payment link flow.</CardDescription>
+      <Badge variant="secondary" class="w-fit bg-amber-100 text-amber-700">Partial</Badge>
+    </CardContent>
+  </Card>
+  <Card class="h-full overflow-hidden border-zinc-200 bg-white !p-0 shadow-none">
+    <CardContent class="grid h-full grid-rows-[auto_1fr_auto] gap-3 !p-4">
+      <CardContent class="grid grid-cols-[32px_minmax(0,1fr)] items-start gap-2 !p-0">
+        <span class="ck-logo-slot"><img src="https://www.google.com/s2/favicons?domain=calendly.com&sz=64" alt="Calendly logo" data-ck-logo /><span class="ck-logo-fallback bg-blue-600 text-white">C</span></span>
+        <CardContent class="min-w-0 !p-0">
+          <CardTitle class="text-sm leading-4 !whitespace-normal !overflow-visible !text-clip break-words [&_a]:text-zinc-950 [&_a]:no-underline hover:[&_a]:underline">[Calendly ↗](https://help.calendly.com/hc/en-us/articles/4413298040859-Collect-payments-with-Calendly)</CardTitle>
+          <CardDescription class="text-xs leading-4">Self-booking payments</CardDescription>
+        </CardContent>
+      </CardContent>
+      <CardDescription class="text-sm leading-5">Payments attach to invitee booking flows; staff-scheduled meetings confirm without a pending-until-paid hold.</CardDescription>
+      <Badge variant="secondary" class="w-fit bg-red-100 text-red-700">No</Badge>
+    </CardContent>
+  </Card>
+  <Card class="h-full overflow-hidden border-zinc-200 bg-white !p-0 shadow-none">
+    <CardContent class="grid h-full grid-rows-[auto_1fr_auto] gap-3 !p-4">
+      <CardContent class="grid grid-cols-[32px_minmax(0,1fr)] items-start gap-2 !p-0">
+        <span class="ck-logo-slot"><img src="https://www.google.com/s2/favicons?domain=booksy.com&sz=64" alt="Booksy logo" data-ck-logo /><span class="ck-logo-fallback bg-blue-700 text-white">B</span></span>
+        <CardContent class="min-w-0 !p-0">
+          <CardTitle class="text-sm leading-4 !whitespace-normal !overflow-visible !text-clip break-words [&_a]:text-zinc-950 [&_a]:no-underline hover:[&_a]:underline">[Booksy ↗](https://support.booksy.com/hc/en-us/articles/44065762992266-How-to-send-a-payment-request)</CardTitle>
+          <CardDescription class="text-xs leading-4">Payment requests</CardDescription>
+        </CardContent>
+      </CardContent>
+      <CardDescription class="text-sm leading-5">Staff can send payment requests from a booked appointment, but the slot is already treated as booked before payment.</CardDescription>
+      <Badge variant="secondary" class="w-fit bg-amber-100 text-amber-700">Partial</Badge>
+    </CardContent>
+  </Card>
+  <Card class="h-full overflow-hidden border-zinc-200 bg-white !p-0 shadow-none">
+    <CardContent class="grid h-full grid-rows-[auto_1fr_auto] gap-3 !p-4">
+      <CardContent class="grid grid-cols-[32px_minmax(0,1fr)] items-start gap-2 !p-0">
+        <span class="ck-logo-slot"><img src="https://www.google.com/s2/favicons?domain=boulevard.io&sz=64" alt="Boulevard logo" data-ck-logo /><span class="ck-logo-fallback bg-zinc-900 text-white">Bl</span></span>
+        <CardContent class="min-w-0 !p-0">
+          <CardTitle class="text-sm leading-4 !whitespace-normal !overflow-visible !text-clip break-words [&_a]:text-zinc-950 [&_a]:no-underline hover:[&_a]:underline">[Boulevard ↗](https://support.boulevard.io/en/articles/5945073-send-a-payment-link)</CardTitle>
+          <CardDescription class="text-xs leading-4">Appointment payment links</CardDescription>
+        </CardContent>
+      </CardContent>
+      <CardDescription class="text-sm leading-5">Payment links can be sent from an appointment, but staff bookings confirm the slot before client pays.</CardDescription>
+      <Badge variant="secondary" class="w-fit bg-amber-100 text-amber-700">Partial</Badge>
+    </CardContent>
+  </Card>
+  <Card class="h-full overflow-hidden border-zinc-200 bg-white !p-0 shadow-none">
+    <CardContent class="grid h-full grid-rows-[auto_1fr_auto] gap-3 !p-4">
+      <CardContent class="grid grid-cols-[32px_minmax(0,1fr)] items-start gap-2 !p-0">
+        <span class="ck-logo-slot"><img src="https://www.google.com/s2/favicons?domain=stripe.com&sz=64" alt="Stripe logo" data-ck-logo /><span class="ck-logo-fallback bg-violet-600 text-white">$</span></span>
+        <CardContent class="min-w-0 !p-0">
+          <CardTitle class="text-sm leading-4 !whitespace-normal !overflow-visible !text-clip break-words [&_a]:text-zinc-950 [&_a]:no-underline hover:[&_a]:underline">[Stripe / Square Invoices ↗](https://squareup.com/help/us/en/article/5153-create-and-send-invoices-with-square-invoices)</CardTitle>
+          <CardDescription class="text-xs leading-4">Manual substitute</CardDescription>
+        </CardContent>
+      </CardContent>
+      <CardDescription class="text-sm leading-5">Owners invoice or payment-link outside the calendar; no pending appointment state tied to payment completion.</CardDescription>
+      <Badge variant="secondary" class="w-fit bg-red-100 text-red-700">No</Badge>
+    </CardContent>
+  </Card>
+</CardContent>
+
+## Competitive takeaways
+
+<Card class="gap-4 rounded-[28px] border-0 bg-pink-50 p-6 shadow-none">
+  <CardDescription class="px-1 text-sm leading-5 text-zinc-600">Evidence links sit beside each takeaway. Mangomint Express Booking is the clearest end-to-end benchmark for staff-initiated bookings that stay provisional until the client completes payment.</CardDescription>
+  <Card class="border-zinc-200 bg-white p-0 shadow-none">
+    <CardContent class="grid gap-5 !p-6 lg:grid-cols-[220px_1fr]">
+      <CardContent class="!p-0">
+        <CardTitle class="text-3xl font-semibold tracking-normal text-zinc-950">Category Standards</CardTitle>
+        <CardDescription class="mt-4">Baseline patterns Wix should match because serious scheduling tools already treat payment collection as part of the booking job.</CardDescription>
+      </CardContent>
+      <CardContent class="flex flex-col gap-3 !p-0 min-w-0 overflow-hidden">
+        <Card class="border-zinc-200 bg-white shadow-none">
+          <CardHeader class="gap-3">
+            <CardTitle>Appointment-linked payment collection</CardTitle>
+            <CardDescription>Payment links, deposits, and card capture should tie back to the booking — not float as standalone checkout.</CardDescription>
+            <CardContent class="flex flex-wrap gap-2 !p-0">
+              <Badge variant="outline" class="w-fit max-w-full rounded-full bg-white break-words [&_a]:text-zinc-900 [&_a]:no-underline hover:[&_a]:underline">[Mangomint · FAQ ↗](https://www.mangomint.com/learn/faq-express-booking/)</Badge>
+              <Badge variant="outline" class="w-fit max-w-full rounded-full bg-white break-words [&_a]:text-zinc-900 [&_a]:no-underline hover:[&_a]:underline">[Phorest · KB ↗](https://support.phorest.com/hc/en-us/articles/34681018433938)</Badge>
+              <Badge variant="outline" class="w-fit max-w-full rounded-full bg-white break-words [&_a]:text-zinc-900 [&_a]:no-underline hover:[&_a]:underline">[Setmore · KB ↗](https://support.setmore.com/en/articles/15897798)</Badge>
+              <Badge variant="outline" class="w-fit max-w-full rounded-full bg-white break-words [&_a]:text-zinc-900 [&_a]:no-underline hover:[&_a]:underline">[Boulevard · KB ↗](https://support.boulevard.io/en/articles/5945073-send-a-payment-link)</Badge>
+            </CardContent>
+          </CardHeader>
+          <CardContent class="grid gap-3 border-t border-zinc-100 !p-4 sm:grid-cols-2">
+            <Card class="overflow-hidden border-zinc-200 bg-white p-0 shadow-none">
+              <CardContent class="aspect-[16/10] bg-zinc-100 !p-0 [&_a]:block [&_a]:h-full [&_img]:h-full [&_img]:w-full [&_img]:object-cover [&_img]:object-top">
+                <a href="https://support.setmore.com/en/articles/15897798-collect-payments-remotely-with-payment-links"><img src="./evidence-images/setmore-payment-link-1.png" alt="Setmore calendar appointment with Collect Payment and Payment Link option" /></a>
+              </CardContent>
+              <CardHeader class="gap-1 p-3">
+                <CardTitle class="text-sm leading-4 [&_a]:text-zinc-950 [&_a]:no-underline hover:[&_a]:underline">[Setmore](https://support.setmore.com/en/articles/15897798-collect-payments-remotely-with-payment-links)</CardTitle>
+                <CardDescription class="text-xs">Payment link generated from an existing appointment.</CardDescription>
+              </CardHeader>
+            </Card>
+            <Card class="overflow-hidden border-zinc-200 bg-white p-0 shadow-none">
+              <CardContent class="aspect-[16/10] bg-zinc-100 !p-0 [&_a]:block [&_a]:h-full [&_img]:h-full [&_img]:w-full [&_img]:object-cover [&_img]:object-top">
+                <a href="https://support.setmore.com/en/articles/15897798-collect-payments-remotely-with-payment-links"><img src="./evidence-images/setmore-payment-link-2.png" alt="Setmore appointment marked paid after Stripe checkout" /></a>
+              </CardContent>
+              <CardHeader class="gap-1 p-3">
+                <CardTitle class="text-sm leading-4 [&_a]:text-zinc-950 [&_a]:no-underline hover:[&_a]:underline">[Setmore](https://support.setmore.com/en/articles/15897798-collect-payments-remotely-with-payment-links)</CardTitle>
+                <CardDescription class="text-xs">Appointment updates to paid when the linked checkout completes.</CardDescription>
+              </CardHeader>
+            </Card>
+          </CardContent>
+        </Card>
+        <Card class="border-zinc-200 bg-white shadow-none">
+          <CardHeader class="gap-3">
+            <CardTitle>Visible unpaid / pending payment status</CardTitle>
+            <CardDescription>Staff need to see which bookings still need client action before treating the slot as revenue-confirmed.</CardDescription>
+            <CardContent class="flex flex-wrap gap-2 !p-0">
+              <Badge variant="outline" class="w-fit max-w-full rounded-full bg-white break-words [&_a]:text-zinc-900 [&_a]:no-underline hover:[&_a]:underline">[Mangomint · learn ↗](https://www.mangomint.com/learn/how-to-use-express-booking/)</Badge>
+              <Badge variant="outline" class="w-fit max-w-full rounded-full bg-white break-words [&_a]:text-zinc-900 [&_a]:no-underline hover:[&_a]:underline">[Phorest · KB ↗](https://support.phorest.com/hc/en-us/articles/34681018433938)</Badge>
+              <Badge variant="outline" class="w-fit max-w-full rounded-full bg-white break-words [&_a]:text-zinc-900 [&_a]:no-underline hover:[&_a]:underline">[Mindbody · KB ↗](https://support.mindbodyonline.com/s/article/209234788)</Badge>
+            </CardContent>
+          </CardHeader>
+          <CardContent class="grid gap-3 border-t border-zinc-100 !p-4 sm:grid-cols-2">
+            <Card class="overflow-hidden border-zinc-200 bg-white p-0 shadow-none">
+              <CardContent class="aspect-[16/10] bg-zinc-100 !p-0 [&_a]:block [&_a]:h-full [&_img]:h-full [&_img]:w-full [&_img]:object-cover [&_img]:object-top">
+                <a href="https://www.mangomint.com/learn/how-to-use-express-booking/"><img src="./evidence-images/mangomint-pending-completion.jpg" alt="Mangomint appointment detail showing Pending completion status and time remaining" /></a>
+              </CardContent>
+              <CardHeader class="gap-1 p-3">
+                <CardTitle class="text-sm leading-4 [&_a]:text-zinc-950 [&_a]:no-underline hover:[&_a]:underline">[Mangomint](https://www.mangomint.com/learn/how-to-use-express-booking/)</CardTitle>
+                <CardDescription class="text-xs">Pending completion label with visible time remaining.</CardDescription>
+              </CardHeader>
+            </Card>
+            <Card class="overflow-hidden border-zinc-200 bg-white p-0 shadow-none">
+              <CardContent class="aspect-[16/10] bg-zinc-100 !p-0 [&_a]:block [&_a]:h-full [&_img]:h-full [&_img]:w-full [&_img]:object-cover [&_img]:object-top">
+                <a href="https://www.mangomint.com/learn/how-to-use-express-booking/"><img src="./evidence-images/mangomint-pending-appointment.jpg" alt="Mangomint calendar showing a pending Express Booking appointment block" /></a>
+              </CardContent>
+              <CardHeader class="gap-1 p-3">
+                <CardTitle class="text-sm leading-4 [&_a]:text-zinc-950 [&_a]:no-underline hover:[&_a]:underline">[Mangomint](https://www.mangomint.com/learn/how-to-use-express-booking/)</CardTitle>
+                <CardDescription class="text-xs">Pending state is visible on the calendar, not only in checkout.</CardDescription>
+              </CardHeader>
+            </Card>
+          </CardContent>
+        </Card>
+        <Foldout title="More standard features">
+          <CardContent class="flex flex-col gap-3 !p-0 min-w-0 overflow-hidden">
+            <Card class="border-zinc-200 bg-white shadow-none">
+              <CardHeader class="gap-3">
+                <CardTitle>Deposit, full payment, or card-on-file options</CardTitle>
+                <CardDescription>Businesses need flexible commitment levels — not a single pay-in-full default for every service.</CardDescription>
+                <CardContent class="flex flex-wrap gap-2 !p-0">
+                  <Badge variant="outline" class="w-fit max-w-full rounded-full bg-white break-words [&_a]:text-zinc-900 [&_a]:no-underline hover:[&_a]:underline">[Mangomint · FAQ ↗](https://www.mangomint.com/learn/faq-express-booking/)</Badge>
+                  <Badge variant="outline" class="w-fit max-w-full rounded-full bg-white break-words [&_a]:text-zinc-900 [&_a]:no-underline hover:[&_a]:underline">[Fresha · KB ↗](https://www.fresha.com/help-center/knowledge-base/payments/613)</Badge>
+                  <Badge variant="outline" class="w-fit max-w-full rounded-full bg-white break-words [&_a]:text-zinc-900 [&_a]:no-underline hover:[&_a]:underline">[Acuity · KB ↗](https://help.acuityscheduling.com/hc/en-us/articles/28051970286221)</Badge>
+                </CardContent>
+              </CardHeader>
+            </Card>
+            <Card class="border-zinc-200 bg-white shadow-none">
+              <CardHeader class="gap-3">
+                <CardTitle>Client completion link via SMS or email</CardTitle>
+                <CardDescription>Phone and walk-in bookings often end with “we’ll text you a link” — the product should support that handoff.</CardDescription>
+                <CardContent class="flex flex-wrap gap-2 !p-0">
+                  <Badge variant="outline" class="w-fit max-w-full rounded-full bg-white break-words [&_a]:text-zinc-900 [&_a]:no-underline hover:[&_a]:underline">[Mangomint · feature ↗](https://www.mangomint.com/features/express-booking/)</Badge>
+                  <Badge variant="outline" class="w-fit max-w-full rounded-full bg-white break-words [&_a]:text-zinc-900 [&_a]:no-underline hover:[&_a]:underline">[Booksy · KB ↗](https://support.booksy.com/hc/en-us/articles/44065762992266-How-to-send-a-payment-request)</Badge>
+                </CardContent>
+              </CardHeader>
+              <CardContent class="grid gap-3 border-t border-zinc-100 !p-4 sm:grid-cols-2">
+                <Card class="overflow-hidden border-zinc-200 bg-white p-0 shadow-none">
+                  <CardContent class="aspect-[16/10] bg-zinc-100 !p-0 [&_a]:block [&_a]:h-full [&_img]:h-full [&_img]:w-full [&_img]:object-cover [&_img]:object-top">
+                    <a href="https://www.mangomint.com/learn/how-to-use-express-booking/"><img src="./evidence-images/mangomint-express-booking-send-text.jpg" alt="Mangomint new appointment panel with Use Express Booking toggle and Send Text Message" /></a>
+                  </CardContent>
+                  <CardHeader class="gap-1 p-3">
+                    <CardTitle class="text-sm leading-4 [&_a]:text-zinc-950 [&_a]:no-underline hover:[&_a]:underline">[Mangomint](https://www.mangomint.com/learn/how-to-use-express-booking/)</CardTitle>
+                    <CardDescription class="text-xs">Staff triggers the client completion link from the booking panel.</CardDescription>
+                  </CardHeader>
+                </Card>
+                <Card class="overflow-hidden border-zinc-200 bg-white p-0 shadow-none">
+                  <CardContent class="aspect-[16/10] bg-zinc-100 !p-0 [&_a]:block [&_a]:h-full [&_img]:h-full [&_img]:w-full [&_img]:object-cover [&_img]:object-top">
+                    <a href="https://www.mangomint.com/learn/how-to-use-express-booking/"><img src="./evidence-images/mangomint-client-sms-link.jpg" alt="SMS message with Mangomint Express Booking completion link sent to client" /></a>
+                  </CardContent>
+                  <CardHeader class="gap-1 p-3">
+                    <CardTitle class="text-sm leading-4 [&_a]:text-zinc-950 [&_a]:no-underline hover:[&_a]:underline">[Mangomint](https://www.mangomint.com/learn/how-to-use-express-booking/)</CardTitle>
+                    <CardDescription class="text-xs">Client receives the completion link by text after staff books.</CardDescription>
+                  </CardHeader>
+                </Card>
+              </CardContent>
+            </Card>
+          </CardContent>
+        </Foldout>
+      </CardContent>
+    </CardContent>
+  </Card>
+
+  <Card class="border-zinc-200 bg-white p-0 shadow-none">
+    <CardContent class="grid gap-5 !p-6 lg:grid-cols-[220px_1fr]">
+      <CardContent class="!p-0">
+        <CardTitle class="text-3xl font-semibold tracking-normal text-zinc-950">Differentiators</CardTitle>
+        <CardDescription class="mt-4">Where Wix can exceed the partial patterns most competitors stop at.</CardDescription>
+      </CardContent>
+      <CardContent class="flex flex-col gap-3 !p-0 min-w-0 overflow-hidden">
+        <Card class="border-zinc-200 bg-white shadow-none">
+          <CardHeader class="gap-3">
+            <CardTitle>Pending completion state with expiry and auto-cancel</CardTitle>
+            <CardDescription>Hold the slot provisionally, release it when the client does not pay, and make the timer visible to staff.</CardDescription>
+            <CardContent class="flex flex-wrap gap-2 !p-0">
+              <Badge variant="outline" class="w-fit max-w-full rounded-full bg-white break-words [&_a]:text-zinc-900 [&_a]:no-underline hover:[&_a]:underline">[Mangomint · FAQ ↗](https://www.mangomint.com/learn/faq-express-booking/)</Badge>
+              <Badge variant="outline" class="w-fit max-w-full rounded-full bg-white break-words [&_a]:text-zinc-900 [&_a]:no-underline hover:[&_a]:underline">[SimplyBook.me · KB ↗](https://help.simplybook.me/index.php/Accept_payments_custom_feature)</Badge>
+            </CardContent>
+          </CardHeader>
+          <CardContent class="grid gap-3 border-t border-zinc-100 !p-4 sm:grid-cols-2">
+            <Card class="overflow-hidden border-zinc-200 bg-white p-0 shadow-none">
+              <CardContent class="aspect-[16/10] bg-zinc-100 !p-0 [&_a]:block [&_a]:h-full [&_img]:h-full [&_img]:w-full [&_img]:object-cover [&_img]:object-top">
+                <a href="https://www.mangomint.com/learn/faq-express-booking/"><img src="./evidence-images/mangomint-resend-text-complete.jpg" alt="Mangomint appointment menu showing Resend Text To Complete option" /></a>
+              </CardContent>
+              <CardHeader class="gap-1 p-3">
+                <CardTitle class="text-sm leading-4 [&_a]:text-zinc-950 [&_a]:no-underline hover:[&_a]:underline">[Mangomint](https://www.mangomint.com/learn/faq-express-booking/)</CardTitle>
+                <CardDescription class="text-xs">Resend resets the completion timer after expiry.</CardDescription>
+              </CardHeader>
+            </Card>
+            <Card class="overflow-hidden border-zinc-200 bg-white p-0 shadow-none">
+              <CardContent class="aspect-[16/10] bg-zinc-100 !p-0 [&_a]:block [&_a]:h-full [&_img]:h-full [&_img]:w-full [&_img]:object-cover [&_img]:object-top">
+                <a href="https://www.mangomint.com/learn/how-to-use-express-booking/"><img src="./evidence-images/mangomint-client-complete-booking.jpg" alt="Mangomint client-facing Express Booking completion screen with payment fields" /></a>
+              </CardContent>
+              <CardHeader class="gap-1 p-3">
+                <CardTitle class="text-sm leading-4 [&_a]:text-zinc-950 [&_a]:no-underline hover:[&_a]:underline">[Mangomint](https://www.mangomint.com/learn/how-to-use-express-booking/)</CardTitle>
+                <CardDescription class="text-xs">Client completes details and payment on their own device.</CardDescription>
+              </CardHeader>
+            </Card>
+          </CardContent>
+        </Card>
+        <Card class="border-zinc-200 bg-white shadow-none">
+          <CardHeader class="gap-3">
+            <CardTitle>Minimal staff entry for phone bookings</CardTitle>
+            <CardDescription>First name, phone, and service — then hand off completion to the client without a full profile build at the desk.</CardDescription>
+            <CardContent class="flex flex-wrap gap-2 !p-0">
+              <Badge variant="outline" class="w-fit max-w-full rounded-full bg-white break-words [&_a]:text-zinc-900 [&_a]:no-underline hover:[&_a]:underline">[Mangomint · learn ↗](https://www.mangomint.com/learn/how-to-use-express-booking/)</Badge>
+            </CardContent>
+          </CardHeader>
+          <CardContent class="border-t border-zinc-100 !p-4">
+            <Card class="overflow-hidden border-zinc-200 bg-white p-0 shadow-none">
+              <CardContent class="aspect-[16/10] bg-zinc-100 !p-0 [&_a]:block [&_a]:h-full [&_img]:h-full [&_img]:w-full [&_img]:object-cover [&_img]:object-top">
+                <a href="https://www.mangomint.com/learn/how-to-use-express-booking/"><img src="./evidence-images/mangomint-express-booking-send-text.jpg" alt="Mangomint booking form requiring only client name, phone, and service before sending Express Booking link" /></a>
+              </CardContent>
+              <CardHeader class="gap-1 p-3">
+                <CardTitle class="text-sm leading-4 [&_a]:text-zinc-950 [&_a]:no-underline hover:[&_a]:underline">[Mangomint](https://www.mangomint.com/learn/how-to-use-express-booking/)</CardTitle>
+                <CardDescription class="text-xs">Minimal desk entry before handing off to the client.</CardDescription>
+              </CardHeader>
+            </Card>
+          </CardContent>
+        </Card>
+        <Foldout title="More differentiator signals">
+          <Card class="border-zinc-200 bg-white shadow-none">
+            <CardHeader class="gap-3">
+              <CardTitle>Separate rules for staff bookings vs online booking</CardTitle>
+              <CardDescription>Express / owner-initiated flows can require different payment rules than client self-booking without duplicating services.</CardDescription>
+              <CardContent class="flex flex-wrap gap-2 !p-0">
+                <Badge variant="outline" class="w-fit max-w-full rounded-full bg-white break-words [&_a]:text-zinc-900 [&_a]:no-underline hover:[&_a]:underline">[Mangomint · FAQ ↗](https://www.mangomint.com/learn/faq-express-booking/)</Badge>
+              </CardContent>
+            </CardHeader>
+          </Card>
+          <Card class="border-zinc-200 bg-white shadow-none">
+            <CardHeader class="gap-3">
+              <CardTitle>Resend resets timer; manual Complete override</CardTitle>
+              <CardDescription>Staff need recovery paths when clients are slow — without losing control of slot release.</CardDescription>
+              <CardContent class="flex flex-wrap gap-2 !p-0">
+                <Badge variant="outline" class="w-fit max-w-full rounded-full bg-white break-words [&_a]:text-zinc-900 [&_a]:no-underline hover:[&_a]:underline">[Mangomint · FAQ ↗](https://www.mangomint.com/learn/faq-express-booking/)</Badge>
+              </CardContent>
+            </CardHeader>
+          </Card>
+        </Foldout>
+      </CardContent>
+    </CardContent>
+  </Card>
+
+  <Card class="border-zinc-200 bg-white p-0 shadow-none">
+    <CardContent class="grid gap-5 !p-6 lg:grid-cols-[220px_1fr]">
+      <CardContent class="!p-0">
+        <CardTitle class="text-3xl font-semibold tracking-normal text-zinc-950">Avoid / Defer</CardTitle>
+        <CardDescription class="mt-4">Competitor friction that should not define Wix's first owner-booking pending-payment release.</CardDescription>
+      </CardContent>
+      <CardContent class="flex flex-col gap-3 !p-0 min-w-0 overflow-hidden">
+        <Card class="border-zinc-200 bg-white shadow-none">
+          <CardHeader class="gap-3">
+            <CardTitle>Standalone payment links detached from appointments</CardTitle>
+            <CardDescription>When payment and booking do not reconcile, owners chase money in one system and availability in another.</CardDescription>
+            <CardContent class="flex flex-wrap gap-2 !p-0">
+              <Badge variant="outline" class="w-fit max-w-full rounded-full bg-white break-words [&_a]:text-zinc-900 [&_a]:no-underline hover:[&_a]:underline">[Square · community ↗](https://community.squareup.com/t5/Feature-Requests/Payment-Links-Attaching-to-Appointments/idi-p/837906)</Badge>
+              <Badge variant="outline" class="w-fit max-w-full rounded-full bg-white break-words [&_a]:text-zinc-900 [&_a]:no-underline hover:[&_a]:underline">[Square Invoices · KB ↗](https://squareup.com/help/us/en/article/5153-create-and-send-invoices-with-square-invoices)</Badge>
+            </CardContent>
+          </CardHeader>
+        </Card>
+        <Foldout title="More deferred signals">
+          <CardContent class="flex flex-col gap-3 !p-0 min-w-0 overflow-hidden">
+            <Card class="border-zinc-200 bg-white shadow-none">
+              <CardHeader class="gap-3">
+                <CardTitle>Confirm first, collect later as the only model</CardTitle>
+                <CardDescription>Most tools treat staff bookings as confirmed and rely on post-hoc invoices — that leaves unpaid slots on the calendar.</CardDescription>
+                <CardContent class="flex flex-wrap gap-2 !p-0">
+                  <Badge variant="outline" class="w-fit max-w-full rounded-full bg-white break-words [&_a]:text-zinc-900 [&_a]:no-underline hover:[&_a]:underline">[Acuity · KB ↗](https://help.acuityscheduling.com/hc/en-us/articles/28051970286221)</Badge>
+                  <Badge variant="outline" class="w-fit max-w-full rounded-full bg-white break-words [&_a]:text-zinc-900 [&_a]:no-underline hover:[&_a]:underline">[Fresha · KB ↗](https://www.fresha.com/help-center/knowledge-base/payments/613)</Badge>
+                  <Badge variant="outline" class="w-fit max-w-full rounded-full bg-white break-words [&_a]:text-zinc-900 [&_a]:no-underline hover:[&_a]:underline">[Mindbody · KB ↗](https://support.mindbodyonline.com/s/article/209234788)</Badge>
+                </CardContent>
+              </CardHeader>
+            </Card>
+            <Card class="border-zinc-200 bg-white shadow-none">
+              <CardHeader class="gap-3">
+                <CardTitle>Self-booking payment rules as the only reference</CardTitle>
+                <CardDescription>Calendly-style invitee checkout does not solve owner-initiated phone bookings — defer copying that model wholesale.</CardDescription>
+                <CardContent class="flex flex-wrap gap-2 !p-0">
+                  <Badge variant="outline" class="w-fit max-w-full rounded-full bg-white break-words [&_a]:text-zinc-900 [&_a]:no-underline hover:[&_a]:underline">[Calendly · KB ↗](https://help.calendly.com/hc/en-us/articles/4413298040859-Collect-payments-with-Calendly)</Badge>
+                </CardContent>
+              </CardHeader>
+            </Card>
+          </CardContent>
+        </Foldout>
+      </CardContent>
+    </CardContent>
+  </Card>
+</Card>
+
+## Competitor matrix
+
+Complete evidence layer. Read across a row to compare one capability; read down a column to see what to learn from or avoid.
+
+<Card class="gap-4 rounded-[28px] border-0 bg-pink-50 p-6 shadow-none">
+  <Card class="gap-0 overflow-hidden border-zinc-200 bg-white p-0 shadow-none">
+    <CardHeader class="flex flex-col gap-4 border-b border-zinc-200 p-6 lg:flex-row lg:items-start lg:justify-between">
+      <CardContent class="!p-0">
+        <CardTitle class="text-2xl font-semibold tracking-normal text-zinc-950">Pending-until-paid staff booking audit</CardTitle>
+        <CardDescription class="mt-2">Mangomint, Phorest, Setmore, Fresha, SimplyBook.me, Acuity, Square.</CardDescription>
+      </CardContent>
+      <CardContent class="flex flex-wrap gap-2 !p-0">
+        <Badge variant="secondary" class="bg-emerald-100 text-emerald-700">Strong</Badge>
+        <Badge variant="secondary" class="bg-blue-100 text-blue-700">Present</Badge>
+        <Badge variant="secondary" class="bg-amber-100 text-amber-700">Partial</Badge>
+        <Badge variant="secondary" class="bg-red-100 text-red-700">Missing</Badge>
+      </CardContent>
+    </CardHeader>
+    <CardContent class="grid gap-3 !p-6">
+      <CardDescription>10 capabilities x 7 competitors. Scroll sideways for the remaining competitor detail.</CardDescription>
+
+      <CardContent class="ck-matrix-scroll overflow-x-auto rounded-[14px] border border-zinc-200 bg-white !p-0">
+        <CardContent class="min-w-[1360px] !p-0">
+          <CardContent class="grid grid-cols-[240px_160px_160px_160px_160px_160px_160px_160px] bg-pink-50 !p-0">
+            <CardContent class="sticky left-0 z-20 border-r border-zinc-200 bg-pink-50 !p-3"><CardDescription class="font-semibold text-zinc-900">Capability</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><CardDescription class="font-semibold text-zinc-900">[Mangomint](https://www.mangomint.com/features/express-booking/)</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><CardDescription class="font-semibold text-zinc-900">[Phorest](https://support.phorest.com/hc/en-us/articles/34681018433938)</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><CardDescription class="font-semibold text-zinc-900">[Setmore](https://support.setmore.com/en/articles/15897798)</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><CardDescription class="font-semibold text-zinc-900">[Fresha](https://www.fresha.com/help-center/knowledge-base/payments/613)</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><CardDescription class="font-semibold text-zinc-900">[SB.me](https://help.simplybook.me/index.php/Accept_payments_custom_feature)</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><CardDescription class="font-semibold text-zinc-900">[Acuity](https://help.acuityscheduling.com/hc/en-us/articles/28051970286221)</CardDescription></CardContent>
+            <CardContent class="!p-3"><CardDescription class="font-semibold text-zinc-900">[Square](https://community.squareup.com/t5/Feature-Requests/Payment-Links-Attaching-to-Appointments/idi-p/837906)</CardDescription></CardContent>
+          </CardContent>
+
+          <CardContent class="grid min-h-[112px] grid-cols-[240px_160px_160px_160px_160px_160px_160px_160px] border-t border-zinc-200 !p-0">
+            <CardContent class="sticky left-0 z-10 border-r border-zinc-200 bg-white !p-3"><CardTitle class="text-sm leading-5">Minimal staff entry</CardTitle><CardDescription class="mt-1 text-xs leading-4">Name, phone, service without full client profile.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-emerald-100 text-emerald-700">Strong</Badge><CardDescription class="mt-2 text-xs leading-4">First name, phone, service + Express toggle.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-amber-100 text-amber-700">Partial</Badge><CardDescription class="mt-2 text-xs leading-4">Full appointment flow; link from booking.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-amber-100 text-amber-700">Partial</Badge><CardDescription class="mt-2 text-xs leading-4">Staff books appointment first.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-amber-100 text-amber-700">Partial</Badge><CardDescription class="mt-2 text-xs leading-4">Manual booking path exists.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-amber-100 text-amber-700">Partial</Badge><CardDescription class="mt-2 text-xs leading-4">Admin booking; pay-later focus.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-blue-100 text-blue-700">Present</Badge><CardDescription class="mt-2 text-xs leading-4">Staff can add appointments.</CardDescription></CardContent>
+            <CardContent class="!p-3"><Badge variant="secondary" class="bg-blue-100 text-blue-700">Present</Badge><CardDescription class="mt-2 text-xs leading-4">Staff booking supported.</CardDescription></CardContent>
+          </CardContent>
+
+          <CardContent class="grid min-h-[112px] grid-cols-[240px_160px_160px_160px_160px_160px_160px_160px] border-t border-zinc-200 !p-0">
+            <CardContent class="sticky left-0 z-10 border-r border-zinc-200 bg-white !p-3"><CardTitle class="text-sm leading-5">Pending until client completes</CardTitle><CardDescription class="mt-1 text-xs leading-4">Slot not fully confirmed until client action.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-emerald-100 text-emerald-700">Strong</Badge><CardDescription class="mt-2 text-xs leading-4">Pending completion status.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-amber-100 text-amber-700">Partial</Badge><CardDescription class="mt-2 text-xs leading-4">Pending link; slot often booked.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-red-100 text-red-700">Missing</Badge><CardDescription class="mt-2 text-xs leading-4">Appointment confirmed; link chases pay.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-red-100 text-red-700">Missing</Badge><CardDescription class="mt-2 text-xs leading-4">Slot booked; unpaid sale optional.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-emerald-100 text-emerald-700">Strong</Badge><CardDescription class="mt-2 text-xs leading-4">Pay Later stays pending until paid.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-red-100 text-red-700">Missing</Badge><CardDescription class="mt-2 text-xs leading-4">Staff booking confirms immediately.</CardDescription></CardContent>
+            <CardContent class="!p-3"><Badge variant="secondary" class="bg-red-100 text-red-700">Missing</Badge><CardDescription class="mt-2 text-xs leading-4">Appointment booked; payment separate.</CardDescription></CardContent>
+          </CardContent>
+
+          <CardContent class="grid min-h-[112px] grid-cols-[240px_160px_160px_160px_160px_160px_160px_160px] border-t border-zinc-200 !p-0">
+            <CardContent class="sticky left-0 z-10 border-r border-zinc-200 bg-white !p-3"><CardTitle class="text-sm leading-5">Client completion link</CardTitle><CardDescription class="mt-1 text-xs leading-4">SMS or email link for client to finish.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-emerald-100 text-emerald-700">Strong</Badge><CardDescription class="mt-2 text-xs leading-4">SMS link after Express Booking.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-blue-100 text-blue-700">Present</Badge><CardDescription class="mt-2 text-xs leading-4">Payment link from appointment.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-blue-100 text-blue-700">Present</Badge><CardDescription class="mt-2 text-xs leading-4">Stripe payment link per appointment.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-blue-100 text-blue-700">Present</Badge><CardDescription class="mt-2 text-xs leading-4">Deposit link or unpaid sale path.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-amber-100 text-amber-700">Partial</Badge><CardDescription class="mt-2 text-xs leading-4">Online pay-later flow stronger.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-blue-100 text-blue-700">Present</Badge><CardDescription class="mt-2 text-xs leading-4">Invoice or payment link after book.</CardDescription></CardContent>
+            <CardContent class="!p-3"><Badge variant="secondary" class="bg-amber-100 text-amber-700">Partial</Badge><CardDescription class="mt-2 text-xs leading-4">Standalone link; not appointment-tied.</CardDescription></CardContent>
+          </CardContent>
+
+          <CardContent class="grid min-h-[112px] grid-cols-[240px_160px_160px_160px_160px_160px_160px_160px] border-t border-zinc-200 !p-0">
+            <CardContent class="sticky left-0 z-10 border-r border-zinc-200 bg-white !p-3"><CardTitle class="text-sm leading-5">Deposit / full / card capture</CardTitle><CardDescription class="mt-1 text-xs leading-4">Flexible payment commitment options.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-emerald-100 text-emerald-700">Strong</Badge><CardDescription class="mt-2 text-xs leading-4">Card, deposit, or full payment.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-blue-100 text-blue-700">Present</Badge><CardDescription class="mt-2 text-xs leading-4">Deposit and card capture links.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-blue-100 text-blue-700">Present</Badge><CardDescription class="mt-2 text-xs leading-4">Full payment via Stripe link.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-blue-100 text-blue-700">Present</Badge><CardDescription class="mt-2 text-xs leading-4">Deposit policies and unpaid sales.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-amber-100 text-amber-700">Partial</Badge><CardDescription class="mt-2 text-xs leading-4">Gateway-dependent pay-later.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-blue-100 text-blue-700">Present</Badge><CardDescription class="mt-2 text-xs leading-4">Card on file, invoice, link.</CardDescription></CardContent>
+            <CardContent class="!p-3"><Badge variant="secondary" class="bg-amber-100 text-amber-700">Partial</Badge><CardDescription class="mt-2 text-xs leading-4">Payments exist; link detached.</CardDescription></CardContent>
+          </CardContent>
+
+          <CardContent class="grid min-h-[112px] grid-cols-[240px_160px_160px_160px_160px_160px_160px_160px] border-t border-zinc-200 !p-0">
+            <CardContent class="sticky left-0 z-10 border-r border-zinc-200 bg-white !p-3"><CardTitle class="text-sm leading-5">Separate staff vs online rules</CardTitle><CardDescription class="mt-1 text-xs leading-4">Express / staff settings apart from online booking.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-emerald-100 text-emerald-700">Strong</Badge><CardDescription class="mt-2 text-xs leading-4">Express settings separate from online.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-amber-100 text-amber-700">Partial</Badge><CardDescription class="mt-2 text-xs leading-4">Link rules; not express-specific.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-red-100 text-red-700">Missing</Badge><CardDescription class="mt-2 text-xs leading-4">Same appointment payment path.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-amber-100 text-amber-700">Partial</Badge><CardDescription class="mt-2 text-xs leading-4">Manual booking skips online policy.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-blue-100 text-blue-700">Present</Badge><CardDescription class="mt-2 text-xs leading-4">Custom pay feature for online.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-amber-100 text-amber-700">Partial</Badge><CardDescription class="mt-2 text-xs leading-4">Different flows; not pending staff.</CardDescription></CardContent>
+            <CardContent class="!p-3"><Badge variant="secondary" class="bg-red-100 text-red-700">Missing</Badge><CardDescription class="mt-2 text-xs leading-4">No express staff payment mode.</CardDescription></CardContent>
+          </CardContent>
+
+          <CardContent class="grid min-h-[112px] grid-cols-[240px_160px_160px_160px_160px_160px_160px_160px] border-t border-zinc-200 !p-0">
+            <CardContent class="sticky left-0 z-10 border-r border-zinc-200 bg-white !p-3"><CardTitle class="text-sm leading-5">Expiry timer + auto-cancel</CardTitle><CardDescription class="mt-1 text-xs leading-4">Release unpaid slots automatically.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-emerald-100 text-emerald-700">Strong</Badge><CardDescription class="mt-2 text-xs leading-4">Custom limit; auto-cancel on expiry.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-blue-100 text-blue-700">Present</Badge><CardDescription class="mt-2 text-xs leading-4">Optional auto-cancel on link expiry.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-red-100 text-red-700">Missing</Badge><CardDescription class="mt-2 text-xs leading-4">No documented auto-release.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-red-100 text-red-700">Missing</Badge><CardDescription class="mt-2 text-xs leading-4">Unpaid sale; no slot release.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-emerald-100 text-emerald-700">Strong</Badge><CardDescription class="mt-2 text-xs leading-4">Timeout cancels unpaid online bookings.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-red-100 text-red-700">Missing</Badge><CardDescription class="mt-2 text-xs leading-4">No pending staff auto-cancel.</CardDescription></CardContent>
+            <CardContent class="!p-3"><Badge variant="secondary" class="bg-red-100 text-red-700">Missing</Badge><CardDescription class="mt-2 text-xs leading-4">Slot stays booked if unpaid.</CardDescription></CardContent>
+          </CardContent>
+
+          <CardContent class="grid min-h-[112px] grid-cols-[240px_160px_160px_160px_160px_160px_160px_160px] border-t border-zinc-200 !p-0">
+            <CardContent class="sticky left-0 z-10 border-r border-zinc-200 bg-white !p-3"><CardTitle class="text-sm leading-5">Resend resets timer</CardTitle><CardDescription class="mt-1 text-xs leading-4">New link extends or restarts countdown.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-emerald-100 text-emerald-700">Strong</Badge><CardDescription class="mt-2 text-xs leading-4">Resend resets the timer.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-amber-100 text-amber-700">Partial</Badge><CardDescription class="mt-2 text-xs leading-4">Can resend link; timer unclear.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-amber-100 text-amber-700">Partial</Badge><CardDescription class="mt-2 text-xs leading-4">New link possible; no reset rule.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-red-100 text-red-700">Missing</Badge><CardDescription class="mt-2 text-xs leading-4">No timer reset documented.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-red-100 text-red-700">Missing</Badge><CardDescription class="mt-2 text-xs leading-4">Timeout is booking-level.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-red-100 text-red-700">Missing</Badge><CardDescription class="mt-2 text-xs leading-4">No express resend timer.</CardDescription></CardContent>
+            <CardContent class="!p-3"><Badge variant="secondary" class="bg-red-100 text-red-700">Missing</Badge><CardDescription class="mt-2 text-xs leading-4">No timer model.</CardDescription></CardContent>
+          </CardContent>
+
+          <CardContent class="grid min-h-[112px] grid-cols-[240px_160px_160px_160px_160px_160px_160px_160px] border-t border-zinc-200 !p-0">
+            <CardContent class="sticky left-0 z-10 border-r border-zinc-200 bg-white !p-3"><CardTitle class="text-sm leading-5">Manual Complete override</CardTitle><CardDescription class="mt-1 text-xs leading-4">Staff can close pending without payment.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-emerald-100 text-emerald-700">Strong</Badge><CardDescription class="mt-2 text-xs leading-4">Manual Complete override available.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-amber-100 text-amber-700">Partial</Badge><CardDescription class="mt-2 text-xs leading-4">Staff can mark paid in salon.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-blue-100 text-blue-700">Present</Badge><CardDescription class="mt-2 text-xs leading-4">Mark paid when client pays in person.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-blue-100 text-blue-700">Present</Badge><CardDescription class="mt-2 text-xs leading-4">Checkout reconciles unpaid sales.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-amber-100 text-amber-700">Partial</Badge><CardDescription class="mt-2 text-xs leading-4">Admin can approve pending.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-blue-100 text-blue-700">Present</Badge><CardDescription class="mt-2 text-xs leading-4">Collect in person after booking.</CardDescription></CardContent>
+            <CardContent class="!p-3"><Badge variant="secondary" class="bg-blue-100 text-blue-700">Present</Badge><CardDescription class="mt-2 text-xs leading-4">In-person payment at checkout.</CardDescription></CardContent>
+          </CardContent>
+
+          <CardContent class="grid min-h-[112px] grid-cols-[240px_160px_160px_160px_160px_160px_160px_160px] border-t border-zinc-200 !p-0">
+            <CardContent class="sticky left-0 z-10 border-r border-zinc-200 bg-white !p-3"><CardTitle class="text-sm leading-5">Appointment-linked payment</CardTitle><CardDescription class="mt-1 text-xs leading-4">Payment status reconciles to the booking.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-emerald-100 text-emerald-700">Strong</Badge><CardDescription class="mt-2 text-xs leading-4">Payment tied to express appointment.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-emerald-100 text-emerald-700">Strong</Badge><CardDescription class="mt-2 text-xs leading-4">Link generated from appointment.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-emerald-100 text-emerald-700">Strong</Badge><CardDescription class="mt-2 text-xs leading-4">Link from appointment record.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-blue-100 text-blue-700">Present</Badge><CardDescription class="mt-2 text-xs leading-4">Sale linked; slot already booked.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-blue-100 text-blue-700">Present</Badge><CardDescription class="mt-2 text-xs leading-4">Booking payment in one record.</CardDescription></CardContent>
+            <CardContent class="border-r border-zinc-200 !p-3"><Badge variant="secondary" class="bg-blue-100 text-blue-700">Present</Badge><CardDescription class="mt-2 text-xs leading-4">Invoice tied to appointment.</CardDescription></CardContent>
+            <CardContent class="!p-3"><Badge variant="secondary" class="bg-red-100 text-red-700">Missing</Badge><CardDescription class="mt-2 text-xs leading-4">Standalone links do not attach.</CardDescription></CardContent>
+          </CardContent>
+        </CardContent>
+      </CardContent>
+    </CardContent>
+  </Card>
+</Card>
+
+## User voice
+
+<Card class="gap-4 rounded-[28px] border-0 bg-pink-50 p-6 shadow-none">
+  <Card class="border-zinc-200 bg-white p-0 shadow-none">
+    <CardContent class="grid gap-5 !p-6 lg:grid-cols-[220px_1fr]">
+      <CardContent class="!p-0">
+        <CardTitle class="text-3xl font-semibold tracking-normal text-zinc-950">What users are really saying</CardTitle>
+        <CardDescription class="mt-4">Signals about pending payment, express booking, and payment links — not generic scheduling praise.</CardDescription>
+      </CardContent>
+
+      <CardContent class="flex flex-col gap-3 !p-0 min-w-0 overflow-hidden">
+        <Card class="border-zinc-200 bg-white shadow-none">
+          <CardHeader class="gap-3">
+            <CardContent class="grid gap-4 !p-0 md:grid-cols-[120px_1fr]">
+              <CardContent class="!p-0">
+                <Badge variant="secondary" class="w-fit bg-emerald-100 text-emerald-700">Praise</Badge>
+              </CardContent>
+              <CardContent class="flex flex-col gap-3 !p-0 min-w-0 overflow-hidden">
+                <CardTitle>Express booking closes the phone-booking gap</CardTitle>
+                <CardDescription>Mangomint users describe Express Booking as the way to book quickly at the desk and let the client finish details and payment on their phone.</CardDescription>
+                <CardContent class="grid gap-2 !p-0">
+                  <CardDescription class="text-xs font-semibold text-zinc-500">User voice links</CardDescription>
+                  <CardContent class="flex flex-wrap gap-2 !p-0">
+                    <Badge variant="outline" class="w-fit max-w-full rounded-full bg-white break-words [&_a]:text-zinc-900 [&_a]:no-underline hover:[&_a]:underline">[Mangomint G2 reviews ↗](https://www.g2.com/products/mangomint/reviews)</Badge>
+                    <Badge variant="outline" class="w-fit max-w-full rounded-full bg-white break-words [&_a]:text-zinc-900 [&_a]:no-underline hover:[&_a]:underline">[Mangomint learn — Express ↗](https://www.mangomint.com/learn/how-to-use-express-booking/)</Badge>
+                  </CardContent>
+                </CardContent>
+              </CardContent>
+            </CardContent>
+          </CardHeader>
+        </Card>
+
+        <Card class="border-zinc-200 bg-white shadow-none">
+          <CardHeader class="gap-3">
+            <CardContent class="grid gap-4 !p-0 md:grid-cols-[120px_1fr]">
+              <CardContent class="!p-0">
+                <Badge variant="secondary" class="w-fit bg-red-100 text-red-700">Complaint</Badge>
+              </CardContent>
+              <CardContent class="flex flex-col gap-3 !p-0 min-w-0 overflow-hidden">
+                <CardTitle>Detached payment links break appointment reconciliation</CardTitle>
+                <CardDescription>Square merchants report that standalone payment links do not attach to appointments — appointments stay unpaid in reporting even after the client pays.</CardDescription>
+                <CardContent class="grid gap-2 !p-0">
+                  <CardDescription class="text-xs font-semibold text-zinc-500">User voice links</CardDescription>
+                  <CardContent class="flex flex-wrap gap-2 !p-0">
+                    <Badge variant="outline" class="w-fit max-w-full rounded-full bg-white break-words [&_a]:text-zinc-900 [&_a]:no-underline hover:[&_a]:underline">[Square — links not attaching ↗](https://community.squareup.com/t5/Feature-Requests/Payment-Links-Attaching-to-Appointments/idi-p/837906)</Badge>
+                    <Badge variant="outline" class="w-fit max-w-full rounded-full bg-white break-words [&_a]:text-zinc-900 [&_a]:no-underline hover:[&_a]:underline">[Square — payment link gap ↗](https://community.squareup.com/t5/Square-Appointments/Payment-Links-Attaching-to-Appointments/td-p/837906)</Badge>
+                  </CardContent>
+                </CardContent>
+              </CardContent>
+            </CardContent>
+          </CardHeader>
+        </Card>
+
+        <Card class="border-zinc-200 bg-white shadow-none">
+          <CardHeader class="gap-3">
+            <CardContent class="grid gap-4 !p-0 md:grid-cols-[120px_1fr]">
+              <CardContent class="!p-0">
+                <Badge variant="secondary" class="w-fit bg-amber-100 text-amber-700">Opportunity</Badge>
+              </CardContent>
+              <CardContent class="flex flex-col gap-3 !p-0 min-w-0 overflow-hidden">
+                <CardTitle>Owners want pay-before-confirm for staff bookings</CardTitle>
+                <CardDescription>Scheduling communities ask for ways to collect deposit or full payment when staff books — not only when clients self-book online.</CardDescription>
+                <CardContent class="grid gap-2 !p-0">
+                  <CardDescription class="text-xs font-semibold text-zinc-500">User voice links</CardDescription>
+                  <CardContent class="flex flex-wrap gap-2 !p-0">
+                    <Badge variant="outline" class="w-fit max-w-full rounded-full bg-white break-words [&_a]:text-zinc-900 [&_a]:no-underline hover:[&_a]:underline">[Fresha community — deposits ↗](https://community.fresha.com/)</Badge>
+                    <Badge variant="outline" class="w-fit max-w-full rounded-full bg-white break-words [&_a]:text-zinc-900 [&_a]:no-underline hover:[&_a]:underline">[Phorest G2 reviews ↗](https://www.g2.com/products/phorest/reviews)</Badge>
+                  </CardContent>
+                </CardContent>
+              </CardContent>
+            </CardContent>
+          </CardHeader>
+        </Card>
+
+        <Foldout title="More user signals">
+          <CardContent class="flex flex-col gap-3 !p-0 min-w-0 overflow-hidden">
+            <Card class="border-zinc-200 bg-white shadow-none">
+              <CardHeader class="gap-3">
+                <CardContent class="grid gap-4 !p-0 md:grid-cols-[120px_1fr]">
+                  <CardContent class="!p-0">
+                    <Badge variant="secondary" class="w-fit bg-amber-100 text-amber-700">Opportunity</Badge>
+                  </CardContent>
+                  <CardContent class="flex flex-col gap-3 !p-0 min-w-0 overflow-hidden">
+                    <CardTitle>Pending status reduces no-pay walk-offs</CardTitle>
+                    <CardDescription>Salon operators want the calendar to show which phone bookings still need client payment before treating the slot as locked revenue.</CardDescription>
+                    <CardContent class="grid gap-2 !p-0">
+                      <CardDescription class="text-xs font-semibold text-zinc-500">User voice links</CardDescription>
+                      <CardContent class="flex flex-wrap gap-2 !p-0">
+                        <Badge variant="outline" class="w-fit max-w-full rounded-full bg-white break-words [&_a]:text-zinc-900 [&_a]:no-underline hover:[&_a]:underline">[Mangomint FAQ — pending ↗](https://www.mangomint.com/learn/faq-express-booking/)</Badge>
+                        <Badge variant="outline" class="w-fit max-w-full rounded-full bg-white break-words [&_a]:text-zinc-900 [&_a]:no-underline hover:[&_a]:underline">[SimplyBook.me reviews ↗](https://www.g2.com/products/simplybook-me/reviews)</Badge>
+                      </CardContent>
+                    </CardContent>
+                  </CardContent>
+                </CardContent>
+              </CardHeader>
+            </Card>
+
+            <Card class="border-zinc-200 bg-white shadow-none">
+              <CardHeader class="gap-3">
+                <CardContent class="grid gap-4 !p-0 md:grid-cols-[120px_1fr]">
+                  <CardContent class="!p-0">
+                    <Badge variant="secondary" class="w-fit bg-red-100 text-red-700">Complaint</Badge>
+                  </CardContent>
+                  <CardContent class="flex flex-col gap-3 !p-0 min-w-0 overflow-hidden">
+                    <CardTitle>Confirm-first booking leaves unpaid slots on the calendar</CardTitle>
+                    <CardDescription>Mindbody and Fresha users reconcile unpaid visits at checkout — a workable back office pattern, but not a client completion flow.</CardDescription>
+                    <CardContent class="grid gap-2 !p-0">
+                      <CardDescription class="text-xs font-semibold text-zinc-500">User voice links</CardDescription>
+                      <CardContent class="flex flex-wrap gap-2 !p-0">
+                        <Badge variant="outline" class="w-fit max-w-full rounded-full bg-white break-words [&_a]:text-zinc-900 [&_a]:no-underline hover:[&_a]:underline">[Mindbody unpaid visits ↗](https://support.mindbodyonline.com/s/article/209234788)</Badge>
+                        <Badge variant="outline" class="w-fit max-w-full rounded-full bg-white break-words [&_a]:text-zinc-900 [&_a]:no-underline hover:[&_a]:underline">[Fresha unpaid sales ↗](https://www.fresha.com/help-center/knowledge-base/payments/613)</Badge>
+                      </CardContent>
+                    </CardContent>
+                  </CardContent>
+                </CardContent>
+              </CardHeader>
+            </Card>
+
+            <Card class="border-zinc-200 bg-white shadow-none">
+              <CardHeader class="gap-3">
+                <CardContent class="grid gap-4 !p-0 md:grid-cols-[120px_1fr]">
+                  <CardContent class="!p-0">
+                    <Badge variant="secondary" class="w-fit bg-emerald-100 text-emerald-700">Praise</Badge>
+                  </CardContent>
+                  <CardContent class="flex flex-col gap-3 !p-0 min-w-0 overflow-hidden">
+                    <CardTitle>Appointment payment links work when tied to the booking</CardTitle>
+                    <CardDescription>Setmore and Phorest users value generating a payment link from the appointment itself — the pattern Wix should extend with a true pending state.</CardDescription>
+                    <CardContent class="grid gap-2 !p-0">
+                      <CardDescription class="text-xs font-semibold text-zinc-500">User voice links</CardDescription>
+                      <CardContent class="flex flex-wrap gap-2 !p-0">
+                        <Badge variant="outline" class="w-fit max-w-full rounded-full bg-white break-words [&_a]:text-zinc-900 [&_a]:no-underline hover:[&_a]:underline">[Setmore payment links ↗](https://support.setmore.com/en/articles/15897798)</Badge>
+                        <Badge variant="outline" class="w-fit max-w-full rounded-full bg-white break-words [&_a]:text-zinc-900 [&_a]:no-underline hover:[&_a]:underline">[Phorest payment links ↗](https://support.phorest.com/hc/en-us/articles/34681018433938)</Badge>
+                      </CardContent>
+                    </CardContent>
+                  </CardContent>
+                </CardContent>
+              </CardHeader>
+            </Card>
+          </CardContent>
+        </Foldout>
+      </CardContent>
+    </CardContent>
+  </Card>
+</Card>
+
+## Source Trail
+
+Compact audit appendix. The strongest links are already placed beside the claims they support.
+
+<Sources>
+- [Mangomint Express Booking feature](https://www.mangomint.com/features/express-booking/)
+- [Mangomint How to Use Express Booking](https://www.mangomint.com/learn/how-to-use-express-booking/)
+- [Mangomint Express Booking FAQ](https://www.mangomint.com/learn/faq-express-booking/)
+- [Phorest Payment Links](https://support.phorest.com/hc/en-us/articles/34681018433938)
+- [Setmore Payment Links](https://support.setmore.com/en/articles/15897798)
+- [Fresha Payment Policies](https://www.fresha.com/help-center/knowledge-base/payments/613)
+- [SimplyBook.me Accept Payments](https://help.simplybook.me/index.php/Accept_payments_custom_feature)
+- [Acuity Collect payment after booking](https://help.acuityscheduling.com/hc/en-us/articles/28051970286221)
+- [Square Community — payment links not attaching](https://community.squareup.com/t5/Feature-Requests/Payment-Links-Attaching-to-Appointments/idi-p/837906)
+- [Mindbody Unpaid visits](https://support.mindbodyonline.com/s/article/209234788)
+- [Calendly Collect payments](https://help.calendly.com/hc/en-us/articles/4413298040859-Collect-payments-with-Calendly)
+- [Booksy Payment requests](https://support.booksy.com/hc/en-us/articles/44065762992266-How-to-send-a-payment-request)
+- [Boulevard Send payment link](https://support.boulevard.io/en/articles/5945073-send-a-payment-link)
+- [Square Invoices](https://squareup.com/help/us/en/article/5153-create-and-send-invoices-with-square-invoices)
+- [Mangomint G2 reviews](https://www.g2.com/products/mangomint/reviews)
+- [Phorest G2 reviews](https://www.g2.com/products/phorest/reviews)
+- [SimplyBook.me G2 reviews](https://www.g2.com/products/simplybook-me/reviews)
+</Sources>
+    </script>
+    <script data-ck-enhancer="competitor-matrix-filters">
+      (() => {
+        const types = [
+          { id: "all", label: "All", rows: null },
+          { id: "standard", label: "Category Standard", rows: [0, 1, 2, 3, 4] },
+          { id: "differentiate", label: "Differentiation Ideas", rows: [5, 6] },
+          { id: "avoid", label: "Avoid / Defer", rows: [7, 8, 9] }
+        ];
+        const competitors = [
+          { id: "all", label: "All", column: null },
+          { id: "mangomint", label: "Mangomint", column: 1 },
+          { id: "phorest", label: "Phorest", column: 2 },
+          { id: "setmore", label: "Setmore", column: 3 },
+          { id: "fresha", label: "Fresha", column: 4 },
+          { id: "simplybook", label: "SimplyBook.me", column: 5 },
+          { id: "acuity", label: "Acuity", column: 6 },
+          { id: "square", label: "Square", column: 7 }
+        ];
+        const params = new URLSearchParams(window.location.search);
+        const requestedType = params.get("type");
+        const requestedCompetitors = (params.get("competitors") || "")
+          .split(",")
+          .map((id) => id.trim())
+          .filter(Boolean);
+        const state = {
+          type: types.some((type) => type.id === requestedType) ? requestedType : "all",
+          competitors: requestedCompetitors.filter((id) =>
+            competitors.some((competitor) => competitor.id === id && id !== "all")
+          )
+        };
+        const anchorOffset = 112;
+
+        function addBaseStyles() {
+          if (document.getElementById("ck-artifact-base-styles")) return;
+          const style = document.createElement("style");
+          style.id = "ck-artifact-base-styles";
+          style.textContent = `
+            .ck-logo-slot {
+              display: inline-flex;
+              position: relative;
+              width: 32px;
+              height: 32px;
+              overflow: hidden;
+              align-items: center;
+              justify-content: center;
+              border: 1px solid #e4dfe8;
+              border-radius: 8px;
+              background: #fff;
+            }
+            .ck-logo-slot img {
+              display: block;
+              width: 100%;
+              height: 100%;
+              object-fit: contain;
+              padding: 4px;
+            }
+            .ck-logo-fallback {
+              display: none;
+              width: 100%;
+              height: 100%;
+              align-items: center;
+              justify-content: center;
+              font-size: 12px;
+              font-weight: 650;
+              line-height: 1;
+            }
+            .ck-logo-missing img {
+              display: none;
+            }
+            .ck-logo-missing .ck-logo-fallback {
+              display: flex;
+            }
+            html {
+              scroll-padding-top: 112px;
+            }
+            :where(h2, h3, section)[id] {
+              scroll-margin-top: 112px;
+            }
+          `;
+          document.head.appendChild(style);
+        }
+
+        function addStyles() {
+          if (document.getElementById("ck-matrix-filter-styles")) return;
+          const style = document.createElement("style");
+          style.id = "ck-matrix-filter-styles";
+          style.textContent = `
+            .ck-matrix-filters {
+              display: grid;
+              gap: 12px;
+              margin: 0 0 12px;
+              padding: 16px 0 2px;
+            }
+            .ck-matrix-filter-row {
+              display: grid;
+              grid-template-columns: 92px minmax(0, 1fr);
+              gap: 12px;
+              align-items: start;
+            }
+            .ck-matrix-filter-label {
+              padding-top: 8px;
+              color: #6f6b79;
+              font-size: 13px;
+              font-weight: 600;
+              line-height: 1.2;
+            }
+            .ck-matrix-chip-group {
+              display: flex;
+              flex-wrap: wrap;
+              gap: 8px;
+            }
+            .ck-matrix-competitor-chips {
+              flex-wrap: nowrap;
+              overflow-x: auto;
+              padding-bottom: 2px;
+            }
+            .ck-matrix-chip {
+              min-height: 34px;
+              border: 1px solid #e4dfe8;
+              border-radius: 999px;
+              background: #fff;
+              color: #302c38;
+              padding: 0 14px;
+              font: inherit;
+              font-size: 14px;
+              font-weight: 600;
+              cursor: pointer;
+              white-space: nowrap;
+            }
+            .ck-matrix-chip:hover {
+              border-color: #d8d1dd;
+              background: #fcf8fd;
+            }
+            .ck-matrix-chip.is-active {
+              border-color: #b02ab8;
+              background: #b02ab8;
+              color: #fff;
+            }
+            .ck-matrix-hidden {
+              display: none !important;
+            }
+            @media (max-width: 760px) {
+              .ck-matrix-filter-row {
+                grid-template-columns: 1fr;
+                gap: 6px;
+              }
+            }
+          `;
+          document.head.appendChild(style);
+        }
+
+        function prepareExternalLinks() {
+          document.querySelectorAll('a[href^="http"]').forEach((link) => {
+            link.target = "_blank";
+            link.rel = "noreferrer";
+          });
+        }
+
+        function prepareLogoFallbacks() {
+          document.querySelectorAll("[data-ck-logo]").forEach((image) => {
+            const slot = image.closest(".ck-logo-slot");
+            if (!slot) return;
+            const markMissing = () => slot.classList.add("ck-logo-missing");
+            image.addEventListener("error", markMissing, { once: true });
+            if (image.complete && image.naturalWidth === 0) markMissing();
+          });
+        }
+
+        function alignHashTarget() {
+          if (!window.location.hash) return;
+          const id = decodeURIComponent(window.location.hash.slice(1));
+          const target = document.getElementById(id);
+          if (!target) return;
+          requestAnimationFrame(() => {
+            const top = target.getBoundingClientRect().top + window.scrollY - anchorOffset;
+            window.scrollTo({ top, behavior: "auto" });
+          });
+        }
+
+        function makeChip(item, group, render) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "ck-matrix-chip";
+          button.dataset.group = group;
+          button.dataset.id = item.id;
+          button.textContent = item.label;
+          button.addEventListener("click", () => {
+            if (group === "type") {
+              state.type = item.id;
+            } else if (item.id === "all") {
+              state.competitors = [];
+            } else if (state.competitors.includes(item.id)) {
+              state.competitors = state.competitors.filter((id) => id !== item.id);
+            } else {
+              state.competitors = [...state.competitors, item.id];
+            }
+            render();
+          });
+          return button;
+        }
+
+        function initMatrixFilters() {
+          const scroll = document.querySelector(".ck-matrix-scroll");
+          if (!scroll || scroll.dataset.filtersReady === "true") return false;
+          const table = scroll.firstElementChild;
+          if (!table) return false;
+          const grids = Array.from(table.children).filter((child) =>
+            child.className && String(child.className).includes("grid")
+          );
+          if (grids.length < 2) return false;
+
+          addStyles();
+          scroll.dataset.filtersReady = "true";
+
+          const filterShell = document.createElement("div");
+          filterShell.className = "ck-matrix-filters";
+          filterShell.innerHTML = `
+            <div class="ck-matrix-filter-row">
+              <div class="ck-matrix-filter-label">Signal</div>
+              <div class="ck-matrix-chip-group" data-filter-group="type"></div>
+            </div>
+            <div class="ck-matrix-filter-row">
+              <div class="ck-matrix-filter-label">Competitor</div>
+              <div class="ck-matrix-chip-group ck-matrix-competitor-chips" data-filter-group="competitor"></div>
+            </div>
+          `;
+
+          const meta = scroll.previousElementSibling;
+          scroll.parentElement.insertBefore(filterShell, meta || scroll);
+
+          const typeRoot = filterShell.querySelector('[data-filter-group="type"]');
+          const competitorRoot = filterShell.querySelector('[data-filter-group="competitor"]');
+          const header = grids[0];
+          const dataRows = grids.slice(1);
+          const originalMeta = meta ? meta.textContent : "";
+
+          const render = () => {
+            typeRoot.querySelectorAll(".ck-matrix-chip").forEach((chip) => {
+              chip.classList.toggle("is-active", chip.dataset.id === state.type);
+            });
+            competitorRoot.querySelectorAll(".ck-matrix-chip").forEach((chip) => {
+              const active = chip.dataset.id === "all"
+                ? state.competitors.length === 0
+                : state.competitors.includes(chip.dataset.id);
+              chip.classList.toggle("is-active", active);
+            });
+
+            const activeType = types.find((type) => type.id === state.type) || types[0];
+            const activeRows = activeType.rows || dataRows.map((_, index) => index);
+            const activeCompetitors = state.competitors.length === 0
+              ? competitors.filter((competitor) => competitor.id !== "all")
+              : competitors.filter((competitor) => state.competitors.includes(competitor.id));
+            const activeColumns = activeCompetitors.map((competitor) => competitor.column);
+            const columnTemplate = activeColumns.length === 1
+              ? "240px minmax(0, 1fr)"
+              : `240px repeat(${activeColumns.length}, 160px)`;
+            const minWidth = activeColumns.length === 1
+              ? "100%"
+              : `${240 + activeColumns.length * 160}px`;
+
+            table.style.minWidth = minWidth;
+            [header, ...dataRows].forEach((grid) => {
+              const cells = Array.from(grid.children);
+              grid.style.gridTemplateColumns = columnTemplate;
+              cells.forEach((cell, index) => {
+                const visible = index === 0 || activeColumns.includes(index);
+                cell.classList.toggle("ck-matrix-hidden", !visible);
+              });
+            });
+
+            dataRows.forEach((row, index) => {
+              row.classList.toggle("ck-matrix-hidden", !activeRows.includes(index));
+            });
+
+            if (meta) {
+              meta.textContent = `${activeRows.length} capabilities x ${activeColumns.length} competitors. ${activeColumns.length === 1 ? "All selected competitors visible." : "Scroll sideways for the remaining competitor detail."}`;
+            }
+            scroll.scrollLeft = 0;
+          };
+
+          typeRoot.replaceChildren(...types.map((item) => makeChip(item, "type", render)));
+          competitorRoot.replaceChildren(...competitors.map((item) => makeChip(item, "competitor", render)));
+          if (meta && originalMeta) meta.textContent = originalMeta;
+          render();
+          return true;
+        }
+
+        addBaseStyles();
+
+        const observer = new MutationObserver(() => {
+          prepareExternalLinks();
+          prepareLogoFallbacks();
+          if (initMatrixFilters()) observer.disconnect();
+        });
+        observer.observe(document.documentElement, { childList: true, subtree: true });
+        window.addEventListener("load", () => {
+          prepareExternalLinks();
+          prepareLogoFallbacks();
+          initMatrixFilters();
+          alignHashTarget();
+        });
+        window.addEventListener("hashchange", alignHashTarget);
+        setTimeout(() => {
+          prepareExternalLinks();
+          prepareLogoFallbacks();
+          initMatrixFilters();
+          alignHashTarget();
+        }, 300);
+      })();
+    </script>
+  </body>
+</html>

@@ -630,9 +630,26 @@ function renderToc(headings: { id: string; label: string }[], meta: Record<strin
 
   const logoSrc = meta.logo && (BUILT_IN_LOGOS.get(meta.logo.toLowerCase()) ?? meta.logo);
 
+  const toggleButton = createElement(
+    'button',
+    { className: 'htmdx-nav-toggle', type: 'button', 'aria-label': 'Toggle navigation' },
+    createElement(
+      'svg',
+      { width: 16, height: 16, viewBox: '0 0 16 16', fill: 'none', 'aria-hidden': 'true' },
+      createElement('path', {
+        d: 'M10 3L5 8L10 13',
+        stroke: 'currentColor',
+        strokeWidth: '1.5',
+        strokeLinecap: 'round',
+        strokeLinejoin: 'round',
+      }),
+    ),
+  );
+
   return createElement(
     'nav',
     { className: 'htmdx-toc', 'aria-label': 'Sections', key: 'toc' },
+    toggleButton,
     createElement('ol', { className: 'htmdx-toc-list' }, ...items),
     logoSrc
       ? createElement('img', {

@@ -442,6 +442,7 @@ export async function renderHost(host: Element, options: HtmdxRegisterOptions = 
       );
       return;
     }
+    activateNavToggle(host);
     activateSectionRail(host);
     activateStickyHeader(host);
     activateInPageAnchors(host);
@@ -521,7 +522,47 @@ export async function resolveSource(
   return { ok: true, kind: 'embedded', source: readSourceElement(sourceElement) };
 }
 
+const navToggleHosts = new WeakSet<Element>();
 const inPageAnchorHosts = new WeakSet<Element>();
+
+function activateNavToggle(root: Element) {
+  if (!globalThis.window || !globalThis.document) {
+    return;
+  }
+  if (navToggleHosts.has(root)) {
+    return;
+  }
+
+  if (!root.querySelector('.htmdx-nav-toggle')) {
+    return;
+  }
+
+  navToggleHosts.add(root);
+
+  const STORAGE_KEY = 'htmdx-nav-collapsed';
+  try {
+    if (localStorage.getItem(STORAGE_KEY) === '1') {
+      root.querySelector('.htmdx-app')?.classList.add('htmdx-app--nav-collapsed');
+    }
+  } catch {}
+
+  root.addEventListener('click', (event) => {
+    if (!(event.target instanceof Element)) {
+      return;
+    }
+    if (!event.target.closest('.htmdx-nav-toggle')) {
+      return;
+    }
+    const app = root.querySelector('.htmdx-app');
+    if (!app) {
+      return;
+    }
+    const collapsed = app.classList.toggle('htmdx-app--nav-collapsed');
+    try {
+      localStorage.setItem(STORAGE_KEY, collapsed ? '1' : '0');
+    } catch {}
+  });
+}
 
 // Component-generated and author-written in-page links (BulletList rows,
 // `[label](#slug)` markdown links, ...) are plain anchors, not TOC links.
@@ -1168,8 +1209,13 @@ const RUNTIME_CSS = `
     grid-template-columns: 240px minmax(0, 1fr);
     min-height: 100vh;
     background: var(--md-sys-color-surface);
+    transition: grid-template-columns 0.22s ease;
   }
   .htmdx-app--no-nav { grid-template-columns: minmax(0, 1fr); }
+  .htmdx-app--nav-collapsed { grid-template-columns: 52px minmax(0, 1fr); }
+  @media (prefers-reduced-motion: reduce) {
+    .htmdx-app { transition: none; }
+  }
   .htmdx-app--blank,
   .htmdx-app--custom { display: block; }
 
@@ -1217,6 +1263,54 @@ const RUNTIME_CSS = `
   .htmdx-toc-item.is-active .htmdx-toc-link {
     background: var(--md-sys-color-nav-active-container);
     color: var(--md-sys-color-on-nav-active-container);
+  }
+
+  .htmdx-nav-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    margin-left: auto;
+    margin-bottom: 8px;
+    padding: 0;
+    flex-shrink: 0;
+    border: none;
+    border-radius: var(--md-sys-shape-corner-full);
+    background: transparent;
+    color: var(--md-sys-color-on-surface-variant);
+    cursor: pointer;
+    transition: background 120ms ease, color 120ms ease;
+  }
+  .htmdx-nav-toggle:hover {
+    background: color-mix(in srgb, var(--md-sys-color-primary) calc(var(--md-sys-state-hover-opacity) * 100%), transparent);
+    color: var(--md-sys-color-on-surface);
+  }
+  .htmdx-nav-toggle svg {
+    flex-shrink: 0;
+    transition: transform 0.22s ease;
+  }
+
+  .htmdx-toc-list {
+    transition: opacity 0.15s ease;
+  }
+  .htmdx-app--nav-collapsed .htmdx-toc {
+    overflow: hidden;
+  }
+  .htmdx-app--nav-collapsed .htmdx-toc-list {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .htmdx-app--nav-collapsed .htmdx-nav-logo {
+    display: none;
+  }
+  .htmdx-app--nav-collapsed .htmdx-nav-toggle svg {
+    transform: rotate(180deg);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .htmdx-nav-toggle,
+    .htmdx-nav-toggle svg,
+    .htmdx-toc-list { transition: none; }
   }
 
   .htmdx-content {

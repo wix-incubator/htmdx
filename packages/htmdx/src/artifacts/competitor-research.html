@@ -5,15 +5,16 @@
 -->
 <html lang="en">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="ck-artifact-format" content="htmdx@2">
-    <meta name="ck-renderer" content="@wix/htmdx@4.11.0">
-    <meta name="ck-template-skill" content="ck-research-competitors">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="ck-artifact-format" content="htmdx@2" />
+    <meta name="ck-renderer" content="@wix/htmdx@4.11.0" />
+    <meta name="ck-template-skill" content="ck-research-competitors" />
     <title>Owner Booking Pending Payment · Competitor Research</title>
     <script src="https://cdn.jsdelivr.net/npm/@wix/htmdx@4.11.0/dist/browser.js" defer></script>
   </head>
   <body>
+    <!-- prettier-ignore -->
     <script type="text/htmdx" data-ck-source="primary" data-ck-format="htmdx@2">
 ---
 title: "Owner Booking Pending Payment"
@@ -797,39 +798,39 @@ Compact audit appendix. The strongest links are already placed beside the claims
     <script data-ck-enhancer="competitor-matrix-filters">
       (() => {
         const types = [
-          { id: "all", label: "All", rows: null },
-          { id: "standard", label: "Category Standard", rows: [0, 1, 2, 3, 4] },
-          { id: "differentiate", label: "Differentiation Ideas", rows: [5, 6] },
-          { id: "avoid", label: "Avoid / Defer", rows: [7, 8, 9] }
+          { id: 'all', label: 'All', rows: null },
+          { id: 'standard', label: 'Category Standard', rows: [0, 1, 2, 3, 4] },
+          { id: 'differentiate', label: 'Differentiation Ideas', rows: [5, 6] },
+          { id: 'avoid', label: 'Avoid / Defer', rows: [7, 8, 9] },
         ];
         const competitors = [
-          { id: "all", label: "All", column: null },
-          { id: "mangomint", label: "Mangomint", column: 1 },
-          { id: "phorest", label: "Phorest", column: 2 },
-          { id: "setmore", label: "Setmore", column: 3 },
-          { id: "fresha", label: "Fresha", column: 4 },
-          { id: "simplybook", label: "SimplyBook.me", column: 5 },
-          { id: "acuity", label: "Acuity", column: 6 },
-          { id: "square", label: "Square", column: 7 }
+          { id: 'all', label: 'All', column: null },
+          { id: 'mangomint', label: 'Mangomint', column: 1 },
+          { id: 'phorest', label: 'Phorest', column: 2 },
+          { id: 'setmore', label: 'Setmore', column: 3 },
+          { id: 'fresha', label: 'Fresha', column: 4 },
+          { id: 'simplybook', label: 'SimplyBook.me', column: 5 },
+          { id: 'acuity', label: 'Acuity', column: 6 },
+          { id: 'square', label: 'Square', column: 7 },
         ];
         const params = new URLSearchParams(window.location.search);
-        const requestedType = params.get("type");
-        const requestedCompetitors = (params.get("competitors") || "")
-          .split(",")
+        const requestedType = params.get('type');
+        const requestedCompetitors = (params.get('competitors') || '')
+          .split(',')
           .map((id) => id.trim())
           .filter(Boolean);
         const state = {
-          type: types.some((type) => type.id === requestedType) ? requestedType : "all",
+          type: types.some((type) => type.id === requestedType) ? requestedType : 'all',
           competitors: requestedCompetitors.filter((id) =>
-            competitors.some((competitor) => competitor.id === id && id !== "all")
-          )
+            competitors.some((competitor) => competitor.id === id && id !== 'all'),
+          ),
         };
         const anchorOffset = 112;
 
         function addBaseStyles() {
-          if (document.getElementById("ck-artifact-base-styles")) return;
-          const style = document.createElement("style");
-          style.id = "ck-artifact-base-styles";
+          if (document.getElementById('ck-artifact-base-styles')) return;
+          const style = document.createElement('style');
+          style.id = 'ck-artifact-base-styles';
           style.textContent = `
             .ck-logo-slot {
               display: inline-flex;
@@ -877,9 +878,9 @@ Compact audit appendix. The strongest links are already placed beside the claims
         }
 
         function addStyles() {
-          if (document.getElementById("ck-matrix-filter-styles")) return;
-          const style = document.createElement("style");
-          style.id = "ck-matrix-filter-styles";
+          if (document.getElementById('ck-matrix-filter-styles')) return;
+          const style = document.createElement('style');
+          style.id = 'ck-matrix-filter-styles';
           style.textContent = `
             .ck-matrix-filters {
               display: grid;
@@ -947,17 +948,17 @@ Compact audit appendix. The strongest links are already placed beside the claims
 
         function prepareExternalLinks() {
           document.querySelectorAll('a[href^="http"]').forEach((link) => {
-            link.target = "_blank";
-            link.rel = "noreferrer";
+            link.target = '_blank';
+            link.rel = 'noreferrer';
           });
         }
 
         function prepareLogoFallbacks() {
-          document.querySelectorAll("[data-ck-logo]").forEach((image) => {
-            const slot = image.closest(".ck-logo-slot");
+          document.querySelectorAll('[data-ck-logo]').forEach((image) => {
+            const slot = image.closest('.ck-logo-slot');
             if (!slot) return;
-            const markMissing = () => slot.classList.add("ck-logo-missing");
-            image.addEventListener("error", markMissing, { once: true });
+            const markMissing = () => slot.classList.add('ck-logo-missing');
+            image.addEventListener('error', markMissing, { once: true });
             if (image.complete && image.naturalWidth === 0) markMissing();
           });
         }
@@ -969,21 +970,21 @@ Compact audit appendix. The strongest links are already placed beside the claims
           if (!target) return;
           requestAnimationFrame(() => {
             const top = target.getBoundingClientRect().top + window.scrollY - anchorOffset;
-            window.scrollTo({ top, behavior: "auto" });
+            window.scrollTo({ top, behavior: 'auto' });
           });
         }
 
         function makeChip(item, group, render) {
-          const button = document.createElement("button");
-          button.type = "button";
-          button.className = "ck-matrix-chip";
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'ck-matrix-chip';
           button.dataset.group = group;
           button.dataset.id = item.id;
           button.textContent = item.label;
-          button.addEventListener("click", () => {
-            if (group === "type") {
+          button.addEventListener('click', () => {
+            if (group === 'type') {
               state.type = item.id;
-            } else if (item.id === "all") {
+            } else if (item.id === 'all') {
               state.competitors = [];
             } else if (state.competitors.includes(item.id)) {
               state.competitors = state.competitors.filter((id) => id !== item.id);
@@ -996,20 +997,20 @@ Compact audit appendix. The strongest links are already placed beside the claims
         }
 
         function initMatrixFilters() {
-          const scroll = document.querySelector(".ck-matrix-scroll");
-          if (!scroll || scroll.dataset.filtersReady === "true") return false;
+          const scroll = document.querySelector('.ck-matrix-scroll');
+          if (!scroll || scroll.dataset.filtersReady === 'true') return false;
           const table = scroll.firstElementChild;
           if (!table) return false;
-          const grids = Array.from(table.children).filter((child) =>
-            child.className && String(child.className).includes("grid")
+          const grids = Array.from(table.children).filter(
+            (child) => child.className && String(child.className).includes('grid'),
           );
           if (grids.length < 2) return false;
 
           addStyles();
-          scroll.dataset.filtersReady = "true";
+          scroll.dataset.filtersReady = 'true';
 
-          const filterShell = document.createElement("div");
-          filterShell.className = "ck-matrix-filters";
+          const filterShell = document.createElement('div');
+          filterShell.className = 'ck-matrix-filters';
           filterShell.innerHTML = `
             <div class="ck-matrix-filter-row">
               <div class="ck-matrix-filter-label">Signal</div>
@@ -1028,31 +1029,33 @@ Compact audit appendix. The strongest links are already placed beside the claims
           const competitorRoot = filterShell.querySelector('[data-filter-group="competitor"]');
           const header = grids[0];
           const dataRows = grids.slice(1);
-          const originalMeta = meta ? meta.textContent : "";
+          const originalMeta = meta ? meta.textContent : '';
 
           const render = () => {
-            typeRoot.querySelectorAll(".ck-matrix-chip").forEach((chip) => {
-              chip.classList.toggle("is-active", chip.dataset.id === state.type);
+            typeRoot.querySelectorAll('.ck-matrix-chip').forEach((chip) => {
+              chip.classList.toggle('is-active', chip.dataset.id === state.type);
             });
-            competitorRoot.querySelectorAll(".ck-matrix-chip").forEach((chip) => {
-              const active = chip.dataset.id === "all"
-                ? state.competitors.length === 0
-                : state.competitors.includes(chip.dataset.id);
-              chip.classList.toggle("is-active", active);
+            competitorRoot.querySelectorAll('.ck-matrix-chip').forEach((chip) => {
+              const active =
+                chip.dataset.id === 'all'
+                  ? state.competitors.length === 0
+                  : state.competitors.includes(chip.dataset.id);
+              chip.classList.toggle('is-active', active);
             });
 
             const activeType = types.find((type) => type.id === state.type) || types[0];
             const activeRows = activeType.rows || dataRows.map((_, index) => index);
-            const activeCompetitors = state.competitors.length === 0
-              ? competitors.filter((competitor) => competitor.id !== "all")
-              : competitors.filter((competitor) => state.competitors.includes(competitor.id));
+            const activeCompetitors =
+              state.competitors.length === 0
+                ? competitors.filter((competitor) => competitor.id !== 'all')
+                : competitors.filter((competitor) => state.competitors.includes(competitor.id));
             const activeColumns = activeCompetitors.map((competitor) => competitor.column);
-            const columnTemplate = activeColumns.length === 1
-              ? "240px minmax(0, 1fr)"
-              : `240px repeat(${activeColumns.length}, 160px)`;
-            const minWidth = activeColumns.length === 1
-              ? "100%"
-              : `${240 + activeColumns.length * 160}px`;
+            const columnTemplate =
+              activeColumns.length === 1
+                ? '240px minmax(0, 1fr)'
+                : `240px repeat(${activeColumns.length}, 160px)`;
+            const minWidth =
+              activeColumns.length === 1 ? '100%' : `${240 + activeColumns.length * 160}px`;
 
             table.style.minWidth = minWidth;
             [header, ...dataRows].forEach((grid) => {
@@ -1060,22 +1063,24 @@ Compact audit appendix. The strongest links are already placed beside the claims
               grid.style.gridTemplateColumns = columnTemplate;
               cells.forEach((cell, index) => {
                 const visible = index === 0 || activeColumns.includes(index);
-                cell.classList.toggle("ck-matrix-hidden", !visible);
+                cell.classList.toggle('ck-matrix-hidden', !visible);
               });
             });
 
             dataRows.forEach((row, index) => {
-              row.classList.toggle("ck-matrix-hidden", !activeRows.includes(index));
+              row.classList.toggle('ck-matrix-hidden', !activeRows.includes(index));
             });
 
             if (meta) {
-              meta.textContent = `${activeRows.length} capabilities x ${activeColumns.length} competitors. ${activeColumns.length === 1 ? "All selected competitors visible." : "Scroll sideways for the remaining competitor detail."}`;
+              meta.textContent = `${activeRows.length} capabilities x ${activeColumns.length} competitors. ${activeColumns.length === 1 ? 'All selected competitors visible.' : 'Scroll sideways for the remaining competitor detail.'}`;
             }
             scroll.scrollLeft = 0;
           };
 
-          typeRoot.replaceChildren(...types.map((item) => makeChip(item, "type", render)));
-          competitorRoot.replaceChildren(...competitors.map((item) => makeChip(item, "competitor", render)));
+          typeRoot.replaceChildren(...types.map((item) => makeChip(item, 'type', render)));
+          competitorRoot.replaceChildren(
+            ...competitors.map((item) => makeChip(item, 'competitor', render)),
+          );
           if (meta && originalMeta) meta.textContent = originalMeta;
           render();
           return true;
@@ -1089,13 +1094,13 @@ Compact audit appendix. The strongest links are already placed beside the claims
           if (initMatrixFilters()) observer.disconnect();
         });
         observer.observe(document.documentElement, { childList: true, subtree: true });
-        window.addEventListener("load", () => {
+        window.addEventListener('load', () => {
           prepareExternalLinks();
           prepareLogoFallbacks();
           initMatrixFilters();
           alignHashTarget();
         });
-        window.addEventListener("hashchange", alignHashTarget);
+        window.addEventListener('hashchange', alignHashTarget);
         setTimeout(() => {
           prepareExternalLinks();
           prepareLogoFallbacks();

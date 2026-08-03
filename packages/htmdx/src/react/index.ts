@@ -611,6 +611,14 @@ function renderHero(title: string, lead: string, meta: Record<string, string>) {
   );
 }
 
+// The toggle names the action it performs, so the accessible name and the
+// hover tooltip both flip with the collapsed state. activateNavToggle() keeps
+// them in sync; the initial render is always the expanded state.
+export const NAV_TOGGLE_LABELS = {
+  expanded: 'Minimize navigation panel',
+  collapsed: 'Show navigation panel',
+} as const;
+
 function renderToc(headings: { id: string; label: string }[], meta: Record<string, string>) {
   const items = headings.map((heading) =>
     createElement(
@@ -632,7 +640,12 @@ function renderToc(headings: { id: string; label: string }[], meta: Record<strin
 
   const toggleButton = createElement(
     'button',
-    { className: 'htmdx-nav-toggle', type: 'button', 'aria-label': 'Toggle navigation' },
+    {
+      className: 'htmdx-nav-toggle',
+      type: 'button',
+      'aria-label': NAV_TOGGLE_LABELS.expanded,
+      'data-htmdx-tooltip': NAV_TOGGLE_LABELS.expanded,
+    },
     createElement(
       'svg',
       { width: 16, height: 16, viewBox: '0 0 16 16', fill: 'none', 'aria-hidden': 'true' },
@@ -649,8 +662,10 @@ function renderToc(headings: { id: string; label: string }[], meta: Record<strin
   return createElement(
     'nav',
     { className: 'htmdx-toc', 'aria-label': 'Sections', key: 'toc' },
-    toggleButton,
     createElement('ol', { className: 'htmdx-toc-list' }, ...items),
+    // The toggle sits at the bottom of the rail, so it comes last in the DOM
+    // too: visual order and tab order stay the same.
+    toggleButton,
     logoSrc
       ? createElement('img', {
           className: 'htmdx-nav-logo',

@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.12.0](https://github.com/wix-incubator/htmdx/compare/v4.11.1...v4.12.0) (2026-08-03)
+
+
+### Features
+
+* **nav:** add collapsible left navigation sidebar ([#91](https://github.com/wix-incubator/htmdx/issues/91)) ([960b922](https://github.com/wix-incubator/htmdx/commit/960b922cbb4347d1a63aa9366ef80fa47198589c))
+
 ## [4.11.1](https://github.com/wix-incubator/htmdx/compare/v4.11.0...v4.11.1) (2026-07-30)
 
 

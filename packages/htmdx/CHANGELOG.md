@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.13.0](https://github.com/wix-incubator/htmdx/compare/v4.12.0...v4.13.0) (2026-08-03)
+
+
+### Features
+
+* **nav:** bottom-align the minimize toggle and add a hover tooltip ([#93](https://github.com/wix-incubator/htmdx/issues/93)) ([90d807d](https://github.com/wix-incubator/htmdx/commit/90d807d46b9c5c7a85e05d0f15c49b08311889f7))
+
 ## [4.12.0](https://github.com/wix-incubator/htmdx/compare/v4.11.1...v4.12.0) (2026-08-03)
 
 

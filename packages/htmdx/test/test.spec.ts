@@ -204,6 +204,69 @@ Two.</script>`;
     expect(rendered.ok && rendered.html).not.toContain('htmdx-nav-logo');
   });
 
+  test('nav toggle sits last in the rail and labels the action it performs', async () => {
+    localStorage.removeItem('htmdx-nav-collapsed');
+    const host = document.createElement('div');
+    host.innerHTML = `<script type="text/htmdx"># Doc
+
+## Alpha
+
+A.
+
+## Beta
+
+B.</script>`;
+    document.body.append(host);
+
+    await renderHost(host);
+
+    const rail = host.querySelector('.htmdx-toc');
+    const toggle = host.querySelector<HTMLButtonElement>('.htmdx-nav-toggle');
+    const railChildren = Array.from(rail?.children ?? []);
+    expect(railChildren.indexOf(toggle as Element)).toBeGreaterThan(
+      railChildren.findIndex((child) => child.classList.contains('htmdx-toc-list')),
+    );
+    expect(toggle?.getAttribute('aria-label')).toBe('Minimize navigation panel');
+    expect(toggle?.dataset.htmdxTooltip).toBe('Minimize navigation panel');
+
+    toggle?.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+    expect(host.querySelector('.htmdx-app--nav-collapsed')).not.toBeNull();
+    expect(toggle?.getAttribute('aria-label')).toBe('Show navigation panel');
+    expect(toggle?.dataset.htmdxTooltip).toBe('Show navigation panel');
+
+    toggle?.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+    expect(host.querySelector('.htmdx-app--nav-collapsed')).toBeNull();
+    expect(toggle?.getAttribute('aria-label')).toBe('Minimize navigation panel');
+
+    localStorage.removeItem('htmdx-nav-collapsed');
+    host.remove();
+  });
+
+  test('nav toggle restores the collapsed label from storage', async () => {
+    localStorage.setItem('htmdx-nav-collapsed', '1');
+    const host = document.createElement('div');
+    host.innerHTML = `<script type="text/htmdx"># Doc
+
+## Alpha
+
+A.
+
+## Beta
+
+B.</script>`;
+    document.body.append(host);
+
+    await renderHost(host);
+
+    const toggle = host.querySelector<HTMLButtonElement>('.htmdx-nav-toggle');
+    expect(host.querySelector('.htmdx-app--nav-collapsed')).not.toBeNull();
+    expect(toggle?.getAttribute('aria-label')).toBe('Show navigation panel');
+    expect(toggle?.dataset.htmdxTooltip).toBe('Show navigation panel');
+
+    localStorage.removeItem('htmdx-nav-collapsed');
+    host.remove();
+  });
+
   test('escapes logo frontmatter values', () => {
     const rendered = compile(
       '---\nlogo: x.svg" onerror="alert(1)\n---\n\n# T\n\n## Alpha\n\nA.\n\n## Beta\n\nB.',

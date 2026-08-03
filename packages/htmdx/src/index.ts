@@ -18,6 +18,7 @@ import {
   collectStructuralDiagnostics,
   compileDocument,
   diagnosticForBlock,
+  NAV_TOGGLE_LABELS,
   tokenizeSource,
   type HtmdxBlockFailure,
 } from './react';
@@ -539,10 +540,22 @@ function activateNavToggle(root: Element) {
 
   navToggleHosts.add(root);
 
+  // "Minimize navigation panel" / "Show navigation panel": the toggle is
+  // labelled by what the next click does, for the tooltip and screen readers
+  // alike.
+  const labelToggle = (collapsed: boolean) => {
+    const label = collapsed ? NAV_TOGGLE_LABELS.collapsed : NAV_TOGGLE_LABELS.expanded;
+    for (const button of root.querySelectorAll('.htmdx-nav-toggle')) {
+      button.setAttribute('aria-label', label);
+      button.setAttribute('data-htmdx-tooltip', label);
+    }
+  };
+
   const STORAGE_KEY = 'htmdx-nav-collapsed';
   try {
     if (localStorage.getItem(STORAGE_KEY) === '1') {
       root.querySelector('.htmdx-app')?.classList.add('htmdx-app--nav-collapsed');
+      labelToggle(true);
     }
   } catch {}
 
@@ -558,6 +571,7 @@ function activateNavToggle(root: Element) {
       return;
     }
     const collapsed = app.classList.toggle('htmdx-app--nav-collapsed');
+    labelToggle(collapsed);
     try {
       localStorage.setItem(STORAGE_KEY, collapsed ? '1' : '0');
     } catch {}
@@ -1223,14 +1237,27 @@ const RUNTIME_CSS = `
     position: sticky;
     top: 0;
     align-self: start;
+    display: flex;
+    flex-direction: column;
     height: 100vh;
-    overflow-y: auto;
     background: var(--md-sys-color-nav-surface);
     padding: 24px 12px;
     box-sizing: border-box;
     border-radius: 0 16px 16px 0;
+    /* The toggle's tooltip reaches outside the rail, so the rail itself must
+       not clip (the list scrolls instead) and must paint over page content.
+       Kept low enough to stay under the sticky header and dialog overlays. */
+    z-index: 1;
   }
-  .htmdx-toc-list { list-style: none; margin: 0; padding: 0; }
+  .htmdx-toc-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
   .htmdx-nav-logo {
     position: fixed;
     left: 30px;
@@ -1266,13 +1293,16 @@ const RUNTIME_CSS = `
   }
 
   .htmdx-nav-toggle {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
     width: 28px;
     height: 28px;
-    margin-left: auto;
-    margin-bottom: 8px;
+    align-self: flex-end;
+    /* Bottom edge lines up with the logo: the rail's 24px bottom padding plus
+       6px matches the logo's 30px offset from the viewport bottom. */
+    margin-bottom: 6px;
     padding: 0;
     flex-shrink: 0;
     border: none;
@@ -1290,12 +1320,36 @@ const RUNTIME_CSS = `
     flex-shrink: 0;
     transition: transform 0.22s ease;
   }
+  /* Tooltip without extra DOM or JS: the label rides on data-htmdx-tooltip so
+     it swaps with the collapsed state. */
+  .htmdx-nav-toggle::after {
+    content: attr(data-htmdx-tooltip);
+    position: absolute;
+    left: calc(100% + 10px);
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 6px 10px;
+    border-radius: var(--md-sys-shape-corner-small);
+    background: var(--md-sys-color-on-surface);
+    color: var(--md-sys-color-surface);
+    box-shadow: var(--md-sys-elevation-level2);
+    font-family: var(--md-ref-typeface-plain);
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 16px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 120ms ease;
+  }
+  .htmdx-nav-toggle:hover::after,
+  .htmdx-nav-toggle:focus-visible::after {
+    opacity: 1;
+  }
+  .htmdx-nav-toggle:not([data-htmdx-tooltip])::after { content: none; }
 
   .htmdx-toc-list {
     transition: opacity 0.15s ease;
-  }
-  .htmdx-app--nav-collapsed .htmdx-toc {
-    overflow: hidden;
   }
   .htmdx-app--nav-collapsed .htmdx-toc-list {
     opacity: 0;
@@ -1309,6 +1363,7 @@ const RUNTIME_CSS = `
   }
   @media (prefers-reduced-motion: reduce) {
     .htmdx-nav-toggle,
+    .htmdx-nav-toggle::after,
     .htmdx-nav-toggle svg,
     .htmdx-toc-list { transition: none; }
   }

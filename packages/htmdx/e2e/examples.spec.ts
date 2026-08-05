@@ -33,6 +33,16 @@ for (const { path, heading } of EXAMPLES) {
   });
 }
 
+test('/index.html renders its Markdown table', async ({ page }) => {
+  await page.goto('/index.html');
+  await page.evaluate(() => (window as Window & { htmdxReady: Promise<void> }).htmdxReady);
+
+  const table = page.locator('table').filter({ hasText: 'Syntax' });
+  await expect(table.locator('thead th')).toHaveText(['Syntax', 'Rendered result']);
+  await expect(table.locator('tbody tr')).toHaveCount(3);
+  await expect(table).toBeVisible();
+});
+
 // degraded.html is broken on purpose, so it is the one example that proves a
 // failure does not cost the reader the page.
 test('/degraded.html renders around its failing blocks', async ({ page }) => {

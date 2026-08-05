@@ -1,6 +1,6 @@
 import { createServer } from 'node:http';
 import { readFileSync } from 'node:fs';
-import { extname, resolve } from 'node:path';
+import { extname, isAbsolute, relative, resolve } from 'node:path';
 
 const dir = import.meta.dirname;
 const EXAMPLES = resolve(dir, '../../../examples');
@@ -13,13 +13,20 @@ const TYPES = {
 };
 
 createServer((req, res) => {
-  const name = req.url.slice(1) || 'index.html';
+  const name = new URL(req.url, `http://127.0.0.1:${PORT}`).pathname.slice(1) || 'index.html';
   const file = name === 'browser.js' ? BROWSER_JS : resolve(EXAMPLES, name);
+  const fromExamples = relative(EXAMPLES, file);
+  if (file !== BROWSER_JS && (fromExamples.startsWith('..') || isAbsolute(fromExamples))) {
+    res.writeHead(404);
+    res.end();
+    return;
+  }
   try {
+    const body = readFileSync(file);
     res.writeHead(200, { 'Content-Type': TYPES[extname(file)] ?? 'text/plain' });
-    res.end(readFileSync(file));
+    res.end(body);
   } catch {
     res.writeHead(404);
     res.end();
   }
-}).listen(PORT);
+}).listen(PORT, '127.0.0.1');

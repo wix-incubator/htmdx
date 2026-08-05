@@ -69,6 +69,15 @@ type ParsedImage = {
   fallback: string;
 };
 
+type TableAlignment = 'left' | 'center' | 'right' | undefined;
+
+type ParsedTable = {
+  header: string[];
+  alignments: TableAlignment[];
+  rows: string[][];
+  remainder: string;
+};
+
 export function renderInline(text: string, html?: HtmlRenderer): ReactNode {
   const syntax = markdownSyntaxSource(text);
   if (html && hasHtmlElement(syntax)) {
@@ -300,6 +309,64 @@ function renderBlock(
   if (fencedCode) {
     return fencedCode;
   }
+  const table = parseGfmTable(block);
+  if (table) {
+    const renderedTable = createElement(
+      'table',
+      { key: 'table' },
+      createElement(
+        'thead',
+        null,
+        createElement(
+          'tr',
+          null,
+          ...table.header.map((cell, index) =>
+            createElement(
+              'th',
+              {
+                key: index,
+                ...(table.alignments[index]
+                  ? { style: { textAlign: table.alignments[index] } }
+                  : {}),
+              },
+              renderInline(cell, html),
+            ),
+          ),
+        ),
+      ),
+      createElement(
+        'tbody',
+        null,
+        ...table.rows.map((row, rowIndex) =>
+          createElement(
+            'tr',
+            { key: rowIndex },
+            ...row.map((cell, cellIndex) =>
+              createElement(
+                'td',
+                {
+                  key: cellIndex,
+                  ...(table.alignments[cellIndex]
+                    ? { style: { textAlign: table.alignments[cellIndex] } }
+                    : {}),
+                },
+                renderInline(cell, html),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    if (!table.remainder) {
+      return createElement(Fragment, { key }, renderedTable);
+    }
+    return createElement(
+      Fragment,
+      { key },
+      renderedTable,
+      ...renderMarkdown(table.remainder, context, html),
+    );
+  }
   // Ahead of the list check: `- - -` is a break, not three empty bullets.
   if (THEMATIC_BREAK.test(block)) {
     return createElement('hr', { key });
@@ -331,6 +398,82 @@ function renderBlock(
     return createElement(Fragment, { key }, ...renderLists(parseList(block), 'list', html));
   }
   return createElement('p', { key }, renderInline(block.replace(/\n/g, ' '), html));
+}
+
+function parseGfmTable(block: string): ParsedTable | null {
+  const lines = block.split(/\r?\n/);
+  if (lines.length < 2) {
+    return null;
+  }
+
+  const header = splitTableRow(lines[0]);
+  const separator = splitTableRow(lines[1]);
+  if (
+    !header.hasDelimiter ||
+    !separator.hasDelimiter ||
+    header.cells.length === 0 ||
+    separator.cells.length !== header.cells.length ||
+    separator.cells.some((cell) => !/^:?-{3,}:?$/.test(cell))
+  ) {
+    return null;
+  }
+
+  const alignments = separator.cells.map<TableAlignment>((cell) => {
+    const left = cell.startsWith(':');
+    const right = cell.endsWith(':');
+    if (left && right) {
+      return 'center';
+    }
+    if (right) {
+      return 'right';
+    }
+    return left ? 'left' : undefined;
+  });
+
+  const rows: string[][] = [];
+  let lineIndex = 2;
+  for (; lineIndex < lines.length; lineIndex += 1) {
+    const row = splitTableRow(lines[lineIndex]);
+    if (!row.hasDelimiter) {
+      break;
+    }
+    rows.push(Array.from({ length: header.cells.length }, (_, index) => row.cells[index] ?? ''));
+  }
+
+  return {
+    header: header.cells,
+    alignments,
+    rows,
+    remainder: lines.slice(lineIndex).join('\n').trim(),
+  };
+}
+
+function splitTableRow(line: string) {
+  const syntax = markdownSyntaxSource(line, { indentedCode: false });
+  const delimiters: number[] = [];
+  for (let index = 0; index < line.length; index += 1) {
+    if (line[index] === '|' && syntax[index] === '|') {
+      delimiters.push(index);
+    }
+  }
+
+  const cells: string[] = [];
+  let start = 0;
+  for (const delimiter of delimiters) {
+    cells.push(line.slice(start, delimiter).trim());
+    start = delimiter + 1;
+  }
+  cells.push(line.slice(start).trim());
+
+  if (delimiters[0] !== undefined && !line.slice(0, delimiters[0]).trim()) {
+    cells.shift();
+  }
+  const lastDelimiter = delimiters.at(-1);
+  if (lastDelimiter !== undefined && !line.slice(lastDelimiter + 1).trim()) {
+    cells.pop();
+  }
+
+  return { cells, hasDelimiter: delimiters.length > 0 };
 }
 
 function hasHtmlElement(syntax: string) {

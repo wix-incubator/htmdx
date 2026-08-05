@@ -180,8 +180,9 @@ https://cdn.jsdelivr.net/npm/@wix/htmdx@4.12.0/dist/components.json
 - **The Markdown is a subset.** Headings `#` to `######`, `*emphasis*`,
   `**strong**`, `~~strikethrough~~`, `` `code` ``, fenced blocks, links,
   `<https://autolinks>`, ordered and bulleted lists, `> blockquotes`, `---`
-  breaks, and `\*` escapes all render. Tables belong in `DataTable`; task
-  lists, footnotes, reference links, and setext headings do not render.
+  breaks, GFM pipe tables, and `\*` escapes all render. Use `DataTable` when a
+  table needs component-level structure; task lists, footnotes, reference
+  links, and setext headings do not render.
 
 Optional frontmatter sets document metadata; unknown fields are ignored, and
 hero fields you omit are dropped from the hero rather than filled with a

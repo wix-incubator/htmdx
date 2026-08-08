@@ -27,3 +27,4 @@ test-results/
 
 # Claude Code worktrees
 .claude/
+.gstack/

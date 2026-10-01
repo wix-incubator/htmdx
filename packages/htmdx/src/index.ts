@@ -687,6 +687,15 @@ function activateSectionRail(root: Element) {
   onScroll();
 }
 
+// Wix Stash pins a top bar over the window and publishes its height on <html> while it is shown.
+// Window-relative chrome offsets by it; CSS reads it with a 0px fallback, script reads it here.
+function stashTopBarHeight() {
+  const value = getComputedStyle(document.documentElement).getPropertyValue(
+    '--stash-top-bar-height',
+  );
+  return Number.parseFloat(value) || 0;
+}
+
 // Reveal the condensed sticky header once the hero has scrolled out of view.
 // An IntersectionObserver on the hero is cheaper and jank-free versus a scroll
 // handler; falls back to always-hidden where IntersectionObserver is absent.
@@ -712,7 +721,7 @@ function activateStickyHeader(root: Element) {
         header.classList.toggle('is-visible', !entry.isIntersecting);
       }
     },
-    { rootMargin: '-1px 0px 0px 0px' },
+    { rootMargin: `-${stashTopBarHeight() + 1}px 0px 0px 0px` },
   );
   observer.observe(hero);
   stickyObservers.set(root, observer);
@@ -1221,7 +1230,7 @@ const RUNTIME_CSS = `
   .htmdx-app {
     display: grid;
     grid-template-columns: 240px minmax(0, 1fr);
-    min-height: 100vh;
+    min-height: calc(100vh - var(--stash-top-bar-height, 0px));
     background: var(--md-sys-color-surface);
     transition: grid-template-columns 0.22s ease;
   }
@@ -1235,11 +1244,11 @@ const RUNTIME_CSS = `
 
   .htmdx-toc {
     position: sticky;
-    top: 0;
+    top: var(--stash-top-bar-height, 0px);
     align-self: start;
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    height: calc(100vh - var(--stash-top-bar-height, 0px));
     background: var(--md-sys-color-nav-surface);
     padding: 24px 12px;
     box-sizing: border-box;
@@ -1375,7 +1384,7 @@ const RUNTIME_CSS = `
 
   .htmdx-sticky-header {
     position: sticky;
-    top: 8px;
+    top: calc(8px + var(--stash-top-bar-height, 0px));
     z-index: 50;
     height: 0;
     overflow: visible;

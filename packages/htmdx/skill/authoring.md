@@ -129,6 +129,7 @@ and reach for a component when it makes the review question easier to answer.
 | Scope split across the four fixed tiers | `RiskTable`                                      |
 | Secondary detail behind a click         | `Foldout`, `Accordion`                           |
 | Views the reader picks between          | `Tabs`                                           |
+| UI copy: current text vs rewrites       | `ContentReview` with its `Review*` parts         |
 | Grouping, chrome, layout                | `Card` family, `Badge`, `Separator`              |
 
 Default to ordinary `##` sections. `Card`, `Tabs`, `Accordion`, and `Foldout`

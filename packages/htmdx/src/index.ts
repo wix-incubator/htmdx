@@ -12,6 +12,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { bundledDefinitions, globalDefinitions, runtimeOptionsFor } from './runtime-definitions';
 import { calloutStyles } from './components/builtins/Callout/Callout';
 import { executiveSummaryStyles } from './components/builtins/ExecutiveSummary/ExecutiveSummary';
+import { contentReviewStyles } from './components/builtins/ContentReview/ContentReview';
 import { foldoutStyles } from './components/builtins/Foldout/Foldout';
 import { sourceQuoteStyles } from './components/builtins/SourceQuote/SourceQuote';
 import {
@@ -1106,7 +1107,7 @@ function injectTailwindBrowser(tailwind: HtmdxRegisterOptions['tailwind'] = true
 
 // Presentation owned by migrated components, colocated with their
 // implementations; the runtime only injects it next to its own chrome CSS.
-const COMPONENT_CSS = `${calloutStyles}${executiveSummaryStyles}${foldoutStyles}${sourceQuoteStyles}`;
+const COMPONENT_CSS = `${calloutStyles}${contentReviewStyles}${executiveSummaryStyles}${foldoutStyles}${sourceQuoteStyles}`;
 
 // Attribute selector instead of #id: slugs can start with a digit
 // (`## 1. Overview` -> id "1-overview"), which is invalid in an id selector.

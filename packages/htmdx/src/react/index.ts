@@ -26,6 +26,7 @@ import {
   HTML_ELEMENTS,
   HTML_VOID_ELEMENTS,
   safeElementProps,
+  safeStyle,
 } from '../components/html-elements';
 import { SVG_ELEMENTS, safeSvgProps } from '../components/svg-elements';
 import { safeImageAttributes, uniqueSlug, type RenderContext } from '../components/rendering';
@@ -938,7 +939,9 @@ function nodeToReact(
       ? createElement('img', { key, ...safeAttributes })
       : attributes.alt || null;
   }
-  const definition = catalog.definitions.get(lower);
+  const definition = isAuthoredHtmlElement(sourceElements.get(element)?.name || element.tagName)
+    ? undefined
+    : catalog.definitions.get(lower);
   if (definition) {
     const attributes =
       sourceElements.get(element)?.attributes ||
@@ -948,10 +951,13 @@ function nodeToReact(
         bare: false,
         fromDom: true,
       }));
+    // Prefer the authored body over the parsed element's re-serialization:
+    // serializing turns a bare `open` into `open=""` and re-escapes quotes in
+    // attribute values, which breaks props on components nested further down.
     return renderDefinition(
       definition,
       definitionPropsFromAttributes(definition, attributes),
-      unescapeCodeSpans(element.innerHTML).trim(),
+      unescapeCodeSpans(sourceElements.get(element)?.body ?? element.innerHTML).trim(),
       catalog,
       key,
     );
@@ -1137,6 +1143,15 @@ function passthroughElement(
         `event handler attribute "${attribute}" is not allowed`,
       );
     }
+    if (attribute === 'style') {
+      // React takes a style object; the string form also goes through the same
+      // sanitizer as raw HTML so a passthrough cannot smuggle in url().
+      const style = safeStyle(element.getAttribute(attribute) || '');
+      if (style) {
+        props.style = style;
+      }
+      continue;
+    }
     props[normalizePropName(attribute)] = parseAttrValue(element.getAttribute(attribute) || '');
   }
 
@@ -1198,9 +1213,37 @@ function parseBodyNodes(body: string): {
   const xml = new DOMParser().parseFromString(`<htmdx-body>${source}</htmdx-body>`, 'text/xml');
   const nodes = !xml.querySelector('parsererror')
     ? Array.from(xml.documentElement.childNodes)
-    : Array.from(new DOMParser().parseFromString(source, 'text/html').body.childNodes);
+    : Array.from(
+        new DOMParser().parseFromString(closeSelfClosingComponents(source), 'text/html').body
+          .childNodes,
+      );
 
   return { nodes, sourceElements: mapSourceElements(source, nodes) };
+}
+
+// The HTML parser ignores `/>` on anything but a void element, so a
+// self-closing `<Separator />` would swallow every sibling after it as its
+// body. Component tags are capitalized; spell those out as open + close before
+// the fallback parse. The source scan in mapSourceElements still reads the
+// authored form, so attribute pairing is unchanged.
+function closeSelfClosingComponents(source: string) {
+  return source.replace(
+    /<([A-Z][A-Za-z0-9]*)(\s+(?:[^"'<>/]|\/(?!>)|"[^"]*"|'[^']*')*)?\s*\/>/g,
+    (_tag, name: string, attrs = '') => `<${name}${attrs}></${name}>`,
+  );
+}
+
+// A lowercase tag that names a real HTML element is that element, even when a
+// component shares its name case-insensitively (`<button>` vs `<Button>`,
+// `<table>` vs `<Table>`). Components are written capitalized.
+function isAuthoredHtmlElement(authored: string) {
+  // Tag check, not `instanceof`: the CLI's jsdom globals carry no
+  // HTMLUnknownElement constructor.
+  return (
+    /^[a-z]/.test(authored) &&
+    Object.prototype.toString.call(document.createElement(authored)) !==
+      '[object HTMLUnknownElement]'
+  );
 }
 
 // DOMParser exposes both `enabled` and `enabled=""` as an empty attribute, and
@@ -1211,7 +1254,14 @@ function mapSourceElements(body: string, nodes: Node[]): WeakMap<Element, Source
   const openTag = /<([A-Za-z][A-Za-z0-9]*)(\s+(?:[^"'<>]|"[^"]*"|'[^']*')*)?\s*\/?>/g;
   let match: RegExpExecArray | null;
   while ((match = openTag.exec(body))) {
-    sources.push({ name: match[1], attributes: parseAttributes(match[2] || '') });
+    const close = match[0].endsWith('/>')
+      ? null
+      : findMatchingClose(body, match[1], openTag.lastIndex);
+    sources.push({
+      name: match[1],
+      attributes: parseAttributes(match[2] || ''),
+      body: close ? body.slice(openTag.lastIndex, close.bodyEnd) : undefined,
+    });
   }
 
   const domElements: Element[] = [];
@@ -1412,6 +1462,8 @@ function pushMarkdown(blocks: Block[], value: string, start: number) {
 type SourceElement = {
   name: string;
   attributes: SourceAttribute[];
+  /** The body as authored, when the closing tag could be found. */
+  body?: string;
 };
 
 type SourceAttribute = {

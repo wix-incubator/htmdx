@@ -1,6 +1,6 @@
 # Component grammar
 
-The runtime ships two catalogs: 24 report built-ins and a 65-component
+The runtime ships two catalogs: 31 report built-ins and a 65-component
 shadcn/ui pack. Its exact-version manifest documents every component's purpose,
 canonical example, body mode, and props:
 
@@ -172,6 +172,57 @@ Rows with extra structure:
 - **Won't do:** A big-bang cutover.
 </RiskTable>
 ```
+
+## Content review
+
+`ContentReview` reviews UI copy. Each `ReviewElement` holds one `ReviewMockup`
+(the recreated component, written once) and `ReviewVersion`s whose
+`- field: text` rows fill its `CopyField` slots: first `current` (today's
+text), then the proposed versions, numbered Version 1, 2, … in order. A field a
+version leaves out keeps today's text. Open the Overview with a `ReviewSummary`
+(what the review understood, then its assumptions); any other children that are
+not review parts render there too.
+
+Style the mockup with inline `style` attributes. It ignores the page's own
+typography and Tailwind classes so the copy wraps as it will in the product. A
+link whose URL changes between versions is `<CopyField name="link"
+href="linkUrl" />`, with `linkUrl` as one more field. Give a version
+`sourced="..."` when it states something the current text never said.
+
+<!-- prettier-ignore -->
+```mdx
+<ContentReview title="Brand filter">
+
+<ReviewElement name="Empty state" description="Shown before any brand exists.">
+
+<ReviewMockup>
+<div style="padding: 24px; text-align: center">
+<h3><CopyField name="title" /></h3>
+<button style="padding: 8px 16px; border-radius: 99px"><CopyField name="cta" /></button>
+</div>
+</ReviewMockup>
+
+<ReviewVersion current>
+- title: No Brands
+- cta: Create Brand
+</ReviewVersion>
+
+<ReviewVersion label="Action first" why="Names the next step.">
+- title: No brands yet
+- cta: Add your first brand
+</ReviewVersion>
+
+</ReviewElement>
+
+</ContentReview>
+```
+
+Readers select, edit, and comment on versions in the page and copy their
+decisions as one message that starts `Content review decisions:`. Apply it to
+the source, not the page: set `final` (the version number, or `current`) on the
+element, copy their wording verbatim into that version's `edited` JSON (never
+into its rows), add requested versions at the end, mark a version you rewrote
+from a comment with `updated`, and raise `revision` on `ContentReview` by one.
 
 ## shadcn/ui pack
 

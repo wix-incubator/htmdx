@@ -1378,6 +1378,12 @@ const RUNTIME_CSS = `
     .htmdx-toc-list { transition: none; }
   }
 
+  /* creator-kit: a page-level component's own navigation in the rail. */
+  .htmdx-toc-slot { flex: 1 1 auto; min-height: 0; overflow-x: hidden; overflow-y: auto; transition: opacity 0.15s ease; }
+  .htmdx-toc-slot:empty { display: none; }
+  .htmdx-toc-slot:not(:empty) + .htmdx-toc-list:empty { display: none; }
+  .htmdx-app--nav-collapsed .htmdx-toc-slot { opacity: 0; pointer-events: none; }
+
   .htmdx-content {
     box-sizing: border-box;
     padding: 8px 8px 96px;
@@ -1475,6 +1481,22 @@ const RUNTIME_CSS = `
     font-weight: 300;
     color: var(--md-sys-color-on-primary);
   }
+  /* creator-kit: links to the thing the document is about. */
+  .htmdx-hero-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 28px; }
+  .htmdx-hero-links a { display: inline-flex; align-items: center; gap: 7px; padding: 8px 15px; border: 1px solid color-mix(in srgb, var(--md-sys-color-on-primary) 42%, transparent); border-radius: var(--md-sys-shape-corner-full); color: var(--md-sys-color-on-primary); font-size: 0.8125rem; font-weight: 500; text-decoration: none; transition: background 120ms ease, border-color 120ms ease; }
+  .htmdx-hero-links a::after { content: '↗'; font-size: 0.75rem; opacity: 0.8; }
+  .htmdx-hero-links a:hover { background: color-mix(in srgb, var(--md-sys-color-on-primary) 14%, transparent); border-color: var(--md-sys-color-on-primary); }
+  .htmdx-hero-links a:first-child { border-color: var(--md-sys-color-on-primary); background: var(--md-sys-color-on-primary); color: var(--md-sys-color-primary); font-weight: 600; }
+  .htmdx-hero-links a:first-child:hover { background: color-mix(in srgb, var(--md-sys-color-on-primary) 88%, transparent); }
+  /* creator-kit: once a page-level component has moved past its opening view,
+     the hero is identification already read, so it shrinks to one line. */
+  .htmdx-hero.htmdx-hero--compact { padding: 18px 0; margin-bottom: 18px; }
+  .htmdx-hero--compact .htmdx-hero-inner { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; width: auto; padding-right: 32px; }
+  .htmdx-hero--compact .htmdx-hero-eyebrow { order: 1; margin: 0; font-size: 1rem; }
+  .htmdx-hero--compact .htmdx-hero-title { margin: 0; font-size: 1.25rem; line-height: 1.75rem; }
+  .htmdx-hero--compact .htmdx-hero-subtitle { order: 2; margin: 0; font-size: 0.8125rem; }
+  .htmdx-hero--compact :is(.htmdx-hero-desc, .htmdx-hero-labels, .htmdx-hero-links) { display: none; }
+
   .htmdx-hero-labels {
     display: flex;
     flex-wrap: wrap;

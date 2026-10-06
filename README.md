@@ -132,6 +132,8 @@ logo-alt: Creator Kit
 | `layout` | `default`, `creator-kit`, `blank`, or a trusted host-registered layout name. |
 | `title` | Hero and sticky-header title; overrides the first `# heading`. |
 | `project` | Project name in the hero and sticky header. |
+| `subtitle` | One line under the hero title. |
+| `links` | `creator-kit` only: Markdown links on one line, `[Go to prototype](https://…) [Figma](https://…)`, shown as buttons in the hero; the first is solid. |
 | `owner` | Owner label. |
 | `phase` | Phase label. |
 | `updated` | Updated label. |
@@ -143,7 +145,7 @@ logo-alt: Creator Kit
 
 ## Layouts
 
-Omitting `layout` uses `default`, which preserves the existing hero, sticky header, section navigation, and automatic `##` section grouping. `creator-kit` is a built-in alias for `default`, for artifacts that want to name the chrome they were authored against instead of inheriting whatever the default becomes. Use `blank` for source-order composition without that document chrome:
+Omitting `layout` uses `default`, which preserves the existing hero, sticky header, section navigation, and automatic `##` section grouping. `creator-kit` renders like `default` and adds what Creator Kit artifacts need: hero `links`, and room for a page-level component such as `ContentReview`, whose navigation takes the left rail and which shrinks the hero while the reader is inside it. A page that uses none of these renders exactly as `default`, so artifacts can name the chrome they were authored against instead of inheriting whatever the default becomes. Use `blank` for source-order composition without that document chrome:
 
 ```mdx
 ---

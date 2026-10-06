@@ -39,6 +39,12 @@ export type HtmdxComponent = {
   example: string;
   body: 'markdown' | 'htmdx' | 'none';
   props?: readonly HtmdxProp[];
+  /**
+   * The component is a whole page rather than a section of a document: under
+   * the creator-kit layout it gets the left rail for its own navigation and
+   * the full content width. Runtime-only; not part of the manifest.
+   */
+  pageNav?: boolean;
   // Component prop shapes are definition-owned and checked when authored.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Component: ComponentType<any> | ExoticComponent<any>;

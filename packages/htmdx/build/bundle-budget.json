@@ -4,7 +4,7 @@
     "browser.js": {
       "raw": 610000,
       "gzip": 180224,
-      "note": "Raised for the ContentReview family (ContentReview, ReviewSummary, ReviewElement, ReviewMockup, ReviewVersion, CopyField, ReviewScreen), which measured 593,883 raw and 176,137 gzip against 532,068 and 158,431 before it. The gzip limit is 176 KiB exactly, because README.md quotes it as the enforced ceiling. Previously set from 4.10.0 at 160 KiB."
+      "note": "Raised for the ContentReview family and the creator-kit layout additions it uses (ContentReview, ReviewSummary, ReviewElement, ReviewMockup, ReviewVersion, CopyField, ReviewScreen), which measured 594,828 raw and 176,403 gzip against 532,068 and 158,431 before it. The gzip limit is 176 KiB exactly, because README.md quotes it as the enforced ceiling. Previously set from 4.10.0 at 160 KiB."
     }
   }
 }

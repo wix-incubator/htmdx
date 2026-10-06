@@ -15,12 +15,14 @@ export type HtmdxLayoutDefinition = {
   Component: ComponentType<HtmdxLayoutProps>;
 };
 
-// `creator-kit` is a public alias for the default document chrome. Creator Kit
-// artifacts name it explicitly so a future change to the htmdx default cannot
-// silently restyle them.
+// `creator-kit` is the default document chrome plus a few additions Creator
+// Kit artifacts use: hero links, and a rail and hero that a page-level
+// component such as ContentReview can drive. A page that uses none of them
+// renders exactly like `default`. Creator Kit artifacts name it explicitly so a
+// future change to the htmdx default cannot silently restyle them.
 const BUILT_IN_LAYOUTS = new Map([
   ['default', 'default'],
-  ['creator-kit', 'default'],
+  ['creator-kit', 'creator-kit'],
   ['blank', 'blank'],
 ]);
 const registeredLayouts = new Map<string, HtmdxLayoutDefinition>();

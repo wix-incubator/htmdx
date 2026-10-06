@@ -29,10 +29,16 @@ import {
   safeStyle,
 } from '../components/html-elements';
 import { SVG_ELEMENTS, safeSvgProps } from '../components/svg-elements';
-import { safeImageAttributes, uniqueSlug, type RenderContext } from '../components/rendering';
+import {
+  safeHref,
+  safeImageAttributes,
+  uniqueSlug,
+  type RenderContext,
+} from '../components/rendering';
 import { BUILT_IN_LOGOS } from '../logos';
 import { getLayout, resolveLayoutName, resolveLayoutSlots } from '../layout';
 import { CodeBlock } from './CodeBlock';
+import { PageChromeProvider, PageHero, PageNavSlot } from './page-chrome';
 import {
   fenceLanguage,
   isListBlock,
@@ -173,7 +179,8 @@ export function compileDocument(source: string, options: HtmdxDocumentOptions = 
     };
   }
 
-  if (layout !== 'default') {
+  const creatorKit = layout === 'creator-kit';
+  if (layout !== 'default' && !creatorKit) {
     const definition = getLayout(layout);
     if (!definition) {
       throw new HtmdxSourceError('unknown-layout', `unknown layout "${layout}"`);
@@ -226,27 +233,37 @@ export function compileDocument(source: string, options: HtmdxDocumentOptions = 
     createElement('article', { className: 'htmdx-article' }, ...sectionElements),
   );
 
-  const hasNav = context.headings.length >= 2;
+  // Under creator-kit, a page-level component takes the rail for its own
+  // navigation even when the document has no sections to list.
+  const pageNav =
+    creatorKit &&
+    blocks.some(
+      (block) =>
+        block.type === 'component' && catalog.definitions.get(block.name.toLowerCase())?.pageNav,
+    );
+  const hasNav = context.headings.length >= 2 || pageNav;
+  const hero = title ? renderHero(title, lead, meta, creatorKit) : null;
   const content = createElement(
     'div',
     { className: 'htmdx-content', key: 'content' },
     title ? renderStickyHeader(title, meta) : null,
-    title ? renderHero(title, lead, meta) : null,
+    hero && creatorKit ? createElement(PageHero, { key: 'hero', children: hero }) : hero,
     createElement('div', { className: 'htmdx-shell', key: 'shell' }, main),
   );
 
   const theme = themeFromMeta(meta);
+  const app = createElement(
+    'div',
+    {
+      className: hasNav ? 'htmdx-app' : 'htmdx-app htmdx-app--no-nav',
+      ...(theme ? { 'data-htmdx-theme': theme } : {}),
+    },
+    hasNav ? renderToc(context.headings, meta, pageNav) : null,
+    content,
+  );
 
   return {
-    element: createElement(
-      'div',
-      {
-        className: hasNav ? 'htmdx-app' : 'htmdx-app htmdx-app--no-nav',
-        ...(theme ? { 'data-htmdx-theme': theme } : {}),
-      },
-      hasNav ? renderToc(context.headings, meta) : null,
-      content,
-    ),
+    element: creatorKit ? createElement(PageChromeProvider, null, app) : app,
     title,
     headings: context.headings,
     components: componentNames(blocks, catalog.names),
@@ -568,7 +585,32 @@ function renderHeroLabel(name: string, value: string) {
 // Frontmatter drives the hero, and a field nobody filled in is not worth a
 // placeholder on a published page: each line and each label only renders when
 // its field carries a value.
-function renderHero(title: string, lead: string, meta: Record<string, string>) {
+// `links: [Go to prototype](https://…) [Figma](https://…)` — the thing the
+// document is about, one click away. The first link is the one a reader
+// reaches for, so it renders solid.
+function renderHeroLinks(value: string | undefined) {
+  const links = Array.from((value || '').matchAll(/\[([^\]]+)\]\(([^)\s]+)\)/g)).flatMap(
+    ([, label, url]) => {
+      const href = safeHref(url);
+      return href ? [{ label, href }] : [];
+    },
+  );
+  return links.length > 0
+    ? createElement(
+        'div',
+        { className: 'htmdx-hero-links', key: 'links' },
+        ...links.map((link) =>
+          createElement(
+            'a',
+            { key: link.href, href: link.href, target: '_blank', rel: 'noopener noreferrer' },
+            link.label,
+          ),
+        ),
+      )
+    : null;
+}
+
+function renderHero(title: string, lead: string, meta: Record<string, string>, creatorKit = false) {
   const project = meta.project?.trim();
   const subtitle = meta.subtitle?.trim();
   const labels = (
@@ -608,6 +650,7 @@ function renderHero(title: string, lead: string, meta: Record<string, string>) {
       labels.length > 0
         ? createElement('div', { className: 'htmdx-hero-labels', key: 'labels' }, ...labels)
         : null,
+      creatorKit ? renderHeroLinks(meta.links) : null,
     ),
   );
 }
@@ -620,7 +663,11 @@ export const NAV_TOGGLE_LABELS = {
   collapsed: 'Show navigation panel',
 } as const;
 
-function renderToc(headings: { id: string; label: string }[], meta: Record<string, string>) {
+function renderToc(
+  headings: { id: string; label: string }[],
+  meta: Record<string, string>,
+  pageNav = false,
+) {
   const items = headings.map((heading) =>
     createElement(
       'li',
@@ -663,6 +710,7 @@ function renderToc(headings: { id: string; label: string }[], meta: Record<strin
   return createElement(
     'nav',
     { className: 'htmdx-toc', 'aria-label': 'Sections', key: 'toc' },
+    pageNav ? createElement(PageNavSlot, { key: 'slot' }) : null,
     createElement('ol', { className: 'htmdx-toc-list' }, ...items),
     // The toggle sits at the bottom of the rail, so it comes last in the DOM
     // too: visual order and tab order stay the same.
@@ -1685,6 +1733,8 @@ const FRONTMATTER_FIELDS = new Set([
   'layout',
   'title',
   'project',
+  'subtitle',
+  'links',
   'owner',
   'phase',
   'updated',
@@ -1881,7 +1931,12 @@ export function collectStructuralDiagnostics(
   }
 
   const layout = resolveLayoutName(options.layout || meta.layout || 'default');
-  if (layout !== 'default' && layout !== 'blank' && !getLayout(layout)) {
+  if (
+    layout !== 'default' &&
+    layout !== 'creator-kit' &&
+    layout !== 'blank' &&
+    !getLayout(layout)
+  ) {
     diagnostics.push(
       toDiagnostic(
         source,

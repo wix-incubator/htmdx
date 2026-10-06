@@ -175,8 +175,10 @@ Rows with extra structure:
 
 ## Content review
 
-`ContentReview` reviews UI copy. It draws the whole page, nav column and
-header included, so give the artifact `layout: blank`. Each `ReviewElement` holds one `ReviewMockup`
+`ContentReview` reviews UI copy. Give the artifact `layout: creator-kit`: the
+review's nav then takes the page's left rail, the hero shrinks on element
+pages, and `links: [Go to prototype](https://…) [Figma](https://…)` in the
+frontmatter puts links in the hero. Each `ReviewElement` holds one `ReviewMockup`
 (the recreated component, written once) and `ReviewVersion`s whose
 `- field: text` rows fill its `CopyField` slots: first `current` (today's
 text), then the proposed versions, numbered Version 1, 2, … in order. A field a
@@ -192,7 +194,7 @@ href="linkUrl" />`, with `linkUrl` as one more field. Give a version
 
 <!-- prettier-ignore -->
 ```mdx
-<ContentReview title="Brand filter" subtitle="Wix Stores">
+<ContentReview title="Brand filter">
 
 <ReviewElement name="Empty state" description="Shown before any brand exists.">
 

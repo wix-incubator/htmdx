@@ -1,4 +1,5 @@
 import {
+  useContext,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -7,7 +8,8 @@ import {
   type HTMLAttributes,
   type ReactNode,
 } from 'react';
-import { BUILT_IN_LOGOS } from '../../../logos';
+import { createPortal } from 'react-dom';
+import { PageChromeContext } from '../../../react/page-chrome';
 import { safeHref } from '../../rendering';
 import { InlineMarkdown } from '../shared/structured';
 import { ReviewFieldContext } from '../shared/review-context';
@@ -37,16 +39,10 @@ import {
   type ReviewVersionModel,
 } from '../shared/review-model';
 
-type ReviewLink = { label?: string; url?: string };
-
 type ContentReviewProps = {
   title?: string;
-  subtitle?: string;
-  badge?: string;
-  logo?: string;
   revision?: number;
   copyHint?: string;
-  links?: ReviewLink[];
   className?: string;
   children?: ReactNode;
 } & Record<string, unknown>;
@@ -60,17 +56,13 @@ const DEFAULT_HINT =
 // screen, and a thumbnail would only repeat the Before panel smaller.
 const WHOLE_SCREEN = 85;
 
-// The review is a whole page, not a section of a document: a nav column the
-// height of the window, and a header that names the review. Use it with
-// `layout: blank`, which leaves the page chrome to it.
+// Under the creator-kit layout the review's nav lives in the page's left rail
+// and the hero shrinks on element pages. Anywhere else (another layout, or a
+// static compile, where nothing mounts) it draws its own nav column.
 export function ContentReview({
   title = '',
-  subtitle = '',
-  badge = 'Content review',
-  logo = '',
   revision = 0,
   copyHint = DEFAULT_HINT,
-  links = [],
   className,
   children,
   ...attributes
@@ -87,72 +79,69 @@ export function ContentReview({
       return next;
     });
 
+  const chrome = useContext(PageChromeContext);
+  const slot = chrome?.navSlot ?? null;
+  const element = model.elements.find((candidate) => candidate.key === current);
+  const onElement = !!element;
+  useEffect(() => {
+    chrome?.setCompactHero(onElement);
+  }, [chrome, onElement]);
+  useEffect(() => () => chrome?.setCompactHero(false), [chrome]);
+
+  const root = useRef<HTMLElement>(null);
   const open = (elementKey: string) => {
     setCurrent(elementKey);
-    globalThis.scrollTo?.({ top: 0, behavior: 'smooth' });
+    // Under creator-kit the hero shrinks as the element opens, which would
+    // move a scroll target while it is being scrolled to; the top of the page
+    // is where the element starts. Elsewhere, the top of the review.
+    requestAnimationFrame(() =>
+      chrome
+        ? globalThis.scrollTo?.({ top: 0, behavior: 'smooth' })
+        : root.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+    );
   };
-  const element = model.elements.find((candidate) => candidate.key === current);
-  const shownLinks = (Array.isArray(links) ? links : []).flatMap((link) => {
-    const url = link && typeof link.url === 'string' ? safeHref(link.url) : null;
-    return url ? [{ url, label: link.label || link.url! }] : [];
-  });
-  const logoSrc = BUILT_IN_LOGOS.get(logo);
+  const nav = (
+    <ReviewNav
+      elements={model.elements}
+      decisions={decisions}
+      current={element ? current : OVERVIEW}
+      open={open}
+    />
+  );
 
   return (
     <section
       {...(attributes as HTMLAttributes<HTMLElement>)}
+      ref={root}
       data-htmdx-component="ContentReview"
-      className={['htmdx-component htmdx-review', className].filter(Boolean).join(' ')}
+      className={['htmdx-component htmdx-review', slot ? 'is-in-rail' : 'has-own-nav', className]
+        .filter(Boolean)
+        .join(' ')}
     >
-      <aside className="htmdx-review-rail">
-        <ReviewNav
-          elements={model.elements}
-          decisions={decisions}
-          current={element ? current : OVERVIEW}
-          open={open}
-        />
-        {logoSrc && <img className="htmdx-review-logo" src={logoSrc} alt="" />}
-      </aside>
-      <div className="htmdx-review-main">
-        <div className="htmdx-review-measure">
-          {/* The review's identity and nothing else. On an element page it is
-              identification already read, so it shrinks to one line. */}
-          <header className={`htmdx-review-hero${element ? ' is-compact' : ''}`}>
-            {badge && <span className="htmdx-review-badge">{badge}</span>}
-            <h1>{title}</h1>
-            {subtitle && <span className="htmdx-review-location">{subtitle}</span>}
-            {/* The first link is the one a reviewer reaches for, usually the
-                prototype, so it renders solid. */}
-            {shownLinks.length > 0 && (
-              <div className="htmdx-review-links">
-                {shownLinks.map((link) => (
-                  <a key={link.url} href={link.url} target="_blank" rel="noopener noreferrer">
-                    {link.label}
-                  </a>
-                ))}
-              </div>
-            )}
-          </header>
-          {element ? (
-            <ElementView
-              key={element.key}
-              element={element}
-              decisions={decisions}
-              fingerprint={fingerprint}
-              update={update}
-            />
-          ) : (
-            <Overview overview={model.overview} elements={model.elements} open={open} />
-          )}
-          <DecisionsBar
-            title={title}
-            hint={copyHint}
-            elements={model.elements}
+      {slot && createPortal(<div className="htmdx-review-railnav">{nav}</div>, slot)}
+      {/* The rail hides on narrow screens, so the review keeps a nav of its
+          own there too. */}
+      <div className="htmdx-review-ownnav">{nav}</div>
+      <div className="htmdx-review-stage">
+        {element ? (
+          <ElementView
+            key={element.key}
+            element={element}
             decisions={decisions}
             fingerprint={fingerprint}
             update={update}
           />
-        </div>
+        ) : (
+          <Overview overview={model.overview} elements={model.elements} open={open} />
+        )}
+        <DecisionsBar
+          title={title}
+          hint={copyHint}
+          elements={model.elements}
+          decisions={decisions}
+          fingerprint={fingerprint}
+          update={update}
+        />
       </div>
     </section>
   );
@@ -191,8 +180,21 @@ function ReviewNav({
       {mark}
     </button>
   );
+  // When the nav is a scrolling strip, keep the open element's pill in view.
+  const strip = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const nav = strip.current;
+    const active = nav?.querySelector<HTMLElement>('[aria-current]');
+    if (!nav || !active || nav.scrollWidth <= nav.clientWidth) {
+      return;
+    }
+    const left = active.offsetLeft - nav.offsetLeft;
+    if (left < nav.scrollLeft || left + active.offsetWidth > nav.scrollLeft + nav.clientWidth) {
+      nav.scrollLeft = left - 8;
+    }
+  }, [current]);
   return (
-    <nav className="htmdx-review-nav" aria-label="Review">
+    <nav ref={strip} className="htmdx-review-nav" aria-label="Review">
       {item(OVERVIEW, 'Overview')}
       {[...groups].map(([group, members]) => (
         <div key={group} className="htmdx-review-nav-group">
@@ -904,7 +906,7 @@ function DecisionsBar({
 // Colors that are not the page theme's are variables, so a host can set its
 // own on the ContentReview tag: class="[--review-final:#1e6b43]".
 export const contentReviewStyles = `
-  .htmdx-review, .htmdx-review-summary {
+  .htmdx-review, .htmdx-review-summary, .htmdx-review-railnav {
     --review-accent: var(--md-sys-color-primary);
     --review-accent-ink: var(--md-sys-color-on-primary-container);
     --review-accent-soft: var(--md-sys-color-primary-container);
@@ -927,41 +929,23 @@ export const contentReviewStyles = `
     --review-send-ink: #1d4ed8;
     --review-send-soft: #dbe6fe;
   }
-  .htmdx-review {
-    --review-rail: var(--md-sys-color-nav-surface, var(--md-sys-color-surface-container));
-    --review-surface: var(--md-sys-color-surface);
-    --review-section: var(--md-sys-color-surface-container-low);
-    --review-top: var(--stash-top-bar-height, 0px);
-    display: flex; align-items: flex-start; min-height: calc(100vh - var(--review-top));
-    /* The rail's colour runs the full page height from here, so the rail
-       itself can stay short and sticky. */
-    background: linear-gradient(to right, var(--review-rail) 0 240px, var(--review-surface) 240px 100%);
-    color: var(--review-ink); font-family: var(--md-ref-typeface-plain);
-  }
+  .htmdx-review { color: var(--review-ink); scroll-margin-top: calc(88px + var(--stash-top-bar-height, 0px)); }
   .htmdx-review button { font-family: inherit; }
-  /* A blank page carries Tailwind's reset, which strips list bullets. */
+  /* Tailwind's reset strips list bullets. */
   .htmdx-review ul, .htmdx-review-summary ul { list-style: disc; }
-  .htmdx-review-rail { position: sticky; top: var(--review-top); display: flex; flex-direction: column; flex-shrink: 0; width: 240px; height: calc(100vh - var(--review-top)); box-sizing: border-box; padding: 24px 12px; overflow-y: auto; }
-  .htmdx-review-logo { display: block; flex-shrink: 0; width: 44px; margin: auto 12px 0; padding-top: 24px; pointer-events: none; }
-  .htmdx-review-main { flex: 1; min-width: 0; padding: 8px 8px 96px; box-sizing: border-box; }
-  .htmdx-review-measure { max-width: 1184px; margin: 0 auto; }
+  .htmdx-review.has-own-nav { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 24px; align-items: start; }
+  .htmdx-review.has-own-nav > .htmdx-review-ownnav { position: sticky; top: calc(88px + var(--stash-top-bar-height, 0px)); }
+  .htmdx-review.is-in-rail > .htmdx-review-ownnav { display: none; }
+  .htmdx-review-stage { min-width: 0; }
   .htmdx-review-overview { display: flex; flex-direction: column; gap: 20px; }
-
-  .htmdx-review-hero { margin-bottom: 36px; padding: 44px 56px 48px; border-radius: 16px; background: var(--review-accent); color: #fff; }
-  .htmdx-review-badge { display: inline-block; margin-bottom: 20px; padding: 7px 15px; border-radius: 9999px; background: #fff; color: var(--review-accent); font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .12em; }
-  .htmdx-review-hero h1 { margin: 0 0 12px; font-size: 52px; font-weight: 500; line-height: 1.06; letter-spacing: -.02em; color: inherit; }
-  .htmdx-review-location { display: block; font-size: 15px; color: rgba(255,255,255,.72); }
-  .htmdx-review-hero.is-compact { display: flex; align-items: baseline; flex-wrap: wrap; gap: 14px; margin-bottom: 18px; padding: 16px 28px; border-radius: 12px; }
-  .htmdx-review-hero.is-compact h1 { margin: 0; font-size: 20px; letter-spacing: 0; }
-  .htmdx-review-hero.is-compact .htmdx-review-location { font-size: 13px; }
-  .htmdx-review-hero.is-compact .htmdx-review-badge, .htmdx-review-hero.is-compact .htmdx-review-links { display: none; }
-  .htmdx-review-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
-  .htmdx-review .htmdx-review-links a { display: inline-flex; align-items: center; gap: 7px; padding: 8px 15px; border: 1px solid rgba(255,255,255,.42); border-radius: 9999px; color: #fff; font-size: 13px; font-weight: 500; text-decoration: none; transition: background .12s ease, border-color .12s ease; }
-  .htmdx-review .htmdx-review-links a::after { content: '↗'; font-size: 12px; opacity: .8; }
-  .htmdx-review .htmdx-review-links a:hover { background: rgba(255,255,255,.14); border-color: #fff; }
-  .htmdx-review .htmdx-review-links a:first-child { border-color: #fff; background: #fff; color: var(--review-accent); font-weight: 600; }
-  .htmdx-review .htmdx-review-links a:first-child:hover { background: rgba(255,255,255,.88); }
-  .htmdx-review-section { padding: 24px; border-radius: 28px; background: var(--review-section); }
+  .htmdx-review-section { padding: 24px; border-radius: 28px; background: var(--review-section, var(--md-sys-color-surface-container-low)); }
+  /* A review is a whole page, so the section card around it steps aside
+     instead of holding it to the reading column. */
+  .htmdx-doc-section-card:has(> .htmdx-content-component > .htmdx-review) { width: auto; padding: 0; background: none; }
+  /* In the rail, the review's nav reads like the layout's own section list. */
+  .htmdx-review-railnav .htmdx-review-nav-item { padding: 13px 18px; color: var(--md-sys-color-on-surface-variant); font-family: var(--md-ref-typeface-brand); font-size: 0.875rem; line-height: 18px; }
+  .htmdx-review-railnav .htmdx-review-nav-item[aria-current] { background: var(--md-sys-color-nav-active-container); color: var(--md-sys-color-on-nav-active-container); }
+  .htmdx-review-railnav .htmdx-review-nav-heading { padding: 18px 18px 8px; }
 
   .htmdx-review-nav { display: flex; flex-direction: column; gap: 2px; }
   .htmdx-review-nav-heading { padding: 18px 12px 10px; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--review-muted); }
@@ -1131,25 +1115,23 @@ export const contentReviewStyles = `
   .htmdx-review .htmdx-review-mockup.htmdx-review-mockup .htmdx-review-field-editing:focus { outline-style: solid; }
 
   @media (max-width: 1100px) { .htmdx-review-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-  /* Narrow: no room for a nav column, so it becomes a scrollable strip
-     above the page. */
-  @media (max-width: 900px) {
-    .htmdx-review { flex-direction: column; align-items: stretch; background: var(--review-surface); }
-    .htmdx-review-rail { position: sticky; z-index: 25; width: 100%; height: auto; padding: 10px 12px; overflow-x: auto; overflow-y: hidden; background: var(--review-rail); scrollbar-width: none; }
-    .htmdx-review-nav { flex-direction: row; align-items: center; gap: 6px; }
-    .htmdx-review-nav-group { display: contents; }
-    .htmdx-review-nav-heading, .htmdx-review-logo { display: none; }
-    .htmdx-review-nav-item { flex-shrink: 0; width: auto; padding: 9px 16px; white-space: nowrap; }
-    .htmdx-review-main { padding: 12px 12px 56px; }
-    .htmdx-review-hero { margin-bottom: 20px; padding: 28px 24px 32px; }
-    .htmdx-review-hero h1 { font-size: 34px; }
+  /* Narrow: the layout hides its rail and a nav column no longer fits, so
+     the review's nav becomes a scrolling strip above it. */
+  @media (max-width: 960px) {
+    .htmdx-review.has-own-nav { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+    .htmdx-review.has-own-nav > .htmdx-review-ownnav { position: static; }
+    .htmdx-review.is-in-rail > .htmdx-review-ownnav { display: block; margin-bottom: 16px; }
+    .htmdx-review-ownnav .htmdx-review-nav { flex-direction: row; align-items: center; gap: 6px; overflow-x: auto; padding: 8px; border-radius: 9999px; background: var(--review-frame); scrollbar-width: none; }
+    .htmdx-review-ownnav .htmdx-review-nav-group { display: contents; }
+    .htmdx-review-ownnav .htmdx-review-nav-heading { display: none; }
+    .htmdx-review-ownnav .htmdx-review-nav-item { flex-shrink: 0; width: auto; padding: 9px 16px; white-space: nowrap; }
     .htmdx-review-section { padding: 14px; border-radius: 20px; }
     .htmdx-review-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .htmdx-review-title.htmdx-review-title.htmdx-review-title { font-size: 24px; }
     .htmdx-review-head { flex-direction: column; padding: 0; }
     .htmdx-review-fact { flex-direction: column; gap: 4px; }
     .htmdx-review-fact-label { flex-basis: auto; padding-top: 0; }
-    .htmdx-review-card { padding: 18px 18px; }
+    .htmdx-review-card { padding: 18px; }
     #htmdx-review-overview-index { padding: 20px; }
   }
   /* Phone: the version header's buttons take their own row, and the copy
@@ -1157,13 +1139,10 @@ export const contentReviewStyles = `
   @media (max-width: 600px) {
     .htmdx-review-panel { padding: 14px 14px 16px; }
     .htmdx-review-panel.is-chosen, .htmdx-review-panel.is-final { padding: 13px 13px 15px; }
-    .htmdx-review-panel-head { flex-wrap: wrap; }
+    .htmdx-review-panel-head, .htmdx-review-panel.is-collapsed .htmdx-review-panel-head { flex-wrap: wrap; }
     .htmdx-review-titles { flex-basis: calc(100% - 34px); }
-    .htmdx-review-panel.is-collapsed .htmdx-review-panel-head { flex-wrap: wrap; }
     .htmdx-review-frame { padding: 10px 12px 20px 30px; }
     .is-before .htmdx-review-frame { margin: -6px 0 0 -8px; }
-    .htmdx-review-hero h1 { font-size: 28px; }
-    .htmdx-review-hero.is-compact { padding: 12px 18px; }
     .htmdx-review-context { width: 100%; }
     .htmdx-review-tiles { grid-template-columns: minmax(0, 1fr); }
     .htmdx-review-bar { width: auto; margin: 16px 0 0; bottom: 8px; }

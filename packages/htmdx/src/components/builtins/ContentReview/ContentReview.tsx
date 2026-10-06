@@ -938,7 +938,7 @@ export const contentReviewStyles = `
   .htmdx-review.is-in-rail > .htmdx-review-ownnav { display: none; }
   .htmdx-review-stage { min-width: 0; }
   .htmdx-review-overview { display: flex; flex-direction: column; gap: 20px; }
-  .htmdx-review-section { padding: 24px; border-radius: 28px; background: var(--review-section, var(--md-sys-color-surface-container-low)); }
+  .htmdx-review-section { padding: 24px; border-radius: 28px; background: var(--md-sys-color-surface-container-low); }
   /* A review is a whole page, so the section card around it steps aside
      instead of holding it to the reading column. */
   .htmdx-doc-section-card:has(> .htmdx-content-component > .htmdx-review) { width: auto; padding: 0; background: none; }

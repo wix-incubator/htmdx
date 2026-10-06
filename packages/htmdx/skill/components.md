@@ -175,7 +175,8 @@ Rows with extra structure:
 
 ## Content review
 
-`ContentReview` reviews UI copy. Each `ReviewElement` holds one `ReviewMockup`
+`ContentReview` reviews UI copy. It draws the whole page, nav column and
+header included, so give the artifact `layout: blank`. Each `ReviewElement` holds one `ReviewMockup`
 (the recreated component, written once) and `ReviewVersion`s whose
 `- field: text` rows fill its `CopyField` slots: first `current` (today's
 text), then the proposed versions, numbered Version 1, 2, … in order. A field a
@@ -191,7 +192,7 @@ href="linkUrl" />`, with `linkUrl` as one more field. Give a version
 
 <!-- prettier-ignore -->
 ```mdx
-<ContentReview title="Brand filter">
+<ContentReview title="Brand filter" subtitle="Wix Stores">
 
 <ReviewElement name="Empty state" description="Shown before any brand exists.">
 

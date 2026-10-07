@@ -234,6 +234,7 @@ function Overview({
   tilesLabel: string;
   otherLabel: string;
 }) {
+  const extension = useContext(PagesExtensionContext);
   const shown = pages.filter((page) => page.inNav);
   const other = pages.filter((page) => !page.inNav);
   return (
@@ -244,31 +245,44 @@ function Overview({
           {tilesLabel} ({shown.length})
         </h3>
         <div className="htmdx-pages-tiles">
-          {shown.map((page) => (
-            // Not a <button>: a preview can contain buttons of its own, and
-            // nesting them breaks the tile apart.
-            <div
-              key={page.key}
-              id={`htmdx-pages-${page.key}-tile`}
-              className="htmdx-pages-tile"
-              role="button"
-              tabIndex={0}
-              onClick={() => open(page.key)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                  event.preventDefault();
-                  open(page.key);
-                }
-              }}
-            >
-              <span className="htmdx-pages-tile-canvas" aria-hidden="true" inert>
-                <span className="htmdx-pages-tile-scale">
-                  <PreviewContext.Provider value>{page.body}</PreviewContext.Provider>
+          {shown.map((page) => {
+            const status = extension?.status?.(page) ?? null;
+            return (
+              // Not a <button>: a preview can contain buttons of its own, and
+              // nesting them breaks the tile apart.
+              <div
+                key={page.key}
+                id={`htmdx-pages-${page.key}-tile`}
+                className={`htmdx-pages-tile${status ? ` is-${status}` : ''}`}
+                role="button"
+                tabIndex={0}
+                onClick={() => open(page.key)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    open(page.key);
+                  }
+                }}
+              >
+                <span className="htmdx-pages-tile-canvas" aria-hidden="true" inert>
+                  <span className="htmdx-pages-tile-scale">
+                    <PreviewContext.Provider value>{page.body}</PreviewContext.Provider>
+                  </span>
                 </span>
-              </span>
-              <span className="htmdx-pages-tile-name">{page.title}</span>
-            </div>
-          ))}
+                <span className="htmdx-pages-tile-foot">
+                  <span className="htmdx-pages-tile-name">{page.title}</span>
+                  {status && (
+                    <span
+                      className={`htmdx-pages-tile-tag is-${status}`}
+                      title={status === 'final' ? undefined : 'Selected, not final yet'}
+                    >
+                      {status === 'final' ? '✓ Final' : '✓ Selected'}
+                    </span>
+                  )}
+                </span>
+              </div>
+            );
+          })}
         </div>
         {other.length > 0 && (
           <div className="htmdx-pages-other">
@@ -370,7 +384,16 @@ export const pagesStyles = `
   .htmdx-pages-tile:focus-visible { outline: 2px solid var(--pages-accent); outline-offset: 2px; }
   .htmdx-pages-tile-canvas { display: flex; align-items: center; justify-content: center; height: 104px; overflow: hidden; padding: 8px; border-radius: 8px; background: var(--pages-frame); }
   .htmdx-pages-tile-scale { display: block; zoom: .3; pointer-events: none; }
-  .htmdx-pages-tile-name { font-size: 13.5px; font-weight: 600; }
+  .htmdx-pages-tile-foot { display: flex; align-items: center; gap: 8px; }
+  .htmdx-pages-tile-name { flex: 1; min-width: 0; font-size: 13.5px; font-weight: 600; }
+  /* A tile shows its page's status like the nav does: teal while selected,
+     green once final. The thicker border is offset by a pixel less padding so
+     the grid does not shift when a tile changes state. */
+  .htmdx-pages-tile.is-selected { border: 2px solid var(--pages-accent); background: color-mix(in srgb, var(--pages-accent) 7%, var(--pages-card)); padding: 9px; }
+  .htmdx-pages-tile.is-final { border: 2px solid var(--pages-final); background: #f2f9f4; padding: 9px; }
+  .htmdx-pages-tile-tag { flex-shrink: 0; padding: 3px 8px; border-radius: 9999px; font-size: 10.5px; font-weight: 800; letter-spacing: .02em; white-space: nowrap; }
+  .htmdx-pages-tile-tag.is-selected { border: 1.5px solid var(--pages-accent); background: #fff; color: var(--pages-accent); }
+  .htmdx-pages-tile-tag.is-final { border: 1.5px solid var(--pages-final); background: var(--pages-final); color: #fff; }
   .htmdx-pages-other { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--pages-frame); }
   .htmdx-pages-other.htmdx-pages-other.htmdx-pages-other h4 { margin: 0 0 8px; font-size: 15px; font-weight: 500; }
   .htmdx-pages-other.htmdx-pages-other.htmdx-pages-other ul { margin: 0; padding-left: 18px; }

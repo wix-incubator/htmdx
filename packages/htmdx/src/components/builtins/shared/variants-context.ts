@@ -44,8 +44,8 @@ export const VariantsExtensionContext = createContext<VariantsExtension | null>(
 export type PageStatus = 'selected' | 'final' | null;
 export type PageModel = { key: string; title: string; variants: VariantsModel[] };
 
-// A component wrapping Pages can mark each page in the nav, such as whether the
-// reader has picked something on it.
+// A component wrapping Pages can mark each page in the nav and on its overview
+// tile, such as whether the reader has picked something on it.
 export type PagesExtension = {
   status?: (page: PageModel) => PageStatus;
 };

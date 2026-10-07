@@ -198,6 +198,25 @@ describe('Pages', () => {
     expect(html).not.toContain('Version 1');
   });
 
+  test('marks a page in the nav and on its tile with the status an extension sets', () => {
+    const Wrapper: HtmdxComponent = {
+      name: 'StatusWrapper',
+      purpose: 'Test wrapper.',
+      example: '<StatusWrapper />',
+      body: 'htmdx',
+      Component: ({ children }: { children?: ReactNode }) =>
+        createElement(
+          extensions.PagesExtensionContext.Provider,
+          { value: { status: (page) => (page.title === 'Empty state' ? 'final' : null) } },
+          children,
+        ),
+    };
+    const html = render(`<StatusWrapper>\n\n${pagesExample}\n\n</StatusWrapper>`, [Wrapper]);
+    expect(html).toContain('htmdx-pages-tile is-final');
+    expect(html).toContain('✓ Final');
+    expect(html).toContain('htmdx-pages-check is-final');
+  });
+
   test('shares a named screenshot across pages and draws the reuse, not the declaration', () => {
     const html = render(
       `<Pages>\n\n<Screenshot name="home" src="https://example.com/home.png" alt="Home" />\n\n<Page title="A">\n\n<Screenshot use="home" highlight='{"x":1,"y":2,"w":3,"h":4}' />\n\n</Page>\n\n</Pages>`,

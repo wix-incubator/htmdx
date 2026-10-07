@@ -2,9 +2,9 @@
   "$comment": "Size ceilings for the bundle a browser downloads. Enforced by vite.browser.config.ts on every build:browser, so a breach fails CI. Raising a limit is allowed - record why in its note, in the same change. Bytes, measured on the written file; gzip is node:zlib at level 9, which is not what a CDN serves and does not need to be.",
   "files": {
     "browser.js": {
-      "raw": 550000,
-      "gzip": 163840,
-      "note": "Set from 4.10.0, which measured 521,378 raw and 156,247 gzip. The gzip limit is 160 KiB exactly, because README.md quotes it as the enforced ceiling."
+      "raw": 600000,
+      "gzip": 176128,
+      "note": "Raised for Pages, Variants, Premises, Screenshot, TextDiff and the creator-kit layout additions Pages uses, which measured 588,160 raw and 174,910 gzip against 532,068 and 158,431 before them. The gzip limit is 172 KiB exactly, because README.md quotes it as the enforced ceiling. Previously set from 4.10.0 at 160 KiB."
     }
   }
 }

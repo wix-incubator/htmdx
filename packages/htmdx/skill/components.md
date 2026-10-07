@@ -1,6 +1,6 @@
 # Component grammar
 
-The runtime ships two catalogs: 24 report built-ins and a 65-component
+The runtime ships two catalogs: 33 report built-ins and a 65-component
 shadcn/ui pack. Its exact-version manifest documents every component's purpose,
 canonical example, body mode, and props:
 
@@ -172,6 +172,70 @@ Rows with extra structure:
 - **Won't do:** A big-bang cutover.
 </RiskTable>
 ```
+
+## Pages, Variants, Screenshot, TextDiff
+
+`Pages` holds content read one page at a time: anything before the first
+`Page` is the overview, followed by a tile per page; the nav groups pages by
+`group`. Under `layout: creator-kit` the nav takes the left rail and the hero
+shrinks while a page is open. `nav="false"` keeps a page out of the nav and
+lists it on the overview under `otherLabel`.
+
+`Variants` compares versions of one piece of UI. Its `VariantTemplate` is
+written once in HTML with inline `style` attributes and a `TextSlot` for each
+piece of text; each `Variant` fills the slots with `- slot: text` rows. The
+first, `current`, is today's text; the rest are numbered Version 1, 2, … and
+word-diffed against it. A slot a variant leaves out keeps the current text.
+The template ignores the page's typography and Tailwind classes, so it
+renders like the product.
+
+`Screenshot` with a `highlight` is a thumbnail centred on the ringed region;
+inside `Pages`, declare a screen once with `name` and reuse it with `use`.
+`TextDiff` marks how one string changed.
+
+<!-- prettier-ignore -->
+```mdx
+<Pages tilesLabel="Screens reviewed">
+
+<Screenshot name="products" src="https://example.com/products.png" alt="Products page" />
+
+<Page title="Empty state" group="Products page">
+
+<Screenshot use="products" highlight='{"x":28,"y":18,"w":69,"h":76}' />
+
+<Variants name="Empty state" flag="No way to add a brand from here." flagAnchor="cta">
+
+<VariantTemplate>
+<div style="padding: 24px; text-align: center">
+<h3><TextSlot name="title" /></h3>
+<button style="padding: 8px 16px; border-radius: 99px"><TextSlot name="cta" /></button>
+</div>
+</VariantTemplate>
+
+<Variant current>
+- title: No Brands
+- cta: Create Brand
+</Variant>
+
+<Variant label="Action first" why="Names the next step.">
+- title: No brands yet
+- cta: Add your first brand
+</Variant>
+
+</Variants>
+
+</Page>
+
+</Pages>
+```
+
+`chosen="2"` settles a comparison: that variant moves under the current one
+and the rest fold. `Premises` opens an overview with what the work understood
+(`- **Label:** value` rows) and what it took as true (other rows).
+
+A script can let readers act on `Pages` and `Variants` with
+`window.Htmdx.registerExtension({ pages, variants })`, without a tag of its own,
+so the artifact still renders read-only if the script never runs.
 
 ## shadcn/ui pack
 

@@ -10,6 +10,7 @@ const examples = [
   'blank-layout.html',
   'component-tour.html',
   'diagrams.html',
+  'content-review.html',
 ];
 
 function readHtmdxSource(file: string): string {

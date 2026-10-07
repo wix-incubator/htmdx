@@ -159,6 +159,48 @@ describe('raw HTML', () => {
     );
   });
 
+  test('keeps a lowercase HTML element distinct from a same-named component', () => {
+    const rendered = compile(
+      '<Card>\n<CardContent>\n<button class="cta">Go</button>\n</CardContent>\n</Card>',
+    );
+
+    expect(rendered.ok && rendered.html).toContain('<button class="cta"><span>Go</span></button>');
+    expect(rendered.ok && rendered.html).not.toContain('data-slot="button"');
+  });
+
+  test('keeps self-closing component tags closed when a body falls back to HTML parsing', () => {
+    // The bare `hidden` attribute makes the body malformed XML, so it is
+    // parsed as HTML, which ignores `/>` on non-void elements.
+    const rendered = compile(
+      '<Card>\n<CardContent>\n<p hidden>Before <Separator /> after</p>\n</CardContent>\n</Card>',
+    );
+
+    expect(rendered.ok).toBe(true);
+    expect(rendered.ok && rendered.html).toMatch(
+      /data-slot="separator"[^>]*><\/div><span> after<\/span>/,
+    );
+  });
+
+  test('reads deeply nested components from their authored source', () => {
+    // Re-serializing CardContent's body would turn `open` into `open=""` and
+    // the quotes into `&quot;`; the nested Foldout must see what was written.
+    const summary = query(
+      `<Card>\n<CardContent>\n<Foldout title='Say "hi"' open>\nBody.\n</Foldout>\n</CardContent>\n</Card>`,
+      'details[open] summary',
+    );
+
+    expect(summary?.textContent).toBe('Say "hi"');
+  });
+
+  test('turns a style attribute on a passthrough element into a sanitized style', () => {
+    const button = query(
+      '<Card>\n<CardContent>\n<button style="color: red; background: url(javascript:x)">Go</button>\n</CardContent>\n</Card>',
+      'button',
+    );
+
+    expect(button?.getAttribute('style')).toBe('color: red;');
+  });
+
   test('rejects elements that turn a component body into code', () => {
     registerComponent(
       definition({

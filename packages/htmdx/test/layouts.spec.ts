@@ -22,7 +22,7 @@ describe('document layouts', () => {
     expect(compile(source, { layout: 'default' })).toEqual(compile(source));
   });
 
-  test('creator-kit is an alias for the default layout', () => {
+  test('creator-kit renders like default when a page uses none of its additions', () => {
     const source = '# Existing artifact\n\n## First\n\nOne.\n\n## Second\n\nTwo.';
 
     expect(compile(`---\nlayout: creator-kit\n---\n\n${source}`)).toEqual(
@@ -30,6 +30,39 @@ describe('document layouts', () => {
     );
     expect(compile(source, { layout: 'creator-kit' })).toEqual(compile(source));
     expect(validate(`---\nlayout: creator-kit\n---\n\n${source}`)).toEqual([]);
+  });
+
+  test('creator-kit shows hero links and only safe ones', () => {
+    const rendered = compile(
+      '---\nlayout: creator-kit\ntitle: Content Review\nlinks: [Go to prototype](https://example.com/p) [Bad](javascript:alert(1)) [Figma](https://figma.com)\n---\n\nBody.',
+    );
+    const html = rendered.ok ? rendered.html : '';
+    expect(html).toContain('class="htmdx-hero-links"');
+    expect(html).toContain('href="https://example.com/p"');
+    expect(html).toContain('>Figma</a>');
+    expect(html).not.toContain('javascript:');
+  });
+
+  test('default ignores hero links', () => {
+    const rendered = compile('---\ntitle: T\nlinks: [A](https://example.com)\n---\n\nBody.');
+    expect(rendered.ok && rendered.html).not.toContain('htmdx-hero-links');
+  });
+
+  test('creator-kit gives a page-level component the rail', () => {
+    const review = `<Pages>\n\n<Page title="E" />\n\n</Pages>`;
+    const kit = compile(`---\nlayout: creator-kit\ntitle: Content Review\n---\n\n${review}`);
+    const plain = compile(`---\ntitle: Content Review\n---\n\n${review}`);
+    expect(kit.ok && kit.html).toContain('class="htmdx-toc-slot"');
+    expect(plain.ok && plain.html).not.toContain('htmdx-toc-slot');
+    expect(plain.ok && plain.html).toContain('htmdx-app--no-nav');
+  });
+
+  test('subtitle and links are known frontmatter fields', () => {
+    expect(
+      validate(
+        '---\nlayout: creator-kit\nsubtitle: Wix Stores\nlinks: [A](https://example.com)\n---\n\nBody.\n',
+      ),
+    ).toEqual([]);
   });
 
   test('blank preserves source order without document chrome or section grouping', () => {

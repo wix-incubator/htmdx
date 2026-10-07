@@ -266,20 +266,19 @@ describe('extensions registered without a wrapping tag', () => {
     }
   });
 
-  test('re-render when their store changes', () => {
-    let notify = () => {};
-    let version = 0;
+  test('read their store, so the components redraw when it changes', () => {
+    let reads = 0;
     const store = {
-      subscribe: (listener: () => void) => {
-        notify = listener;
-        return () => {};
+      subscribe: () => () => {},
+      getSnapshot: () => {
+        reads += 1;
+        return 1;
       },
-      getSnapshot: () => version,
     };
     setRegisteredExtensions({ variants: store });
     try {
       render(variantsExample);
-      expect(typeof notify).toBe('function');
+      expect(reads).toBeGreaterThan(0);
     } finally {
       setRegisteredExtensions({ variants: {} });
     }

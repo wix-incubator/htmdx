@@ -1,6 +1,6 @@
 # Component grammar
 
-The runtime ships two catalogs: 32 report built-ins and a 65-component
+The runtime ships two catalogs: 33 report built-ins and a 65-component
 shadcn/ui pack. Its exact-version manifest documents every component's purpose,
 canonical example, body mode, and props:
 
@@ -230,8 +230,12 @@ inside `Pages`, declare a screen once with `name` and reuse it with `use`.
 ```
 
 `chosen="2"` settles a comparison: that variant moves under the current one
-and the rest fold. A component that wraps `Pages` or `Variants` can let
-readers act on them through `window.Htmdx.extensions`.
+and the rest fold. `Premises` opens an overview with what the work understood
+(`- **Label:** value` rows) and what it took as true (other rows).
+
+A script can let readers act on `Pages` and `Variants` with
+`window.Htmdx.registerExtension({ pages, variants })`, without a tag of its own,
+so the artifact still renders read-only if the script never runs.
 
 ## shadcn/ui pack
 

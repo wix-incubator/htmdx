@@ -1,4 +1,4 @@
-import { createContext, type ReactNode } from 'react';
+import { createContext, useContext, useSyncExternalStore, type ReactNode } from 'react';
 import type { VariantModel, VariantRef, VariantsModel } from './variants-model';
 
 // What a template's TextSlots show. Variants renders the same template once
@@ -22,7 +22,7 @@ export type VariantInfo = { variants: VariantsModel; variant: VariantModel; ref:
 // Hooks for a component that wraps Variants and lets readers act on them, such
 // as picking a variant or rewording it. Every hook is optional; without a
 // provider, Variants is a read-only comparison.
-export type VariantsExtension = {
+export type VariantsExtension = ExtensionStore & {
   /** Controls at the end of a variant's header. */
   actions?: (info: VariantInfo) => ReactNode;
   /** Extra tags after the variant's label. */
@@ -41,13 +41,33 @@ export type VariantsExtension = {
 
 export const VariantsExtensionContext = createContext<VariantsExtension | null>(null);
 
+// Either kind of extension can tell the components to draw again, e.g. when
+// the reader's decisions change: `subscribe` registers a listener, and
+// `getSnapshot` returns a value that changes whenever the hooks would return
+// something new.
+export type ExtensionStore = {
+  subscribe?: (onChange: () => void) => () => void;
+  getSnapshot?: () => unknown;
+};
+
 export type PageStatus = 'selected' | 'final' | null;
 export type PageModel = { key: string; title: string; variants: VariantsModel[] };
 
-// A component wrapping Pages can mark each page in the nav and on its overview
-// tile, such as whether the reader has picked something on it.
-export type PagesExtension = {
-  status?: (page: PageModel) => PageStatus;
+export type PagesInfo = {
+  /** The Pages' own `name`. */
+  name: string;
+  /** Its data-* attributes, by name without the prefix: data-revision -> revision. */
+  data: Record<string, string>;
+  pages: PageModel[];
+};
+
+// A component wrapping Pages, or a script through registerExtension, can mark
+// each page in the nav and on its overview tile, such as whether the reader has
+// picked something on it, and add UI of its own after the pages.
+export type PagesExtension = ExtensionStore & {
+  status?: (page: PageModel, info: PagesInfo) => PageStatus;
+  /** UI after the pages, on the overview and on every page. */
+  after?: (info: PagesInfo) => ReactNode;
 };
 
 export const PagesExtensionContext = createContext<PagesExtension | null>(null);
@@ -57,3 +77,38 @@ export const PagesExtensionContext = createContext<PagesExtension | null>(null);
 export const ScreenshotLibrary = createContext<ReadonlyMap<string, { src: string; alt: string }>>(
   new Map(),
 );
+
+// Extensions registered by a script rather than a wrapping component. A
+// wrapping component's context takes precedence.
+const registered: { pages: PagesExtension | null; variants: VariantsExtension | null } = {
+  pages: null,
+  variants: null,
+};
+
+export function setRegisteredExtensions(extensions: {
+  pages?: PagesExtension;
+  variants?: VariantsExtension;
+}) {
+  registered.pages = extensions.pages ?? registered.pages;
+  registered.variants = extensions.variants ?? registered.variants;
+}
+
+const noSubscription = () => () => {};
+const noSnapshot = () => 0;
+
+function useStore<T extends ExtensionStore>(extension: T | null) {
+  useSyncExternalStore(
+    extension?.subscribe ?? noSubscription,
+    extension?.getSnapshot ?? noSnapshot,
+    extension?.getSnapshot ?? noSnapshot,
+  );
+  return extension;
+}
+
+export function usePagesExtension() {
+  return useStore(useContext(PagesExtensionContext) ?? registered.pages);
+}
+
+export function useVariantsExtension() {
+  return useStore(useContext(VariantsExtensionContext) ?? registered.variants);
+}

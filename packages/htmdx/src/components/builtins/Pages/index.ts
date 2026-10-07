@@ -10,6 +10,11 @@ export const Pages = {
   body: 'htmdx',
   props: [
     {
+      name: 'name',
+      type: 'string',
+      description: 'What the pages are, e.g. "Brand filter". Names them for extensions.',
+    },
+    {
       name: 'tilesLabel',
       type: 'string',
       default: 'Pages',

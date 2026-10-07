@@ -4,7 +4,7 @@
     "browser.js": {
       "raw": 600000,
       "gzip": 176128,
-      "note": "Raised for Pages, Variants, Screenshot, TextDiff and the creator-kit layout additions Pages uses, which measured 581,835 raw and 173,331 gzip against 532,068 and 158,431 before them. The gzip limit is 172 KiB exactly, because README.md quotes it as the enforced ceiling. Previously set from 4.10.0 at 160 KiB."
+      "note": "Raised for Pages, Variants, Premises, Screenshot, TextDiff and the creator-kit layout additions Pages uses, which measured 588,160 raw and 174,910 gzip against 532,068 and 158,431 before them. The gzip limit is 172 KiB exactly, because README.md quotes it as the enforced ceiling. Previously set from 4.10.0 at 160 KiB."
     }
   }
 }

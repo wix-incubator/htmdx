@@ -16,11 +16,12 @@ import { Screenshot } from '../Screenshot/Screenshot';
 import { Variants } from '../Variants/Variants';
 import { domAttributes } from '../shared/attributes';
 import {
-  PagesExtensionContext,
   PreviewContext,
+  usePagesExtension,
   ScreenshotLibrary,
   type PageModel,
   type PageStatus,
+  type PagesInfo,
 } from '../shared/variants-context';
 import { flatten, ofType, readVariants, slug, text } from '../shared/variants-model';
 
@@ -84,6 +85,7 @@ function readPages(children: ReactNode) {
 }
 
 type PagesProps = {
+  name?: string;
   tilesLabel?: string;
   otherLabel?: string;
   className?: string;
@@ -95,6 +97,7 @@ type PagesProps = {
 // page's left rail and the hero shrinks while a page is open; anywhere else,
 // and below the width where the rail hides, it draws its own nav.
 export function Pages({
+  name = '',
   tilesLabel = 'Pages',
   otherLabel = 'Also covered',
   className,
@@ -102,6 +105,16 @@ export function Pages({
   ...props
 }: PagesProps) {
   const { library, pages, overview } = useMemo(() => readPages(children), [children]);
+  const extension = usePagesExtension();
+  const attributes = domAttributes(props);
+  const data = Object.fromEntries(
+    Object.entries(props).flatMap(([key, value]) =>
+      key.startsWith('data-') ? [[key.slice(5), String(value)]] : [],
+    ),
+  );
+  const dataKey = JSON.stringify(data);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const info: PagesInfo = useMemo(() => ({ name, data, pages }), [name, dataKey, pages]);
   const [current, setCurrent] = useState(OVERVIEW);
   const chrome = useContext(PageChromeContext);
   const slot = chrome?.navSlot ?? null;
@@ -124,12 +137,12 @@ export function Pages({
         : root.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
     );
   };
-  const nav = <PagesNav pages={pages} current={page ? current : OVERVIEW} open={open} />;
+  const nav = <PagesNav info={info} current={page ? current : OVERVIEW} open={open} />;
 
   return (
     <ScreenshotLibrary.Provider value={library}>
       <section
-        {...domAttributes(props)}
+        {...attributes}
         ref={root}
         data-htmdx-component="Pages"
         className={['htmdx-component htmdx-pages', slot ? 'is-in-rail' : 'has-own-nav', className]
@@ -144,12 +157,13 @@ export function Pages({
           ) : (
             <Overview
               overview={overview}
-              pages={pages}
+              info={info}
               open={open}
               tilesLabel={tilesLabel}
               otherLabel={otherLabel}
             />
           )}
+          {extension?.after?.(info)}
         </div>
       </section>
     </ScreenshotLibrary.Provider>
@@ -157,15 +171,16 @@ export function Pages({
 }
 
 function PagesNav({
-  pages,
+  info,
   current,
   open,
 }: {
-  pages: PageEntry[];
+  info: PagesInfo;
   current: string;
   open: (key: string) => void;
 }) {
-  const extension = useContext(PagesExtensionContext);
+  const extension = usePagesExtension();
+  const pages = info.pages as PageEntry[];
   // Pages kept out of the nav are listed on the Overview instead. Grouped by
   // their `group`, in the order each group first appears.
   const shown = pages.filter((page) => page.inNav);
@@ -214,7 +229,7 @@ function PagesNav({
       {[...groups].map(([group, members]) => (
         <div key={group} className="htmdx-pages-nav-group">
           {group && <div className="htmdx-pages-nav-heading">{group}</div>}
-          {members.map((page) => item(page.key, page.title, extension?.status?.(page)))}
+          {members.map((page) => item(page.key, page.title, extension?.status?.(page, info)))}
         </div>
       ))}
     </nav>
@@ -223,18 +238,19 @@ function PagesNav({
 
 function Overview({
   overview,
-  pages,
+  info,
   open,
   tilesLabel,
   otherLabel,
 }: {
   overview: ReactNode[];
-  pages: PageEntry[];
+  info: PagesInfo;
   open: (key: string) => void;
   tilesLabel: string;
   otherLabel: string;
 }) {
-  const extension = useContext(PagesExtensionContext);
+  const extension = usePagesExtension();
+  const pages = info.pages as PageEntry[];
   const shown = pages.filter((page) => page.inNav);
   const other = pages.filter((page) => !page.inNav);
   return (
@@ -246,7 +262,7 @@ function Overview({
         </h3>
         <div className="htmdx-pages-tiles">
           {shown.map((page) => {
-            const status = extension?.status?.(page) ?? null;
+            const status = extension?.status?.(page, info) ?? null;
             return (
               // Not a <button>: a preview can contain buttons of its own, and
               // nesting them breaks the tile apart.

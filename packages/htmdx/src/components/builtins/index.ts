@@ -20,6 +20,7 @@ export { MetricStrip } from './MetricStrip';
 export { OpenQuestions } from './OpenQuestions';
 export { Page } from './Page';
 export { Pages } from './Pages';
+export { Premises } from './Premises';
 export { RiskTable } from './RiskTable';
 export { Screenshot } from './Screenshot';
 export { SourceQuote } from './SourceQuote';

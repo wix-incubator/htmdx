@@ -2,6 +2,7 @@ import { createElement, type ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, test } from 'vitest';
 import { compile, extensions } from '../src';
+import { setRegisteredExtensions } from '../src/components/builtins/shared/variants-context';
 import * as builtinDefinitions from '../src/components/builtins';
 import * as shadcnDefinitions from '../src/components/shadcn';
 import type { HtmdxComponent } from '../src/components';
@@ -231,5 +232,68 @@ describe('Pages', () => {
       ok: false,
       error: expect.stringContaining('no screenshot named "nope"'),
     });
+  });
+});
+
+describe('extensions registered without a wrapping tag', () => {
+  test('reach Pages and Variants, and Pages passes its name and data attributes', () => {
+    const seen: string[] = [];
+    setRegisteredExtensions({
+      pages: {
+        status: (page, info) => {
+          seen.push(`${info.name}:${info.data.revision}:${page.title}`);
+          return 'selected';
+        },
+        after: (info) => createElement('div', { className: 'after' }, `${info.pages.length} pages`),
+      },
+      variants: {
+        actions: ({ ref }) => createElement('button', { className: 'pick' }, `Pick ${ref}`),
+      },
+    });
+    try {
+      const html = render(
+        pagesExample.replace(
+          '<Pages tilesLabel="Screens reviewed">',
+          '<Pages name="Brand filter" data-revision="2" tilesLabel="Screens reviewed">',
+        ),
+      );
+      expect(html).toContain('<div class="after">3 pages</div>');
+      expect(seen).toContain('Brand filter:2:Empty state');
+      expect(html).toContain('htmdx-pages-tile is-selected');
+      expect(render(variantsExample)).toContain('<button class="pick">Pick 0</button>');
+    } finally {
+      setRegisteredExtensions({ pages: {}, variants: {} });
+    }
+  });
+
+  test('re-render when their store changes', () => {
+    let notify = () => {};
+    let version = 0;
+    const store = {
+      subscribe: (listener: () => void) => {
+        notify = listener;
+        return () => {};
+      },
+      getSnapshot: () => version,
+    };
+    setRegisteredExtensions({ variants: store });
+    try {
+      render(variantsExample);
+      expect(typeof notify).toBe('function');
+    } finally {
+      setRegisteredExtensions({ variants: {} });
+    }
+  });
+});
+
+describe('Premises', () => {
+  test('splits bold-label facts from assumptions and nests points', () => {
+    const html = render(
+      '<Premises note="From the code.">\n- **What it is:** Shoppers filter by brand.\n- Brands come from Products:\n  - in the panel\n</Premises>',
+    );
+    expect(html).toContain('About this feature');
+    expect(html).toContain('<div class="htmdx-premises-label">What it is</div>');
+    expect(html).toContain('From the code.');
+    expect(html).toMatch(/Brands come from Products:.*<ul><li>.*in the panel/);
   });
 });

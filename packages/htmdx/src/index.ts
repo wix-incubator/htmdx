@@ -13,9 +13,15 @@ import { bundledDefinitions, globalDefinitions, runtimeOptionsFor } from './runt
 import { calloutStyles } from './components/builtins/Callout/Callout';
 import { executiveSummaryStyles } from './components/builtins/ExecutiveSummary/ExecutiveSummary';
 import { pagesStyles } from './components/builtins/Pages/Pages';
+import { premisesStyles } from './components/builtins/Premises/Premises';
 import { screenshotStyles } from './components/builtins/Screenshot/Screenshot';
 import { diffMarkStyles } from './components/builtins/shared/diff-marks';
 import { variantsStyles } from './components/builtins/Variants/Variants';
+import {
+  setRegisteredExtensions,
+  type PagesExtension,
+  type VariantsExtension,
+} from './components/builtins/shared/variants-context';
 import { foldoutStyles } from './components/builtins/Foldout/Foldout';
 import { sourceQuoteStyles } from './components/builtins/SourceQuote/SourceQuote';
 import {
@@ -240,6 +246,16 @@ function registerDefinitions(definitions: HtmdxComponentDefinitions) {
     ...globalDefinitions.map(({ name }) => name),
   ]);
   globalDefinitions.push(...definitions);
+}
+
+// A script that lets readers act on Pages and Variants without a wrapping tag,
+// so the artifact still renders, read-only, if the script never runs.
+export function registerExtension(
+  extension: { pages?: PagesExtension; variants?: VariantsExtension },
+  options: HtmdxExtensionOptions = {},
+) {
+  setRegisteredExtensions(extension);
+  return options.rerender === false ? Promise.resolve() : rerender();
 }
 
 export function registerTheme(theme: HtmdxThemeDefinition, options: HtmdxExtensionOptions = {}) {
@@ -1111,7 +1127,7 @@ function injectTailwindBrowser(tailwind: HtmdxRegisterOptions['tailwind'] = true
 
 // Presentation owned by migrated components, colocated with their
 // implementations; the runtime only injects it next to its own chrome CSS.
-const COMPONENT_CSS = `${calloutStyles}${diffMarkStyles}${executiveSummaryStyles}${foldoutStyles}${pagesStyles}${screenshotStyles}${sourceQuoteStyles}${variantsStyles}`;
+const COMPONENT_CSS = `${calloutStyles}${diffMarkStyles}${executiveSummaryStyles}${foldoutStyles}${pagesStyles}${premisesStyles}${screenshotStyles}${sourceQuoteStyles}${variantsStyles}`;
 
 // Attribute selector instead of #id: slugs can start with a digit
 // (`## 1. Overview` -> id "1-overview"), which is invalid in an id selector.

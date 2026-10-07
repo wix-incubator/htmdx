@@ -13,7 +13,7 @@ import { diffWords } from '../shared/text-diff';
 import {
   PreviewContext,
   SlotContext,
-  VariantsExtensionContext,
+  useVariantsExtension,
   type VariantInfo,
 } from '../shared/variants-context';
 import {
@@ -35,7 +35,7 @@ export function Variants({ className, ...props }: VariantsProps) {
   const model = useMemo(() => readVariants(props), [props]);
   const attributes = domAttributes(props);
   const preview = useContext(PreviewContext);
-  const extension = useContext(VariantsExtensionContext);
+  const extension = useVariantsExtension();
   const first = model.current ?? model.variants[0];
 
   // In an overview tile, only the current variant, as a thumbnail of the page.
@@ -111,7 +111,7 @@ function Panel({
   variant: VariantModel;
   folded: boolean;
 }) {
-  const extension = useContext(VariantsExtensionContext);
+  const extension = useVariantsExtension();
   const { ref } = variant;
   const info: VariantInfo = { variants: model, variant, ref };
   const isCurrent = ref === CURRENT;

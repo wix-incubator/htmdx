@@ -1,13 +1,15 @@
-// What an extension script needs to build on the bundled components without a
+// Besides registerExtension on the runtime itself, what an extension script needs to build on the bundled components without a
 // build step of its own: the contexts Pages and Variants read their hooks from,
 // the creator-kit layout's chrome, and the helpers they use to read their
 // source. Reached in the browser as window.Htmdx.extensions.
 export {
   PagesExtensionContext,
   VariantsExtensionContext,
+  type ExtensionStore,
   type PageModel,
   type PageStatus,
   type PagesExtension,
+  type PagesInfo,
   type VariantInfo,
   type VariantsExtension,
 } from './components/builtins/shared/variants-context';

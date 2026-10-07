@@ -224,6 +224,9 @@ Host code registers standard React components and themes through `window.Htmdx`;
 
 Artifacts then use `<ProductCard>` declaratively. Tailwind classes compile on the fly; disable that with `register({ tailwind: false })` or use a mirror with `register({ tailwind: { src: './tailwind-browser.js' } })`.
 
+
+`Pages` and `Variants` also take hooks without a tag: `window.Htmdx.registerExtension({ pages, variants })` lets a script mark pages, add controls to variants, and draw UI after the pages, while an artifact whose script never runs still renders read-only. The hook shapes and helpers are on `window.Htmdx.extensions`.
+
 ## Using htmdx from a React app
 
 React hosts use the module entries; `react` and `react-dom` are optional peer dependencies:

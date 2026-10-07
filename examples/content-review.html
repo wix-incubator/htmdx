@@ -20,23 +20,19 @@ logo-alt: Creator Kit
 links: [Go to prototype](https://example.com/prototype) [Figma](https://www.figma.com)
 ---
 
-<Pages tilesLabel="Elements reviewed" otherLabel="Reviewed with no change">
+<Pages name="Brand filter" tilesLabel="Elements reviewed" otherLabel="Reviewed with no change">
 
 <Screenshot name="products" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 450'%3E%3Crect width='800' height='450' fill='%23f4f5f7'/%3E%3Crect x='0' y='0' width='800' height='56' fill='%23fff'/%3E%3Crect x='24' y='18' width='140' height='20' rx='4' fill='%23d0d5dd'/%3E%3Crect x='24' y='80' width='180' height='340' rx='8' fill='%23fff'/%3E%3Crect x='40' y='100' width='120' height='14' rx='3' fill='%23d0d5dd'/%3E%3Crect x='40' y='130' width='140' height='70' rx='6' fill='%23e8f0fe'/%3E%3Crect x='228' y='80' width='548' height='340' rx='8' fill='%23fff'/%3E%3Crect x='380' y='190' width='240' height='18' rx='4' fill='%23d0d5dd'/%3E%3Crect x='340' y='220' width='320' height='12' rx='3' fill='%23e4e7ec'/%3E%3Crect x='430' y='256' width='140' height='32' rx='16' fill='%23116dff'/%3E%3C/svg%3E" alt="Products page with the Brand filter panel on the left and an empty product list" />
 
-<Card>
-<CardHeader>
-<CardTitle>What the review understood</CardTitle>
-</CardHeader>
-<CardContent>
-Merchants can now tag products with a brand, and shoppers can filter the store by it. The filter only appears once at least one brand exists.
-</CardContent>
-</Card>
-
-<OpenQuestions>
-- **Assumption:** Brands are created from the Products page, not from Settings.
-- **Assumption:** "Brand" stays lowercase mid-sentence, like other product attributes.
-</OpenQuestions>
+<Premises note="Taken from the code and from your answers. If any is wrong, say so before reading the options: every one of them was written on top of these.">
+- **What it is:** Merchants can tag products with a brand, and shoppers can filter the store by it.
+- **Audience:** Every Wix Stores merchant, from a first store to an agency running dozens.
+- Brands are created from the Products page, not from Settings.
+- The filter appears only once at least one brand exists.
+- "Brand" stays lowercase mid-sentence, like other product attributes:
+  - in the filter panel
+  - in product cards
+</Premises>
 
 <Page title="Empty state" group="Products page" description="Shown on the Products page before any brand exists.">
 

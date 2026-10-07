@@ -256,7 +256,7 @@ function Overview({
   return (
     <div className="htmdx-pages-overview">
       {overview}
-      <div className="htmdx-pages-index">
+      <div id="htmdx-pages-index" className="htmdx-pages-index">
         <h3>
           {tilesLabel} ({shown.length})
         </h3>
@@ -328,7 +328,7 @@ function Overview({
 function PageView({ page }: { page: PageEntry }) {
   return (
     <div id={`htmdx-pages-${page.key}`}>
-      <header className="htmdx-pages-head">
+      <header id={`htmdx-pages-${page.key}-head`} className="htmdx-pages-head">
         <div className="htmdx-pages-head-text">
           <h2 className="htmdx-pages-title">{page.title}</h2>
           {page.description && <p className="htmdx-pages-desc">{page.description}</p>}

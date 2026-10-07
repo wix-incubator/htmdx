@@ -19,6 +19,7 @@ import {
 import {
   CURRENT,
   readVariants,
+  slug,
   type VariantModel,
   type VariantsModel,
 } from '../shared/variants-model';
@@ -155,9 +156,15 @@ function Panel({
   const why = splitWhy(variant.why);
   const more = why.rest || variant.assumptions.length > 0 || variant.sourced;
   const flagged = isCurrent && !!model.flag;
+  // An id from the comparison's name, so a Stash comment stays on its variant
+  // even when a chosen one moves up or the page re-renders.
+  const id = model.name
+    ? `htmdx-variants-${slug(model.name)}-${isCurrent ? 'before' : `v${(ref as number) + 1}`}`
+    : undefined;
 
   return (
     <article
+      id={id}
       className={[
         'htmdx-variants-panel',
         isCurrent ? 'is-current' : 'is-variant',

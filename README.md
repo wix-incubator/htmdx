@@ -145,7 +145,7 @@ logo-alt: Creator Kit
 
 ## Layouts
 
-Omitting `layout` uses `default`, which preserves the existing hero, sticky header, section navigation, and automatic `##` section grouping. `creator-kit` renders like `default` and adds what Creator Kit artifacts need: hero `links`, and room for a page-level component such as `ContentReview`, whose navigation takes the left rail and which shrinks the hero while the reader is inside it. A page that uses none of these renders exactly as `default`, so artifacts can name the chrome they were authored against instead of inheriting whatever the default becomes. Use `blank` for source-order composition without that document chrome:
+Omitting `layout` uses `default`, which preserves the existing hero, sticky header, section navigation, and automatic `##` section grouping. `creator-kit` renders like `default` and adds what Creator Kit artifacts need: hero `links`, and room for a page-level component such as `Pages`, whose navigation takes the left rail and which shrinks the hero while a page is open. A page that uses none of these renders exactly as `default`, so artifacts can name the chrome they were authored against instead of inheriting whatever the default becomes. Use `blank` for source-order composition without that document chrome:
 
 ```mdx
 ---
@@ -300,7 +300,7 @@ The authoring guidance ships with the runtime and is printed by `htmdx skill`, s
 
 ## Package
 
-- npm: `@wix/htmdx` · CDN entry: `dist/browser.js` (under 176KB gzip, [budgeted in CI](./packages/htmdx/build/bundle-budget.json)) · module entries: `.`, `./react`, `./testing`, `./components`, `./components/builtins`, `./components/shadcn`
+- npm: `@wix/htmdx` · CDN entry: `dist/browser.js` (under 172KB gzip, [budgeted in CI](./packages/htmdx/build/bundle-budget.json)) · module entries: `.`, `./react`, `./testing`, `./components`, `./components/builtins`, `./components/shadcn`
 - custom element: `<htmdx-code>` · browser API: `window.Htmdx`
 - linting: [`validate()`](#validation-and-linting) · CLI: [`lint`, `compile`, `components`](#command-line) — `npx @wix/htmdx lint <files...>`
 - component contract: `dist/components.json`

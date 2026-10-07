@@ -20,108 +20,132 @@ logo-alt: Creator Kit
 links: [Go to prototype](https://example.com/prototype) [Figma](https://www.figma.com)
 ---
 
-<ContentReview title="Brand filter">
+<Pages tilesLabel="Elements reviewed" otherLabel="Reviewed with no change">
 
-<ReviewScreen name="products" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 450'%3E%3Crect width='800' height='450' fill='%23f4f5f7'/%3E%3Crect x='0' y='0' width='800' height='56' fill='%23fff'/%3E%3Crect x='24' y='18' width='140' height='20' rx='4' fill='%23d0d5dd'/%3E%3Crect x='24' y='80' width='180' height='340' rx='8' fill='%23fff'/%3E%3Crect x='40' y='100' width='120' height='14' rx='3' fill='%23d0d5dd'/%3E%3Crect x='40' y='130' width='140' height='70' rx='6' fill='%23e8f0fe'/%3E%3Crect x='228' y='80' width='548' height='340' rx='8' fill='%23fff'/%3E%3Crect x='380' y='190' width='240' height='18' rx='4' fill='%23d0d5dd'/%3E%3Crect x='340' y='220' width='320' height='12' rx='3' fill='%23e4e7ec'/%3E%3Crect x='430' y='256' width='140' height='32' rx='16' fill='%23116dff'/%3E%3C/svg%3E" alt="Products page with the Brand filter panel on the left and an empty product list" />
+<Screenshot name="products" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 450'%3E%3Crect width='800' height='450' fill='%23f4f5f7'/%3E%3Crect x='0' y='0' width='800' height='56' fill='%23fff'/%3E%3Crect x='24' y='18' width='140' height='20' rx='4' fill='%23d0d5dd'/%3E%3Crect x='24' y='80' width='180' height='340' rx='8' fill='%23fff'/%3E%3Crect x='40' y='100' width='120' height='14' rx='3' fill='%23d0d5dd'/%3E%3Crect x='40' y='130' width='140' height='70' rx='6' fill='%23e8f0fe'/%3E%3Crect x='228' y='80' width='548' height='340' rx='8' fill='%23fff'/%3E%3Crect x='380' y='190' width='240' height='18' rx='4' fill='%23d0d5dd'/%3E%3Crect x='340' y='220' width='320' height='12' rx='3' fill='%23e4e7ec'/%3E%3Crect x='430' y='256' width='140' height='32' rx='16' fill='%23116dff'/%3E%3C/svg%3E" alt="Products page with the Brand filter panel on the left and an empty product list" />
 
-<ReviewSummary whatItIs="Merchants can tag products with a brand, and shoppers can filter the store by it." audience="Every Wix Stores merchant, from a first store to an agency running dozens.">
-- Brands are created from the Products page, not from Settings.
-- The filter appears only once at least one brand exists.
-- "Brand" stays lowercase mid-sentence, like other product attributes:
-  - in the filter panel
-  - in product cards
-</ReviewSummary>
+<Card>
+<CardHeader>
+<CardTitle>What the review understood</CardTitle>
+</CardHeader>
+<CardContent>
+Merchants can now tag products with a brand, and shoppers can filter the store by it. The filter only appears once at least one brand exists.
+</CardContent>
+</Card>
 
-<ReviewElement name="Empty state" group="Products page" screen="products" highlight='{"x":28,"y":18,"w":69,"h":76}' description="Shown on the Products page before any brand exists." flag="Nothing on this screen lets the merchant add a brand, so the button has nowhere to go yet." flagAnchor="cta">
+<OpenQuestions>
+- **Assumption:** Brands are created from the Products page, not from Settings.
+- **Assumption:** "Brand" stays lowercase mid-sentence, like other product attributes.
+</OpenQuestions>
 
-<ReviewMockup>
+<Page title="Empty state" group="Products page" description="Shown on the Products page before any brand exists.">
+
+<Screenshot use="products" highlight='{"x":28,"y":18,"w":69,"h":76}' />
+
+<Variants name="Empty state" flag="Nothing on this screen lets the merchant add a brand, so the button has nowhere to go yet." flagAnchor="cta" flagLabel="Design flag">
+
+<VariantTemplate>
 <div style="max-width: 380px; margin: 0 auto; padding: 28px 24px; border: 1px solid #e4e7ec; border-radius: 12px; background: #fff; text-align: center; font-family: Helvetica, Arial, sans-serif; color: #162d3d">
-<h3 style="margin: 0 0 8px; font-size: 20px"><CopyField name="title" /></h3>
-<p style="margin: 0 0 18px; font-size: 14px; color: #3b4057"><CopyField name="body" /> <span style="color: #116dff"><CopyField name="link" href="linkUrl" /></span></p>
-<button style="padding: 8px 20px; border: 0; border-radius: 99px; background: #116dff; color: #fff; font-size: 14px"><CopyField name="cta" /></button>
+<h3 style="margin: 0 0 8px; font-size: 20px"><TextSlot name="title" /></h3>
+<p style="margin: 0 0 18px; font-size: 14px; color: #3b4057"><TextSlot name="body" /> <span style="color: #116dff"><TextSlot name="link" href="linkUrl" /></span></p>
+<button style="padding: 8px 20px; border: 0; border-radius: 99px; background: #116dff; color: #fff; font-size: 14px"><TextSlot name="cta" /></button>
 </div>
-</ReviewMockup>
+</VariantTemplate>
 
-<ReviewVersion current="true">
+<Variant current="true">
 - title: No Brands
 - body: You haven't created any brands.
 - link: Learn More
 - linkUrl: https://support.wix.com/en/article/brands
 - cta: Create Brand
-</ReviewVersion>
+</Variant>
 
-<ReviewVersion label="Action first" why="Leads with what the merchant gets, then names the one step." assumptions='["Shoppers only see the filter once a brand exists."]'>
+<Variant label="Action first" why="Leads with what the merchant gets, then names the one step." assumptions='["Shoppers only see the filter once a brand exists."]'>
 - title: No brands yet
 - body: Add a brand to your products and shoppers can filter by it.
 - link: Learn more
 - cta: Add your first brand
-</ReviewVersion>
+</Variant>
 
-<ReviewVersion label="Short and plain" why="The shortest wording that still says what to do next.">
+<Variant label="Short and plain" badge="Updated" badgeTip="Dropped the body line, as you asked." why="The shortest wording that still says what to do next.">
 - title: No brands yet
 - body: Brands you add show up here.
 - link: Learn more
 - cta: Add brand
-</ReviewVersion>
+</Variant>
 
-</ReviewElement>
+</Variants>
 
-<ReviewElement name="Delete brand" group="Products page" description="Confirms deleting a brand that products still use.">
+</Page>
 
-<ReviewMockup>
+<Page title="Delete brand" group="Products page" description="Confirms deleting a brand that products still use.">
+
+<Variants name="Delete brand" chosen="1" chosenLabel="Final">
+
+<VariantTemplate>
 <div style="max-width: 420px; margin: 0 auto; padding: 24px; border-radius: 10px; background: #fff; box-shadow: 0 6px 24px rgb(0 0 0 / .15); font-family: Helvetica, Arial, sans-serif; color: #162d3d">
-<h3 style="margin: 0 0 10px; font-size: 18px"><CopyField name="title" /></h3>
-<p style="margin: 0 0 20px; font-size: 14px; color: #3b4057"><CopyField name="body" /></p>
+<h3 style="margin: 0 0 10px; font-size: 18px"><TextSlot name="title" /></h3>
+<p style="margin: 0 0 20px; font-size: 14px; color: #3b4057"><TextSlot name="body" /></p>
 <div style="display: flex; justify-content: flex-end; gap: 10px">
-<button style="padding: 7px 16px; border: 1px solid #116dff; border-radius: 99px; background: #fff; color: #116dff"><CopyField name="cancel" /></button>
-<button style="padding: 7px 16px; border: 0; border-radius: 99px; background: #e62214; color: #fff"><CopyField name="confirm" /></button>
+<button style="padding: 7px 16px; border: 1px solid #116dff; border-radius: 99px; background: #fff; color: #116dff"><TextSlot name="cancel" /></button>
+<button style="padding: 7px 16px; border: 0; border-radius: 99px; background: #e62214; color: #fff"><TextSlot name="confirm" /></button>
 </div>
 </div>
-</ReviewMockup>
+</VariantTemplate>
 
-<ReviewVersion current="true">
+<Variant current="true">
 - title: Are you sure?
 - body: This action cannot be undone.
 - cancel: Cancel
 - confirm: OK
-</ReviewVersion>
+</Variant>
 
-<ReviewVersion label="Names the cost" why="Says what happens to the products, which is what the merchant is actually weighing. A count makes the cost concrete without a second sentence." sourced="The product count comes from the brand's product list in the prototype.">
+<Variant label="Names the cost" why="Says what happens to the products, which is what the merchant is actually weighing. A count makes the cost concrete without a second sentence." sourced="The product count comes from the brand's product list in the prototype.">
 - title: Delete this brand?
 - body: It's removed from 12 products, and shoppers can't filter by it anymore.
 - confirm: Delete brand
-</ReviewVersion>
+</Variant>
 
-<ReviewVersion label="Shorter" why="Keeps only the consequence that can surprise them.">
+<Variant label="Shorter" why="Keeps only the consequence that can surprise them.">
 - title: Delete brand?
 - body: It's removed from every product that uses it.
 - confirm: Delete
-</ReviewVersion>
+</Variant>
 
-</ReviewElement>
+</Variants>
 
-<ReviewElement name="Filter label" group="Storefront" description="The filter heading shoppers see on the store's category page.">
+</Page>
 
-<ReviewMockup>
+<Page title="Filter label" group="Storefront" description="The filter heading shoppers see on the store's category page.">
+
+<Variants name="Filter label">
+
+<VariantTemplate>
 <div style="width: 220px; padding: 16px; border: 1px solid #e4e7ec; border-radius: 8px; background: #fff; font-family: Georgia, serif">
-<div style="margin-bottom: 10px; font-size: 13px; letter-spacing: .08em; text-transform: uppercase"><CopyField name="heading" /></div>
+<div style="margin-bottom: 10px; font-size: 13px; letter-spacing: .08em; text-transform: uppercase"><TextSlot name="heading" /></div>
 <div style="font-size: 14px">☐ Acme<br />☐ Northwind</div>
 </div>
-</ReviewMockup>
+</VariantTemplate>
 
-<ReviewVersion current="true">
+<Variant current="true">
 - heading: Filter By Brand
-</ReviewVersion>
+</Variant>
 
-<ReviewVersion label="Matches the other filters" why="The store's other filters are single nouns: Price, Color, Size.">
+<Variant label="Matches the other filters" why="The store's other filters are single nouns: Price, Color, Size.">
 - heading: Brand
-</ReviewVersion>
+</Variant>
 
-</ReviewElement>
+</Variants>
 
-<ReviewElement name="Saved toast" changed="false" />
+</Page>
 
-</ContentReview>
+<Page title="Saved toast" nav="false" description="Checked, and the current text stays.">
+
+The toast already reads **Changes saved**, in sentence case.
+
+</Page>
+
+</Pages>
     </script>
   </body>
 </html>

@@ -1,6 +1,6 @@
 # Component grammar
 
-The runtime ships two catalogs: 31 report built-ins and a 65-component
+The runtime ships two catalogs: 32 report built-ins and a 65-component
 shadcn/ui pack. Its exact-version manifest documents every component's purpose,
 canonical example, body mode, and props:
 
@@ -173,59 +173,65 @@ Rows with extra structure:
 </RiskTable>
 ```
 
-## Content review
+## Pages, Variants, Screenshot, TextDiff
 
-`ContentReview` reviews UI copy. Give the artifact `layout: creator-kit`: the
-review's nav then takes the page's left rail, the hero shrinks on element
-pages, and `links: [Go to prototype](https://…) [Figma](https://…)` in the
-frontmatter puts links in the hero. Each `ReviewElement` holds one `ReviewMockup`
-(the recreated component, written once) and `ReviewVersion`s whose
-`- field: text` rows fill its `CopyField` slots: first `current` (today's
-text), then the proposed versions, numbered Version 1, 2, … in order. A field a
-version leaves out keeps today's text. Open the Overview with a `ReviewSummary`
-(what the review understood, then its assumptions); any other children that are
-not review parts render there too.
+`Pages` holds content read one page at a time: anything before the first
+`Page` is the overview, followed by a tile per page; the nav groups pages by
+`group`. Under `layout: creator-kit` the nav takes the left rail and the hero
+shrinks while a page is open. `nav="false"` keeps a page out of the nav and
+lists it on the overview under `otherLabel`.
 
-Style the mockup with inline `style` attributes. It ignores the page's own
-typography and Tailwind classes so the copy wraps as it will in the product. A
-link whose URL changes between versions is `<CopyField name="link"
-href="linkUrl" />`, with `linkUrl` as one more field. Give a version
-`sourced="..."` when it states something the current text never said.
+`Variants` compares versions of one piece of UI. Its `VariantTemplate` is
+written once in HTML with inline `style` attributes and a `TextSlot` for each
+piece of text; each `Variant` fills the slots with `- slot: text` rows. The
+first, `current`, is today's text; the rest are numbered Version 1, 2, … and
+word-diffed against it. A slot a variant leaves out keeps the current text.
+The template ignores the page's typography and Tailwind classes, so it
+renders like the product.
+
+`Screenshot` with a `highlight` is a thumbnail centred on the ringed region;
+inside `Pages`, declare a screen once with `name` and reuse it with `use`.
+`TextDiff` marks how one string changed.
 
 <!-- prettier-ignore -->
 ```mdx
-<ContentReview title="Brand filter">
+<Pages tilesLabel="Screens reviewed">
 
-<ReviewElement name="Empty state" description="Shown before any brand exists.">
+<Screenshot name="products" src="https://example.com/products.png" alt="Products page" />
 
-<ReviewMockup>
+<Page title="Empty state" group="Products page">
+
+<Screenshot use="products" highlight='{"x":28,"y":18,"w":69,"h":76}' />
+
+<Variants name="Empty state" flag="No way to add a brand from here." flagAnchor="cta">
+
+<VariantTemplate>
 <div style="padding: 24px; text-align: center">
-<h3><CopyField name="title" /></h3>
-<button style="padding: 8px 16px; border-radius: 99px"><CopyField name="cta" /></button>
+<h3><TextSlot name="title" /></h3>
+<button style="padding: 8px 16px; border-radius: 99px"><TextSlot name="cta" /></button>
 </div>
-</ReviewMockup>
+</VariantTemplate>
 
-<ReviewVersion current>
+<Variant current>
 - title: No Brands
 - cta: Create Brand
-</ReviewVersion>
+</Variant>
 
-<ReviewVersion label="Action first" why="Names the next step.">
+<Variant label="Action first" why="Names the next step.">
 - title: No brands yet
 - cta: Add your first brand
-</ReviewVersion>
+</Variant>
 
-</ReviewElement>
+</Variants>
 
-</ContentReview>
+</Page>
+
+</Pages>
 ```
 
-Readers select, edit, and comment on versions in the page and copy their
-decisions as one message that starts `Content review decisions:`. Apply it to
-the source, not the page: set `final` (the version number, or `current`) on the
-element, copy their wording verbatim into that version's `edited` JSON (never
-into its rows), add requested versions at the end, mark a version you rewrote
-from a comment with `updated`, and raise `revision` on `ContentReview` by one.
+`chosen="2"` settles a comparison: that variant moves under the current one
+and the rest fold. A component that wraps `Pages` or `Variants` can let
+readers act on them through `window.Htmdx.extensions`.
 
 ## shadcn/ui pack
 

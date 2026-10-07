@@ -390,7 +390,7 @@ The standard runtime script gives an artifact the full catalog:
 `dist/browser.js` bundles React, the built-in catalog (ExecutiveSummary,
 MetricStrip, charts, ...), the shadcn/ui pack (Card, Badge, Button, Tabs,
 Accordion), and the shadcn theme, including the static-render path that powers
-`compile()`. It stays under 176KB gzip: the build measures the written bundle
+`compile()`. It stays under 172KB gzip: the build measures the written bundle
 against
 [`build/bundle-budget.json`](https://github.com/wix-incubator/htmdx/blob/master/packages/htmdx/build/bundle-budget.json)
 and fails when it grows past the ceiling, so the figure cannot drift without a

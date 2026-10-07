@@ -12,7 +12,10 @@ import { createRoot, type Root } from 'react-dom/client';
 import { bundledDefinitions, globalDefinitions, runtimeOptionsFor } from './runtime-definitions';
 import { calloutStyles } from './components/builtins/Callout/Callout';
 import { executiveSummaryStyles } from './components/builtins/ExecutiveSummary/ExecutiveSummary';
-import { contentReviewStyles } from './components/builtins/ContentReview/ContentReview';
+import { pagesStyles } from './components/builtins/Pages/Pages';
+import { screenshotStyles } from './components/builtins/Screenshot/Screenshot';
+import { diffMarkStyles } from './components/builtins/shared/diff-marks';
+import { variantsStyles } from './components/builtins/Variants/Variants';
 import { foldoutStyles } from './components/builtins/Foldout/Foldout';
 import { sourceQuoteStyles } from './components/builtins/SourceQuote/SourceQuote';
 import {
@@ -43,6 +46,7 @@ export { VERSION } from './version';
 export { HtmdxSourceError };
 export { injectShadcnTheme } from './components/shadcn/shared/theme';
 export { compileDocument, compileToReact, Htmdx, listComponents } from './react';
+export { extensions } from './extensions';
 export type {
   HtmdxBlockFailure,
   HtmdxDocument,
@@ -1107,7 +1111,7 @@ function injectTailwindBrowser(tailwind: HtmdxRegisterOptions['tailwind'] = true
 
 // Presentation owned by migrated components, colocated with their
 // implementations; the runtime only injects it next to its own chrome CSS.
-const COMPONENT_CSS = `${calloutStyles}${contentReviewStyles}${executiveSummaryStyles}${foldoutStyles}${sourceQuoteStyles}`;
+const COMPONENT_CSS = `${calloutStyles}${diffMarkStyles}${executiveSummaryStyles}${foldoutStyles}${pagesStyles}${screenshotStyles}${sourceQuoteStyles}${variantsStyles}`;
 
 // Attribute selector instead of #id: slugs can start with a digit
 // (`## 1. Overview` -> id "1-overview"), which is invalid in an id selector.

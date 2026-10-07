@@ -49,7 +49,7 @@ describe('document layouts', () => {
   });
 
   test('creator-kit gives a page-level component the rail', () => {
-    const review = `<ContentReview title="R">\n\n<ReviewElement name="E" changed="false" />\n\n</ContentReview>`;
+    const review = `<Pages>\n\n<Page title="E" />\n\n</Pages>`;
     const kit = compile(`---\nlayout: creator-kit\ntitle: Content Review\n---\n\n${review}`);
     const plain = compile(`---\ntitle: Content Review\n---\n\n${review}`);
     expect(kit.ok && kit.html).toContain('class="htmdx-toc-slot"');
